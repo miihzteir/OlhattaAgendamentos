@@ -1,0 +1,15 @@
+{
+  "name": "Olhatta",
+  "short_name": "Olhatta",
+  "description": "Olhatta - Centro de Oftalmologia Veterinária",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FBF8F3",
+  "theme_color": "#5C7355",
+  "icons": [
+    { "src": "olhatta-logo-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "olhatta-logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
