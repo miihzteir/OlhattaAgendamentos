@@ -1316,43 +1316,61 @@ function animalById(id){ return DB.animais.find(a=>a.id===id); }
 function agTutorNome(a){ return a.tutorId ? (tutorById(a.tutorId)?.nome||'—') : (a.tutorAvulso||'—'); }
 function agAnimalNome(a){ return a.animalId ? (animalById(a.animalId)?.nome||'—') : (a.animalAvulso||'—'); }
 function agSemCadastro(a){ return !a.tutorId && !!a.tutorAvulso; }
-function linkWhatsappConfirmacao(a){
-  const t = tutorById(a.tutorId);
-  const telefoneRaw = (t?.telefone || a.telefoneAvulso || '');
-  let digitos = telefoneRaw.replace(/\D/g,'');
-  if(digitos.length<=11) digitos = '55'+digitos; // adiciona código do Brasil se não tiver
-  const primeiroNome = (agTutorNome(a)||'').split(' ')[0];
-  const animalNome = agAnimalNome(a);
-  const animal = a.animalId ? animalById(a.animalId) : null;
-  const artigo = animal?.sexo==='Fêmea' ? 'a' : 'o';
-
-  const hoje = todayISO();
-  const amanha = addDays(hoje,1);
-  let diaTexto;
-  const diaSemanaCompleto = new Date(a.data+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'long'}).split('-').map(p=>p.replace(/^\w/,c=>c.toUpperCase())).join('-');
-  if(a.data===amanha){
-    diaTexto = `amanhã (${diaSemanaCompleto})`;
-  } else {
-    diaTexto = diaSemanaCompleto;
+const MSG_VARIAVEIS = [['{nome}','Primeiro nome do tutor'],['{animal}','Nome do animal'],['{artigo}','a ou o'],['{profissional}','Profissional'],['{dia}','Dia da semana'],['{data}','Data (dd/mm)'],['{hora}','Horário'],['{usuario}','Quem está usando']];
+function mensagensPadrao(){
+  return [
+    {id:'confirmacao', nome:'Confirmação de agendamento', texto:"*| {usuario} - Secretária*\n\nOlá, bom dia {nome}! Tudo bem? 🐱👁️\nO atendimento para {artigo} {animal} {profissional} está marcado para *{dia} - {data} às {hora}.*\n\n *Podemos confirmar seu horário?* ⏰\n\n⚠️ Aviso: Caso não seja confirmado até às 17h30 do dia de hoje, a consulta estará considerada desmarcada. Retorno confirmado e respectivo não comparecimento, este será considerado como realizado.\n\n Atenciosamente,\nOlhatta - Centro de Oftalmologia Veterinária"},
+    {id:'acompanhamento', nome:'Chamar para acompanhamento', texto:"*| {usuario} - Secretária*\n\nOlá, {nome}! Tudo bem?\nPassando para lembrar do acompanhamento {artigo} {animal}. Podemos agendar um horário?\n\nAtenciosamente,\nOlhatta - Centro de Oftalmologia Veterinária"},
+    {id:'reagendar', nome:'Reagendamento de consulta', texto:"*| {usuario} - Secretária*\n\nOlá, {nome}! Tudo bem?\nPrecisamos reagendar a consulta {artigo} {animal} que estava marcada para {dia} - {data} às {hora}. Qual o melhor horário para você?\n\nAtenciosamente,\nOlhatta - Centro de Oftalmologia Veterinária"}
+  ];
+}
+function mensagensLista(){ if(!Array.isArray(DB.mensagens) || !DB.mensagens.length) DB.mensagens = mensagensPadrao(); else if(!DB.msgV2){ DB.msgV2=true; const conf=DB.mensagens.find(m=>m.id==='confirmacao'); DB.mensagens = mensagensPadrao().map(n=>n.id==='confirmacao'&&conf?conf:n); } return DB.mensagens; }
+function mensagemCtx(tipo,id){
+  if(tipo==='ag'){ const a=DB.agendamentos.find(x=>x.id===id); if(!a) return null; const t=tutorById(a.tutorId); return {ag:a, tel:t?.telefone||a.telefoneAvulso||'', nome:agTutorNome(a), animalId:a.animalId, animalNome:agAnimalNome(a)}; }
+  if(tipo==='contato'){ const c=DB.contatos.find(x=>x.id===id); if(!c) return null; const t=c.tutorId?tutorById(c.tutorId):null; const an=c.animalId?animalById(c.animalId):null;
+    const ag=proxAgDoTutor(c.tutorId); const an2=an||(ag?.animalId?animalById(ag.animalId):null); return {ag, tel:c.telefone||t?.telefone||'', nome:t?.nome||c.nomeAvulso||'', animalId:an2?.id, animalNome:an2?.nome||c.animalAvulso||''}; }
+  const t=tutorById(id); if(!t) return null; const ag=proxAgDoTutor(t.id); const ans=animaisDoTutor(t.id);
+  const an = ag?.animalId?animalById(ag.animalId):(ans.length===1?ans[0]:null);
+  return {ag, tel:t.telefone||'', nome:t.nome, animalId:an?.id, animalNome:an?.nome||''};
+}
+function proxAgDoTutor(tutorId){
+  if(!tutorId) return null; const h=todayISO();
+  return agendamentosDoTutor(tutorId).filter(a=>a.data>=h && ['Agendado','Confirmado','AguardandoConfirmacao'].includes(a.status)).sort((a,b)=>a.data.localeCompare(b.data))[0]||null;
+}
+function mensagemVars(ctx){
+  const a = ctx.ag, animal = ctx.animalId ? animalById(ctx.animalId) : null;
+  const v = { nome:(ctx.nome||'').split(' ')[0], animal:ctx.animalNome||'', artigo:animal?.sexo==='Fêmea'?'a':'o', usuario:(getCurrentUser()||'').split(' ')[0].toUpperCase(), profissional:'com a equipe Olhatta', dia:'', data:'', hora:'' };
+  if(a){
+    const dt = new Date(a.data+'T00:00:00');
+    const dia = dt.toLocaleDateString('pt-BR',{weekday:'long'}).split('-').map(p=>p.replace(/^\w/,c=>c.toUpperCase())).join('-');
+    const [hh,mm] = (a.horario||'00:00').split(':');
+    const pr = a.profissionais||[]; const dra = n=>/^dra?\.?\s/i.test(n)?n:'a Dra. '+n;
+    if(pr.length) v.profissional = 'com '+pr.map(dra).join(' e ');
+    v.dia = a.data===addDays(todayISO(),1) ? `amanhã (${dia})` : dia;
+    v.data = `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`;
+    v.hora = mm==='00' ? `${hh}h` : `${hh}h${mm}`;
   }
-  const dtObj = new Date(a.data+'T00:00:00');
-  const dataCurta = `${String(dtObj.getDate()).padStart(2,'0')}/${String(dtObj.getMonth()+1).padStart(2,'0')}`;
-  const [hh,mm] = (a.horario||'00:00').split(':');
-  const horaTexto = (mm==='00') ? `${hh}h` : `${hh}h${mm}`;
-
-  const profissionais = a.profissionais||[];
-  let profissionalTexto = 'com a equipe Olhatta';
-  if(profissionais.length===1){
-    const nome = profissionais[0];
-    profissionalTexto = 'com ' + (/^dra?\.?\s/i.test(nome) ? nome : 'a Dra. '+nome);
-  } else if(profissionais.length>1){
-    profissionalTexto = 'com ' + profissionais.map(p=>/^dra?\.?\s/i.test(p)?p:'a Dra. '+p).join(' e ');
-  }
-
-  const nomeUsuario = (getCurrentUser()||'').split(' ')[0].toUpperCase();
-  const msg = `*| ${nomeUsuario} - Secretária*\n\nOlá, bom dia ${primeiroNome}! Tudo bem? 🐱👁️\nO atendimento para ${artigo} ${animalNome} ${profissionalTexto} está marcado para *${diaTexto} - ${dataCurta} às ${horaTexto}.*\n\n *Podemos confirmar seu horário?* ⏰\n\n⚠️ Aviso: Caso não seja confirmado até às 17h30 do dia de hoje, a consulta estará considerada desmarcada. Retorno confirmado e respectivo não comparecimento, este será considerado como realizado.\n\n Atenciosamente,\nOlhatta - Centro de Oftalmologia Veterinária`;
+  return v;
+}
+function linkWhatsappMsg(ctx, modeloId){
+  let digitos = (ctx.tel||'').replace(/\D/g,''); if(digitos.length<=11) digitos='55'+digitos;
+  const lista = mensagensLista(); const modelo = lista.find(m=>m.id===modeloId) || lista[0]; const v = mensagemVars(ctx);
+  const msg = modelo.texto.replace(/\{(\w+)\}/g,(x,k)=> k in v ? v[k] : x);
   return `https://api.whatsapp.com/send?phone=${digitos}&text=${encodeURIComponent(msg)}`;
 }
+function linkWhatsappConfirmacao(a, modeloId){ return linkWhatsappMsg(mensagemCtx('ag',a.id), modeloId||'confirmacao'); }
+function abrirMenuMensagens(tipo,id){
+  const ctx = mensagemCtx(tipo,id); if(!ctx) return;
+  if(!ctx.tel){ toast('Sem telefone cadastrado'); return; }
+  openModal(modalShell('Mensagem para '+(ctx.nome||'o contato'), `
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      ${mensagensLista().map(m=>`<a class="btn btn-secondary" href="${linkWhatsappMsg(ctx,m.id)}" target="_blank" rel="noopener" data-fecha-menu style="justify-content:flex-start; text-decoration:none;">${m.nome}</a>`).join('')}
+    </div>
+    ${ctx.ag?'':`<p class="hint" style="margin-top:12px;">Sem agendamento futuro: dia e horário ficam em branco na mensagem.</p>`}`,
+    `<button class="btn btn-secondary" id="modalCancel">Fechar</button>`), {narrow:true});
+  document.querySelectorAll('[data-fecha-menu]').forEach(a=>a.addEventListener('click', ()=>setTimeout(closeModal,50)));
+}
+document.addEventListener('click', e=>{ const b=e.target.closest?.('[data-msg-menu]'); if(!b) return; e.preventDefault(); e.stopPropagation(); abrirMenuMensagens(b.dataset.msgMenu, b.dataset.msgId); });
 function animaisDoTutor(tutorId){
   return DB.vinculos.filter(v=>v.tutorId===tutorId).map(v=>animalById(v.animalId)).filter(Boolean);
 }
@@ -4089,6 +4107,22 @@ function renderPersonalizacao(){
     </div>
 
     <div class="card pad" style="grid-column:1/-1;">
+      <div class="section-title" style="justify-content:space-between;"><span>Mensagens prontas</span><button type="button" class="chip-btn" id="msgRestaurar">Restaurar padrão</button></div>
+      <div class="rel-motivos" id="msgVars">${MSG_VARIAVEIS.map(([v,d])=>`<button type="button" class="chip-btn" data-msgvar="${v}" title="${d}">${v}</button>`).join('')}</div>
+      <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:14px;">
+        ${mensagensLista().map(m=>`
+          <div class="msg-modelo" data-msg="${m.id}" style="border:1px solid var(--line); border-radius:10px; padding:12px;">
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
+              <input data-msg-nome="${m.id}" value="${m.nome.replace(/"/g,'&quot;')}" style="flex:1; font-weight:700;">
+              ${m.id==='confirmacao'?'':`<button type="button" class="icon-btn" data-msg-del="${m.id}" title="Excluir">${ICONS.trash}</button>`}
+            </div>
+            <textarea data-msg-texto="${m.id}" rows="7" style="width:100%;">${m.texto.replace(/</g,'&lt;')}</textarea>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-secondary btn-sm" id="msgAdd">${ICONS.plus} Nova mensagem</button>
+    </div>
+
+    <div class="card pad" style="grid-column:1/-1;">
       <div class="section-title">Tipos de atendimento e cores</div>
       <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
         ${(DB.tiposAtendimento||[]).map(t=>`
@@ -5331,6 +5365,7 @@ function openTutorDrawer(tutorId){
       <div style="display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" data-edit-tutor="${t.id}">${ICONS.edit} Editar</button>
         <button class="btn btn-primary btn-sm" data-quick-ag-tutor="${t.id}">${ICONS.plus} Agendar</button>
+        ${t.telefone?`<button class="btn btn-primary btn-sm" style="background:#25D366; border-color:#25D366;" data-msg-menu="tutor" data-msg-id="${t.id}">Mensagem pronta</button>`:''}
         <button class="btn btn-secondary btn-sm" data-novo-animal-tutor="${t.id}">${ICONS.plus} Novo animal</button>
       </div>
       ${t.obs?`<div class="alert alert-brown" style="margin-bottom:16px;">${t.obs}</div>`:''}
@@ -5530,7 +5565,8 @@ function openAgendamentoDrawer(agId){
       ${a.retornoPrevisto?`<div class="alert alert-sage" style="margin-bottom:16px;">${ICONS.bell}<div>Retorno previsto para <strong>${fmtDate(a.retornoPrevisto)}</strong></div></div>`:''}
       <div class="section-title">Ações rápidas</div>
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
-        ${(t?.telefone||a.telefoneAvulso)?`<a href="${linkWhatsappConfirmacao(a)}" target="_blank" rel="noopener" class="btn btn-primary btn-sm" style="text-decoration:none; background:#25D366; border-color:#25D366;">${ICONS.check} Enviar confirmação por WhatsApp</a>`:''}
+        ${(t?.telefone||a.telefoneAvulso)?`<a href="${linkWhatsappConfirmacao(a)}" target="_blank" rel="noopener" class="btn btn-primary btn-sm" style="text-decoration:none; background:#25D366; border-color:#25D366;">${ICONS.check} Enviar confirmação por WhatsApp</a>
+        <button type="button" class="btn btn-secondary btn-sm" data-msg-menu="ag" data-msg-id="${a.id}">Outra mensagem</button>`:''}
         <button class="btn btn-secondary btn-sm" data-set-status="${a.id}" data-status="AguardandoConfirmacao">Aguardando confirmação</button>
         <button class="btn btn-secondary btn-sm" data-set-status="${a.id}" data-status="Confirmado">${ICONS.check} Confirmar</button>
         <button class="btn btn-secondary btn-sm" data-set-status="${a.id}" data-status="Realizado">${ICONS.check} Marcar realizado</button>
@@ -5563,6 +5599,7 @@ function openContatoDrawer(cId){
       <div class="section-title" style="margin-top:22px;">Ações</div>
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
         <button class="btn btn-secondary btn-sm" data-edit-contato="${c.id}">${ICONS.edit} Editar</button>
+        ${(c.telefone||t?.telefone)?`<button class="btn btn-primary btn-sm" style="background:#25D366; border-color:#25D366;" data-msg-menu="contato" data-msg-id="${c.id}">Mensagem pronta</button>`:''}
         ${c.status!=='Agendado'?`<button class="btn btn-primary btn-sm" data-contato-to-ag="${c.id}">${ICONS.plus} Vincular a agendamento</button>`:''}
       </div>
     </div>`);
@@ -6333,6 +6370,21 @@ function attachViewHandlers(){
   document.getElementById('btnExcluirConta')?.addEventListener('click', openDeleteAccountFlow);
   document.querySelectorAll('[data-csv]').forEach(el=>el.addEventListener('click', ()=>exportCSV(el.dataset.csv)));
   document.getElementById('btnSairConfig')?.addEventListener('click', doLogout);
+  (()=>{
+    let alvo = null;
+    document.querySelectorAll('[data-msg-texto]').forEach(t=>{
+      t.addEventListener('focus', ()=>{ alvo=t; });
+      t.addEventListener('change', ()=>{ const m=mensagensLista().find(x=>x.id===t.dataset.msgTexto); if(m){ m.texto=t.value; saveDB(); toast('Mensagem salva'); } });
+    });
+    document.querySelectorAll('[data-msg-nome]').forEach(i=>i.addEventListener('change', ()=>{ const m=mensagensLista().find(x=>x.id===i.dataset.msgNome); if(m && i.value.trim()){ m.nome=i.value.trim(); saveDB(); toast('Mensagem salva'); } }));
+    document.querySelectorAll('[data-msgvar]').forEach(b=>{
+      b.addEventListener('mousedown', e=>e.preventDefault());
+      b.addEventListener('click', ()=>{ const t = alvo || document.querySelector('[data-msg-texto]'); if(!t) return; const a=t.selectionStart??t.value.length, z=t.selectionEnd??a; t.setRangeText(b.dataset.msgvar, a, z, 'end'); t.focus(); t.dispatchEvent(new Event('change')); });
+    });
+    document.querySelectorAll('[data-msg-del]').forEach(b=>b.addEventListener('click', ()=>{ confirmDialog('Excluir esta mensagem?','Ela deixa de aparecer nas opções de envio.', ()=>{ closeModal(); DB.mensagens = mensagensLista().filter(m=>m.id!==b.dataset.msgDel); saveDB(); render(); }); }));
+    document.getElementById('msgAdd')?.addEventListener('click', ()=>{ mensagensLista().push({id:'m'+Date.now().toString(36), nome:'Nova mensagem', texto:'Olá, {nome}! Tudo bem?\n\nAtenciosamente,\nOlhatta - Centro de Oftalmologia Veterinária'}); saveDB(); render(); });
+    document.getElementById('msgRestaurar')?.addEventListener('click', ()=>{ confirmDialog('Restaurar mensagens padrão?','Suas mensagens editadas serão substituídas pelas originais.', ()=>{ closeModal(); DB.mensagens = mensagensPadrao(); DB.msgV2=true; saveDB(); render(); }); });
+  })();
   document.getElementById('addUsuarioBtn')?.addEventListener('click', ()=>{
     const input = document.getElementById('novoUsuarioInput');
     const nome = input.value.trim();
