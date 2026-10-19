@@ -93,6 +93,8 @@ a, button, [role=button], .rowlink, .navlink{-webkit-touch-callout:none; touch-a
 .rel-tab th:first-child, .rel-tab td:first-child{text-align:left;}
 .rel-tab thead th{background:#5C7355; color:#fff;}
 .rel-tab tr.mot td{color:#555;}
+.rel-tab thead th.cur{background:#33452F;}
+.rel-tab td.cur{background:#E9EFE2; font-weight:700; color:#2E3A2A;}
 @media print{
   @page{margin:16mm;}
   body.imprimindo-rel{background:#fff !important;}
@@ -3612,7 +3614,7 @@ function relSanitiza(html){
   const doc = new DOMParser().parseFromString('<div>'+(html||'')+'</div>','text/html');
   const ok = ['B','STRONG','U','I','BR','DIV','P','SPAN'];
   (function limpa(n){ [...n.childNodes].forEach(c=>{
-    if(c.nodeType===1){ if(!ok.includes(c.tagName)){ c.replaceWith(doc.createTextNode(c.textContent)); return; } [...c.attributes].forEach(at=>c.removeAttribute(at.name)); limpa(c); }
+    if(c.nodeType===1){ if(!ok.includes(c.tagName)){ c.replaceWith(doc.createTextNode(c.textContent)); return; } const fs = c.tagName==='SPAN' ? (c.getAttribute('style')||'').match(/font-size:\s*(\d{1,2})px/) : null; [...c.attributes].forEach(at=>c.removeAttribute(at.name)); if(fs) c.setAttribute('style','font-size:'+fs[1]+'px'); limpa(c); }
   }); })(doc.body.firstChild);
   return doc.body.firstChild.innerHTML;
 }
@@ -3621,9 +3623,9 @@ function relTabelaMeses(P){
   const M = meses.map(m=>metricasPeriodo(m+'-01', ultimoDiaMes(m)));
   const motivos = [...new Set(M.flatMap(x=>Object.keys(x.motivos)))].sort();
   const linhas = [['Total de contatos','contatos'],['Total de agendamentos','agendados'],['Consultas e acompanhamentos','consultas'],['Cirurgias','cirurgias'],['Desmarques','desmarques'],['Não agendamentos','naoAgendaram']];
-  return `<table class="rel-tab"><thead><tr><th>Indicador</th>${meses.map(m=>`<th>${MESES_ABREV[+m.slice(5)-1]}/${m.slice(2,4)}</th>`).join('')}</tr></thead><tbody>
-    ${linhas.map(([n,k])=>`<tr><td>${n}</td>${M.map(x=>`<td>${x[k]}</td>`).join('')}</tr>`).join('')}
-    ${motivos.map(mo=>`<tr class="mot"><td>${mo}</td>${M.map(x=>`<td>${x.motivos[mo]||0}</td>`).join('')}</tr>`).join('')}
+  return `<table class="rel-tab"><thead><tr><th>Indicador</th>${meses.map(m=>`<th class="${m===P.mesRef?'cur':''}">${MESES_ABREV[+m.slice(5)-1]}/${m.slice(2,4)}</th>`).join('')}</tr></thead><tbody>
+    ${linhas.map(([n,k])=>`<tr><td>${n}</td>${M.map((x,i)=>`<td class="${meses[i]===P.mesRef?'cur':''}">${x[k]}</td>`).join('')}</tr>`).join('')}
+    ${motivos.map(mo=>`<tr class="mot"><td>${mo}</td>${M.map((x,i)=>`<td class="${meses[i]===P.mesRef?'cur':''}">${x.motivos[mo]||0}</td>`).join('')}</tr>`).join('')}
   </tbody></table>`;
 }
 function renderRelatorioAuto(){
@@ -3694,14 +3696,20 @@ function renderRelatorioAuto(){
     <div class="section-title" style="justify-content:space-between;">
       <span>Observações</span>
       <span class="rel-fmt">
-        <button class="icon-btn rel-fmt-btn" data-relfmt="menos" title="Diminuir letra">A-</button>
-        <button class="icon-btn rel-fmt-btn" data-relfmt="normal" title="Tamanho normal">A</button>
-        <button class="icon-btn rel-fmt-btn" data-relfmt="mais" title="Aumentar letra">A+</button>
-        <button class="icon-btn rel-fmt-btn" data-relfmt="bold" title="Negrito"><strong>N</strong></button>
-        <button class="icon-btn rel-fmt-btn" data-relfmt="underline" title="Sublinhado"><u>S</u></button>
+        <button class="icon-btn rel-fmt-btn" data-relfmt="menos" title="Diminuir letra selecionada">A-</button>
+        <button class="icon-btn rel-fmt-btn" data-relfmt="normal" title="Tamanho normal da seleção">A</button>
+        <button class="icon-btn rel-fmt-btn" data-relfmt="mais" title="Aumentar letra selecionada">A+</button>
+        <button class="icon-btn rel-fmt-btn" data-relfmt="bold" title="Negrito na seleção"><strong>N</strong></button>
+        <button class="icon-btn rel-fmt-btn" data-relfmt="underline" title="Sublinhado na seleção"><u>S</u></button>
+        <button type="button" class="chip-btn rel-fmt-btn" data-relfmt="desfazer" title="Voltar a alteração anterior (até 5)">Desfazer</button>
+        <button type="button" class="chip-btn rel-fmt-btn" data-relfmt="limpar" title="Apagar todo o texto">Limpar tudo</button>
       </span>
     </div>
-    <div id="relObs" class="rel-obs" contenteditable="true" data-key="${P.key}" style="font-size:${obs.size||15}px;">${relSanitiza(obs.html)}</div>
+    <div id="relObs" class="rel-obs" contenteditable="true" data-key="${P.key}" style="font-size:15px;">${relSanitiza(obs.html)}</div>
+  </div>
+  <div id="relObsPrintWrap" style="margin-bottom:18px; display:none;">
+    <div class="section-title" style="margin-bottom:8px;">Observações</div>
+    <div class="rel-obs-box" id="relObsPrint" style="font-size:15px;"></div>
   </div>
   </div>`;
 }
@@ -3710,6 +3718,8 @@ function relatorioTabHandlers(){
   document.querySelectorAll('[data-reldettipo]').forEach(b=>b.addEventListener('click', ()=>{ relDetTipo=b.dataset.reldettipo; render(); }));
   const P = periodoRel();
   document.getElementById('relatPdf')?.addEventListener('click', ()=>{
+    const _ed=document.getElementById('relObs'), _pw=document.getElementById('relObsPrintWrap'), _pb=document.getElementById('relObsPrint');
+    if(_ed && _pw && _pb){ const tem=_ed.textContent.trim().length>0; _pb.innerHTML=relSanitiza(_ed.innerHTML); _pw.style.display = tem ? '' : 'none'; _pw.classList.toggle('rel-print-only', tem); }
     document.body.classList.add('imprimindo-rel');
     const fim=()=>{ document.body.classList.remove('imprimindo-rel'); window.removeEventListener('afterprint', fim); };
     window.addEventListener('afterprint', fim);
@@ -3717,18 +3727,37 @@ function relatorioTabHandlers(){
   });
   const ed = document.getElementById('relObs');
   if(ed){
-    let t;
-    const salva = ()=>{ DB.relatObs = DB.relatObs||{}; const cur = DB.relatObs[ed.dataset.key]||{size:15};
-      DB.relatObs[ed.dataset.key] = {html: relSanitiza(ed.innerHTML), size: cur.size||15}; saveDB(); };
+    let t, hist=[], ultimoDigito=0;
+    const salva = ()=>{ DB.relatObs = DB.relatObs||{}; DB.relatObs[ed.dataset.key] = {html: relSanitiza(ed.innerHTML), size:15}; saveDB(); };
+    const snap = ()=>{ const h=ed.innerHTML; if(hist[hist.length-1]!==h){ hist.push(h); if(hist.length>5) hist.shift(); } };
+    ed.addEventListener('beforeinput', ()=>{ const agora=Date.now(); if(agora-ultimoDigito>1000) snap(); ultimoDigito=agora; });
     ed.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(salva, 600); });
     ed.addEventListener('blur', ()=>{ clearTimeout(t); salva(); });
+    const selecaoNoEditor = ()=>{ const sel=window.getSelection(); if(!sel.rangeCount || sel.isCollapsed) return null; const r=sel.getRangeAt(0); return ed.contains(r.commonAncestorContainer) ? sel : null; };
     document.querySelectorAll('[data-relfmt]').forEach(b=>{
       b.addEventListener('mousedown', e=>e.preventDefault());
       b.addEventListener('click', ()=>{
-        const k=b.dataset.relfmt; const cur = (DB.relatObs&&DB.relatObs[ed.dataset.key])||{html:'',size:15};
+        const k=b.dataset.relfmt;
+        if(k==='desfazer'){ if(!hist.length){ toast('Nada para desfazer'); return; } ed.innerHTML = hist.pop(); salva(); return; }
+        if(k==='limpar'){ if(!ed.textContent.trim()){ return; } snap(); ed.innerHTML=''; salva(); toast('Texto apagado. Use Desfazer para voltar'); return; }
+        if(!selecaoNoEditor()){ toast('Selecione o trecho do texto primeiro'); return; }
+        snap();
         if(k==='bold') document.execCommand('bold');
         else if(k==='underline') document.execCommand('underline');
-        else { let s=cur.size||15; s = k==='mais'?Math.min(26,s+1):(k==='menos'?Math.max(11,s-1):15); ed.style.fontSize=s+'px'; DB.relatObs=DB.relatObs||{}; DB.relatObs[ed.dataset.key]={html:relSanitiza(ed.innerHTML), size:s}; saveDB(); return; }
+        else {
+          const sl=window.getSelection(), r=sl.getRangeAt(0);
+          const baseEl = r.startContainer.nodeType===3 ? r.startContainer.parentElement : r.startContainer;
+          const base = parseFloat(getComputedStyle(baseEl).fontSize)||15;
+          const novo = k==='mais' ? Math.min(32,base+2) : (k==='menos' ? Math.max(10,base-2) : 15);
+          const frag = r.extractContents();
+          frag.querySelectorAll('span[style]').forEach(x=>x.style.removeProperty('font-size'));
+          let sp = document.createElement('span'); sp.style.fontSize = Math.round(novo)+'px'; sp.appendChild(frag);
+          r.insertNode(sp);
+          while(sp.parentElement && sp.parentElement.tagName==='SPAN' && sp.parentElement!==ed && sp.parentElement.childNodes.length===1){ const par=sp.parentElement; par.style.fontSize=sp.style.fontSize; par.replaceChildren(...sp.childNodes); sp=par; }
+          ed.querySelectorAll('span').forEach(x=>{ if(!x.style.cssText) x.replaceWith(...x.childNodes); });
+          ed.normalize();
+          const nr=document.createRange(); nr.selectNodeContents(sp); sl.removeAllRanges(); sl.addRange(nr);
+        }
         salva();
       });
     });
