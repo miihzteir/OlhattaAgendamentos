@@ -35,8 +35,11 @@
 .rolagem-lista, .pend-list{scrollbar-width:none; -ms-overflow-style:none;}
 .rolagem-lista::-webkit-scrollbar, .pend-list::-webkit-scrollbar{display:none; width:0; height:0;}
 /* nada ultrapassa a margem: palavras longas quebram dentro do quadro */
-.card, .modal, .drawer, .stat-card, .alert, .tl-item, .insight, .pend-row, .gsr-item, td, th, .field, .hint, .section-title{overflow-wrap:anywhere; word-break:normal;}
-td strong, th{overflow-wrap:break-word;}
+.card, .modal, .drawer, .alert, .tl-item, .insight, .pend-row, .gsr-item, .field, .hint, .section-title{overflow-wrap:anywhere; word-break:normal;}
+td, th, td strong, .stat-card, .stat-card .label{overflow-wrap:break-word; word-break:normal;}
+.view, .modal, .drawer, td, th, .stat-card, .card{hyphens:auto; -webkit-hyphens:auto; hyphenate-limit-chars:6 3 3;}
+th{hyphens:manual; -webkit-hyphens:manual;}
+input, textarea, select, .btn, button, .chip-btn, .nav-badge, .pill-muted, .tag, code, a[href^="mailto"]{hyphens:none; -webkit-hyphens:none;}
 button, .btn, .chip-btn, .pill-muted, .tag, .nav-badge{overflow-wrap:normal; word-break:keep-all;}
 input, select, textarea, button{max-width:100%;}
 img, svg, video{max-width:100%;}
@@ -53,6 +56,59 @@ img, svg, video{max-width:100%;}
 *{-webkit-tap-highlight-color:rgba(0,0,0,0) !important;}
 a, button, [role=button], .rowlink, .navlink{-webkit-touch-callout:none; touch-action:manipulation;}
 ::selection{background:rgba(124,148,115,.28);}
+
+.recontato{background:var(--brown-light); color:var(--brown-dark);}
+.recontato.hoje{background:#F5EBD3; color:#8A6A12;}
+.recontato.atrasado{background:var(--st-cancelado-bg); color:var(--st-cancelado);}
+.field.copiavel{background:var(--brown-pale); border:1px solid var(--brown-light); border-radius:12px; padding:8px 10px 10px;}
+.field.copiavel > label{margin-bottom:4px;}
+.copy-row{display:flex; gap:8px; align-items:center;}
+.copy-row input, .copy-row textarea{flex:1; min-width:0; background:#fff;}
+.copy-row textarea{min-height:70px;}
+.copy-btn{display:inline-flex; align-items:center; gap:5px; padding:7px 10px; border:1px solid var(--brown-light); border-radius:9px; background:#fff; color:var(--brown-dark); font-weight:700; font-size:12px; cursor:pointer; flex-shrink:0; transition:transform .15s, background .15s;}
+.copy-btn svg{width:14px; height:14px;}
+.copy-btn:hover{background:var(--brown-light);} .copy-btn:active{transform:scale(.94);}
+.copy-btn.copiado{background:var(--sage-dark); color:#fff; border-color:var(--sage-dark);}
+.nf-valor{flex:1; font-family:'Fraunces',serif; font-size:20px; font-weight:600; padding:6px 2px;}
+.nf-valor-nota{color:var(--sage-dark);}
+/* relatório automático */
+.rel-var{display:flex; align-items:baseline; gap:2px; font-size:12.5px; font-weight:800; margin-top:6px;}
+.rel-var.ok{color:var(--st-realizado);} .rel-var.bad{color:var(--st-cancelado);} .rel-var.ink{color:var(--ink-soft);}
+.rel-prev{font-weight:600; color:var(--ink-faint);}
+.rel-texto p{margin:0 0 10px; font-size:14.5px; line-height:1.6; color:var(--ink);}
+.rel-texto p:last-child{margin-bottom:0;}
+.rel-motivos{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;}
+.rel-detalhes{display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;}
+.rel-det{background:var(--sage-pale); border-radius:10px; padding:10px 12px;}
+.rel-det-top{display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center; font-size:13px;}
+.rel-det-data{margin-left:auto; color:var(--ink-soft); font-size:12px;}
+.rel-det-txt{margin-top:6px; font-size:13px; color:var(--ink-soft); white-space:pre-wrap;}
+.rel-fmt{display:inline-flex; gap:4px;}
+.rel-fmt-btn{min-width:34px; height:32px; font-size:13px; border:1px solid var(--line); border-radius:8px; background:#fff;}
+.rel-obs{min-height:130px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:#fff; line-height:1.6; outline:none; overflow-wrap:anywhere;}
+.rel-obs:focus{border-color:var(--sage);}
+.rel-print-only, .rel-print-head{display:none;}
+.rel-tab{width:100%; border-collapse:collapse; font-size:13px;}
+.rel-tab th, .rel-tab td{padding:8px 10px; text-align:center; border-bottom:1px solid #D9D5C8;}
+.rel-tab th:first-child, .rel-tab td:first-child{text-align:left;}
+.rel-tab thead th{background:#5C7355; color:#fff;}
+.rel-tab tr.mot td{color:#555;}
+@media print{
+  @page{margin:16mm;}
+  body.imprimindo-rel{background:#fff !important;}
+  body.imprimindo-rel .sidebar, body.imprimindo-rel .topbar, body.imprimindo-rel .sidebar-scrim, body.imprimindo-rel #modalRoot, body.imprimindo-rel #drawerRoot, body.imprimindo-rel .mobile-toggle, body.imprimindo-rel .toast, body.imprimindo-rel .rel-noprint{display:none !important;}
+  body.imprimindo-rel main{margin:0 !important;}
+  body.imprimindo-rel .view{padding:0 !important;}
+  body.imprimindo-rel .rel-print-only{display:block !important;}
+  body.imprimindo-rel .rel-print-head{display:block !important; margin-bottom:18px; border-bottom:2px solid #5C7355; padding-bottom:10px;}
+  body.imprimindo-rel .rel-print-brand{font-family:'Fraunces',serif; font-size:13px; color:#5C7355; letter-spacing:.08em; text-transform:uppercase;}
+  body.imprimindo-rel .rel-print-title{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:#33362F;}
+  body.imprimindo-rel .rel-print-per{font-size:13px; color:#6B6E63;}
+  body.imprimindo-rel .rel-resumo{box-shadow:none !important; border:0 !important; padding:0 !important;}
+  body.imprimindo-rel .rel-tab{break-inside:avoid;}
+  body.imprimindo-rel .rel-obs-box{border:1px solid #D9D5C8; border-radius:8px; padding:10px 12px; line-height:1.6;}
+  body.imprimindo-rel *{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+}
 /* barra de rolagem: trilho sempre transparente, só o puxador discreto */
 *{scrollbar-width:thin; scrollbar-color:rgba(138,102,71,.35) transparent;}
 ::-webkit-scrollbar{width:8px; height:8px; background:transparent;}
@@ -448,6 +504,12 @@ input[type="date"],input[type="time"]{color-scheme:light; min-height:38px;}
 .login-link:hover{text-decoration:underline;}
 .login-error{background:var(--st-cancelado-bg); color:var(--st-cancelado); font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:9px; margin-top:12px;}
 .account-row{display:flex; align-items:center; gap:12px; background:var(--sage-pale); border-radius:12px; padding:12px 14px;}
+.stat-card.clicavel{cursor:pointer; transition:transform .18s, box-shadow .18s;} .stat-card.clicavel:hover{transform:translateY(-2px); box-shadow:0 6px 16px rgba(90,60,30,.12);} .stat-card.clicavel:focus-visible{outline:2px solid var(--brown); outline-offset:2px;}
+th.sortavel{cursor:pointer; user-select:none;} th.sortavel:hover{color:var(--brown);}
+th.sortavel[data-dir=asc]::after{content:' \2191'; font-size:11px;} th.sortavel[data-dir=desc]::after{content:' \2193'; font-size:11px;}
+.table-wrap{cursor:grab;} .table-wrap.arrastando{cursor:grabbing; user-select:none;}
+.semanas-tab tr.semana-atual td{background:#F6EFE0;} .semanas-tab .rowlink{cursor:pointer;}
+.rel-det-cli{font-size:12.5px; color:var(--ink-soft); margin-top:3px;}
 </style>
 </head>
 <body>
@@ -613,7 +675,7 @@ function blankDB(){
   return { tutores:[], animais:[], vinculos:[], agendamentos:[], contatos:[], lembretes:[],
     usuarios:[{id:'u_default', nome:'Recepção', foto:null}], auditLog:[], lixeira:[], metas:[],
     notasFiscais:[], categoriasNF:['Consulta','Cirurgia','Medicamento','Colírio','Material cirúrgico','Outro'],
-    relatorios:[], avaliacoes:[], profissionais:[], linksRapidos:[], pendencias:[],
+    relatorios:[], relatObs:{}, avaliacoes:[], profissionais:[], linksRapidos:[], pendencias:[],
     motivosPadrao:['Preço','Não respondeu','Vai pensar','Procurou outra clínica','Não tinha disponibilidade','Outro motivo'],
     tiposAtendimento:[
       {nome:'Consulta', cor:'#3F7FBF'}, {nome:'Acompanhamento', cor:'#3F7FBF'},
@@ -878,7 +940,7 @@ const VIEWS = [
   {id:'metas', label:'Metas', icon:'target', sub:'Metas e supermetas mensais'},
   {id:'visaoanual', label:'Visão Anual', icon:'barchart', sub:'Comparativo mês a mês do ano'},
   {id:'notasfiscais', label:'Notas Fiscais', icon:'receipt', sub:'Emissão e controle de notas fiscais'},
-  {id:'relatorios', label:'Relatórios', icon:'notepad', sub:'Anotações semanais e mensais das reuniões'},
+  {id:'relatorios', label:'Relatórios', icon:'notepad', sub:'Resumo automático do mês e da semana'},
   {id:'avaliacoes', label:'Avaliações', icon:'star', sub:'Pedidos de avaliação no Google'},
   {id:'lembretes', label:'Lembretes', icon:'lembretes', sub:'Lembretes pessoais e administrativos'},
   {id:'pendencias', label:'Anotações', icon:'pin', sub:'Anotações livres, por dia'},
@@ -965,7 +1027,7 @@ function avatarHtml(user, size){
 
 function navBadge(id){
   let n=0;
-  if(id==='contatos') n=(DB.contatos||[]).filter(c=>c.status==='Aguardando').length;
+  if(id==='contatos') n=(DB.contatos||[]).filter(c=>c.status==='Aguardando' && !c.mesmoTelefonema).length;
   else if(id==='notasfiscais') n=(DB.notasFiscais||[]).filter(nf=>nf.status==='Pendente').length;
   return n>0 ? `<span class="nav-badge">${n}</span>` : '';
 }
@@ -1033,6 +1095,7 @@ const ROTA_SUB = {
   clientes:{get:()=>clientesTab!=='tutores'?clientesTab:'', set:v=>{clientesTab=v==='animais'?'animais':'tutores';}},
   notasfiscais:{get:()=>notasFiscaisTab!=='notas'?notasFiscaisTab:'', set:v=>{notasFiscaisTab=v==='categorias'?'categorias':'notas';}},
   agenda:{get:()=>agendaViewMode!=='calendario'?agendaViewMode:'', set:v=>{agendaViewMode=v==='lista'?'lista':'calendario';}},
+  relatorios:{get:()=>relatTab!=='mensal'?relatTab:'', set:v=>{relatTab=['semanal','reunioes'].includes(v)?v:'mensal';}},
   avaliacoes:{get:()=>avaliacoesFiltro||'', set:v=>{avaliacoesFiltro=['vouPedir','aguardando','avaliou','naoAvaliou'].includes(v)?v:'';}},
   contatos:{get:()=>({'Aguardando':'aguardando','Agendado':'agendado','Não agendado':'nao-agendado'})[contatosFilters.status]||'', set:v=>{contatosFilters.status=({'aguardando':'Aguardando','agendado':'Agendado','nao-agendado':'Não agendado'})[v]||'';}}
 };
@@ -1530,9 +1593,9 @@ function renderDashboard(){
     return out;
   })();
   const reagendadosMes = ags.filter(a=>a.reagendadoDe && inRefPeriod(a.data));
-  const contatosMes = DB.contatos.filter(c=>inRefPeriod(c.dataContato));
-  const naoAgendadosMes = DB.contatos.filter(c=>c.status==='Não agendado' && inRefPeriod(c.dataContato));
-  const agendadosViaContatoMes = DB.contatos.filter(c=>inRefPeriod(c.dataContato) && ['Agendado','Faltou'].includes(contatoResultadoFinal(c)));
+  const contatosMes = DB.contatos.filter(c=>!c.mesmoTelefonema && inRefPeriod(c.dataContato));
+  const naoAgendadosMes = DB.contatos.filter(c=>!c.mesmoTelefonema && c.status==='Não agendado' && inRefPeriod(c.dataContato));
+  const agendadosViaContatoMes = DB.contatos.filter(c=>!c.mesmoTelefonema && inRefPeriod(c.dataContato) && ['Agendado','Faltou'].includes(contatoResultadoFinal(c)));
 
   // período anterior p/ comparação
   const realizadosPM = ags.filter(a=>a.status==='Realizado' && inPrevRefPeriod(a.data)).length;
@@ -1541,9 +1604,9 @@ function renderDashboard(){
   // -- versões fixas em mês-calendário de verdade, só para "Inteligência da rotina" (não seguem o navegador de datas) --
   const inCurrentCalendarMonth = iso => iso && monthKey(iso)===monthKey(today);
   const inPrevCalendarMonth = (()=>{ const d=new Date(today+'T00:00:00'); d.setMonth(d.getMonth()-1); const mk=monthKey(d.toISOString().slice(0,10)); return iso => iso && monthKey(iso)===mk; })();
-  const contatosMesFixo = DB.contatos.filter(c=>inCurrentCalendarMonth(c.dataContato));
-  const naoAgendadosMesFixo = DB.contatos.filter(c=>c.status==='Não agendado' && inCurrentCalendarMonth(c.dataContato));
-  const agendadosViaContatoMesFixo = DB.contatos.filter(c=>inCurrentCalendarMonth(c.dataContato) && ['Agendado','Faltou'].includes(contatoResultadoFinal(c)));
+  const contatosMesFixo = DB.contatos.filter(c=>!c.mesmoTelefonema && inCurrentCalendarMonth(c.dataContato));
+  const naoAgendadosMesFixo = DB.contatos.filter(c=>!c.mesmoTelefonema && c.status==='Não agendado' && inCurrentCalendarMonth(c.dataContato));
+  const agendadosViaContatoMesFixo = DB.contatos.filter(c=>!c.mesmoTelefonema && inCurrentCalendarMonth(c.dataContato) && ['Agendado','Faltou'].includes(contatoResultadoFinal(c)));
   const realizadosMesFixo = ags.filter(a=>a.status==='Realizado' && inCurrentCalendarMonth(a.data));
   const desmarcadosMesFixo = ags.filter(a=>a.status==='Desmarcado' && inCurrentCalendarMonth(a.data));
   const realizadosPMFixo = ags.filter(a=>a.status==='Realizado' && inPrevCalendarMonth(a.data)).length;
@@ -1641,7 +1704,8 @@ function renderDashboard(){
   DB.contatos.filter(c=>c.status==='Aguardando').forEach(c=>{
     const nome = c.tutorId? (tutorById(c.tutorId)?.nome||'') : (c.nomeAvulso||'contato');
     const dias = daysBetween(c.dataContato,today);
-    pendencias.push({tipo:'Contato', texto:`${nome}${dias>0?' — contato há '+dias+' dia'+(dias===1?'':'s'):' — contato de hoje'}`, ref:{type:'contato', id:c.id}});
+    const rec = c.recontatarEm && c.recontatarEm<=today ? (c.recontatarEm<today?' · recontatar atrasado':' · recontatar hoje') : '';
+    pendencias.push({tipo:'Contato', texto:`${nome}${dias>0?' — contato há '+dias+' dia'+(dias===1?'':'s'):' — contato de hoje'}${rec}`, ref:{type:'contato', id:c.id}});
   });
   ags.filter(a=>a.status==='AguardandoConfirmacao' && a.data<=addDays(today,2)).forEach(a=>{
     pendencias.push({tipo:'Confirmação', texto:`Confirmar ${animalById(a.animalId)?.nome||'—'} — ${fmtDate(a.data)} ${a.horario}`, ref:{type:'ag', id:a.id}});
@@ -1693,20 +1757,20 @@ function renderDashboard(){
   ${renderDashNav()}
 
   <div class="grid g4" style="margin-bottom:20px;">
-    ${statCard('Contatos recebidos · '+periodoTag, contatosMes.length, 'var(--brown)')}
-    ${statCard('Contatos que agendaram', agendadosViaContatoMes.length, 'var(--st-confirmado)', 'Dos contatos deste período que ainda têm agendamento válido')}
-    ${statCard('Agendamentos · '+periodoTag, agsDoDia.length, 'var(--sage)', tipoBreakdown(agsDoDia)+'<br>Atendimentos com data marcada neste período (de qualquer origem)')}
-    ${statCard('Realizados · '+periodoTag, realizadosMes.length, 'var(--st-realizado)', tipoBreakdown(realizadosMes))}
-    ${statCard('Desmarcados/Cancelados', desmarcadosCanceladosUnicosPorTutor.length, 'var(--st-desmarcado)', tipoBreakdown(desmarcadosCanceladosUnicosPorTutor))}
-    ${statCard('Faltas · '+periodoTag, faltasMes.length, 'var(--st-reagendado)', tipoBreakdown(faltasMes))}
-    ${statCard('Reagendados', reagendadosMes.length, 'var(--st-reagendado)', tipoBreakdown(reagendadosMes))}
+    ${statCard('Contatos recebidos · '+periodoTag, contatosMes.length, 'var(--brown)', '', 'contatos:')}
+    ${statCard('Contatos que agendaram', agendadosViaContatoMes.length, 'var(--st-confirmado)', 'Dos contatos deste período que ainda têm agendamento válido', 'contatos:Agendado')}
+    ${statCard('Agendamentos · '+periodoTag, agsDoDia.length, 'var(--sage)', tipoBreakdown(agsDoDia)+'<br>Atendimentos com data marcada neste período (de qualquer origem)', 'agenda:')}
+    ${statCard('Realizados · '+periodoTag, realizadosMes.length, 'var(--st-realizado)', tipoBreakdown(realizadosMes), 'agenda:Realizado')}
+    ${statCard('Desmarcados e cancelados', desmarcadosCanceladosUnicosPorTutor.length, 'var(--st-desmarcado)', tipoBreakdown(desmarcadosCanceladosUnicosPorTutor), 'desmarcacoes:')}
+    ${statCard('Faltas · '+periodoTag, faltasMes.length, 'var(--st-reagendado)', tipoBreakdown(faltasMes), 'agenda:Falta')}
+    ${statCard('Reagendados', reagendadosMes.length, 'var(--st-reagendado)', tipoBreakdown(reagendadosMes), 'agenda:Reagendado')}
   </div>
 
   ${semanaGraficoHtml()}
 
   <div class="card pad" style="margin-bottom:20px; border-color:var(--st-aguardando);">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:4px;">
-      <div class="section-title" style="margin-bottom:0;">${ICONS.contatos} Contatos aguardando resposta <span class="tag">${contatosAguardando.length}</span></div>
+      <div class="section-title" style="margin-bottom:0;">${ICONS.contatos} Contatos aguardando resposta <span class="tag">${contatosAguardando.filter(c=>!c.mesmoTelefonema).length}</span></div>
       <div style="display:flex; gap:8px;">
         <button class="chip-btn" id="aguardOrdemBtn">${aguardOrdem==='recentes'?'Mais recentes':'Mais antigos'} primeiro</button>
         <button class="chip-btn" id="aguardRecBtn">${aguardRecolhido?'Expandir':'Recolher'}</button>
@@ -1721,7 +1785,7 @@ function renderDashboard(){
         return `<div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--sage-pale); border-radius:10px; padding:10px 12px;">
           <div style="flex:1; min-width:160px; font-size:13px;">
             <strong>${nome}</strong>${animalNome?' · '+animalNome:''}
-            <div style="color:var(--ink-soft); font-size:11.5px; margin-top:2px;">${dias>0?'Contato há '+dias+' dia'+(dias===1?'':'s'):'Contato de hoje'} · ${fmtDate(c.dataContato)}</div>
+            <div style="color:var(--ink-soft); font-size:11.5px; margin-top:2px;">${dias>0?'Contato há '+dias+' dia'+(dias===1?'':'s'):'Contato de hoje'} · ${fmtDate(c.dataContato)}${recontatoPill(c)?' '+recontatoPill(c):''}</div>
           </div>
           <button class="btn btn-primary btn-sm" data-contato-to-ag="${c.id}">${ICONS.check} Agendou</button>
           <button class="btn btn-secondary btn-sm" data-contato-nao-agendou="${c.id}">${ICONS.x} Não agendou</button>
@@ -2063,9 +2127,9 @@ function renderDashboard(){
     </div>
   </div>`;
 }
-function statCard(label,value,color,sub){
+function statCard(label,value,color,sub,go){
   const isLongText = typeof value==='string' && value.length>6 && !/^R\$/.test(value);
-  return `<div class="stat-card" style="--c:${color}"><div class="stripe"></div><div class="label">${label}</div><div class="value" style="${isLongText?'font-size:19px; line-height:1.25; word-break:break-word;':''}">${value}</div>${sub?`<div style="font-size:11px; color:var(--ink-soft); margin-top:5px; line-height:1.5;">${sub}</div>`:''}</div>`;
+  return `<div class="stat-card${go?' clicavel':''}" style="--c:${color}" ${go?`data-go="${go}" role="button" tabindex="0"`:''}><div class="stripe"></div><div class="label">${label}</div><div class="value" style="${isLongText?'font-size:19px; line-height:1.25; word-break:break-word;':''}">${value}</div>${sub?`<div style="font-size:11px; color:var(--ink-soft); margin-top:5px; line-height:1.5;">${sub}</div>`:''}</div>`;
 }
 function tipoBreakdown(list){
   const porTipo = {Consulta:0, Acompanhamento:0, Cirurgia:0};
@@ -2216,7 +2280,8 @@ function renderAgenda(){
 
   let list = DB.agendamentos.slice();
   const modoData = agendaFilters.modoData||'agendamento';
-  if(!agendaFilters.todos && !agendaFilters.data) list = list.filter(a=> modoData==='contato' ? inRefPeriod(a.dataContato) : inRefPeriod(a.data));
+  if(agendaFilters.ult7){ const de=addDays(today,-6); list = list.filter(a=>{ const d = modoData==='contato' ? a.dataContato : a.data; return d && d>=de && d<=today; }); }
+  else if(!agendaFilters.todos && !agendaFilters.data) list = list.filter(a=> modoData==='contato' ? inRefPeriod(a.dataContato) : inRefPeriod(a.data));
   const sa = x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   if(agendaFilters.tutor) list = list.filter(a=>sa(agTutorNome(a)).includes(sa(agendaFilters.tutor)));
   if(agendaFilters.animal) list = list.filter(a=>sa(agAnimalNome(a)).includes(sa(agendaFilters.animal)));
@@ -2228,7 +2293,7 @@ function renderAgenda(){
   if(agendaFilters.cidade) list = list.filter(a=>a.cidade===agendaFilters.cidade);
   list.sort((a,b)=> (a.data+a.horario).localeCompare(b.data+b.horario));
 
-  const contatosNoPeriodo = agendaFilters.todos ? DB.contatos.length : DB.contatos.filter(c=>inRefPeriod(c.dataContato)).length;
+  const contatosNoPeriodo = agendaFilters.todos ? DB.contatos.filter(c=>!c.mesmoTelefonema).length : DB.contatos.filter(c=>!c.mesmoTelefonema && inRefPeriod(c.dataContato)).length;
   const agendadosNoPeriodo = agendaFilters.todos ? DB.agendamentos.filter(a=>!['Cancelado','Desmarcado','Reagendado'].includes(a.status)).length : DB.agendamentos.filter(a=>inRefPeriod(a.data) && !['Cancelado','Desmarcado','Reagendado'].includes(a.status)).length;
 
   return `
@@ -2261,6 +2326,7 @@ function renderAgenda(){
   </div>
   <div style="margin:-4px 0 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
     <label style="display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;"><input type="checkbox" id="agendaTodosPeriodos" style="width:auto;" ${agendaFilters.todos?'checked':''}> Ignorar período e mostrar todos os agendamentos</label>
+    <button type="button" class="chip-btn ${agendaFilters.ult7?'on':''}" id="agendaUlt7">Últimos 7 dias</button>
     <label style="display:inline-flex; align-items:center; gap:6px; font-weight:600;">Filtrar por:
       <select data-fx="modoData" style="width:auto; min-width:150px;">
         <option value="agendamento" ${modoData==='agendamento'?'selected':''}>Data do agendamento</option>
@@ -2382,10 +2448,36 @@ function renderClientes(){
 /* =========================================================
    CONTATOS
 ========================================================= */
-let contatosFilters = {status:'', motivo:'', tipo:'', q:'', todos:false};
+let contatosFilters = {status:'', motivo:'', tipo:'', q:'', todos:false, ult7:false, de:'', ate:''};
+function semanasDoMes(mk){
+  const ini=mk+'-01', fim=ultimoDiaMes(mk); const semanas=[]; let seg=segundaDe(ini);
+  while(seg<=fim){ semanas.push({de:seg, ate:addDays(seg,6)}); seg=addDays(seg,7); }
+  return semanas;
+}
+let semanasRecolhido = (()=>{ try{ return localStorage.getItem('olh_semanasRec')==='1'; }catch(e){ return false; } })();
+function contatosPorSemanaHtml(){
+  const mk = (state.dash.refDate||todayISO()).slice(0,7), hoje=todayISO();
+  const rows = semanasDoMes(mk).map(w=>{
+    const cs = DB.contatos.filter(c=>!c.mesmoTelefonema && c.dataContato>=w.de && c.dataContato<=w.ate);
+    const atual = hoje>=w.de && hoje<=w.ate;
+    return {w, atual, total:cs.length, cliente:cs.filter(c=>c.origem!=='Realizado').length, nos:cs.filter(c=>c.origem==='Realizado').length, ag:cs.filter(c=>c.status==='Agendado').length, nao:cs.filter(c=>c.status==='Não agendado').length};
+  });
+  return `<div class="card pad" style="margin-bottom:16px;">
+    <div class="section-title" style="justify-content:space-between; margin-bottom:${semanasRecolhido?0:10}px;">
+      <span>Contatos por semana</span>
+      <button class="chip-btn" id="semanasRecBtn">${semanasRecolhido?'Expandir':'Recolher'}</button>
+    </div>
+    ${semanasRecolhido?'':`<div class="table-wrap"><table class="semanas-tab"><thead><tr><th>Semana</th><th>Total</th><th>Do cliente</th><th>Nossos</th><th>Agendou</th><th>Não agendou</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr class="rowlink ${r.atual?'semana-atual':''}" data-semana-de="${r.w.de}" data-semana-ate="${r.w.ate}"><td>${fmtDate(r.w.de).slice(0,5)} a ${fmtDate(r.w.ate).slice(0,5)}${r.atual?' <span class="pill-muted">atual</span>':''}</td><td><strong>${r.total}</strong></td><td>${r.cliente}</td><td>${r.nos}</td><td>${r.ag}</td><td>${r.nao}</td></tr>`).join('')}
+    </tbody></table></div>`}
+  </div>`;
+}
 function renderContatos(){
   let list = DB.contatos.slice();
-  if(!contatosFilters.todos) list = list.filter(c=>c.status==='Aguardando' || inRefPeriod(c.dataContato)); // pendentes sempre aparecem (igual à bolinha da aba)
+  const _de = contatosFilters.ult7 ? addDays(todayISO(),-6) : contatosFilters.de, _ate = contatosFilters.ult7 ? todayISO() : contatosFilters.ate;
+  const _intervalo = !!(_de||_ate);
+  if(_intervalo) list = list.filter(c=>(!_de || c.dataContato>=_de) && (!_ate || c.dataContato<=_ate));
+  else if(!contatosFilters.todos) list = list.filter(c=>c.status==='Aguardando' || inRefPeriod(c.dataContato)); // pendentes sempre aparecem (igual à bolinha da aba)
   const semAcento = t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   if(contatosFilters.q){
     const q = semAcento(contatosFilters.q), qd = contatosFilters.q.replace(/\D/g,'');
@@ -2396,7 +2488,7 @@ function renderContatos(){
     });
   }
   const contagemStatus = {};
-  list.forEach(c=>{ contagemStatus[c.status]=(contagemStatus[c.status]||0)+1; });
+  list.forEach(c=>{ if(!c.mesmoTelefonema) contagemStatus[c.status]=(contagemStatus[c.status]||0)+1; });
   if(contatosFilters.status) list = list.filter(c=>c.status===contatosFilters.status);
   if(contatosFilters.motivo) list = list.filter(c=>c.motivoNaoAgendamento===contatosFilters.motivo);
   if(contatosFilters.tipo) list = list.filter(c=>c.tipoAtendimento===contatosFilters.tipo);
@@ -2405,10 +2497,13 @@ function renderContatos(){
 
   return `
   ${renderDashNav()}
-  <div style="margin:-10px 0 16px;"><label style="display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;"><input type="checkbox" id="contatosTodosPeriodos" style="width:auto;" ${contatosFilters.todos?'checked':''}> Ignorar período e mostrar todos os contatos</label></div>
+  ${contatosPorSemanaHtml()}
   <div class="view-head">
     <div class="filters" style="margin-bottom:0;">
       <input type="text" placeholder="Buscar nome, animal ou telefone" value="${contatosFilters.q||''}" id="contatosBusca" style="min-width:230px;">
+      <button type="button" class="chip-btn ${contatosFilters.ult7?'on':''}" id="contatosUlt7">Últimos 7 dias</button>
+      <button type="button" class="chip-btn ${contatosFilters.todos?'on':''}" id="contatosTodosPeriodos">Todo o período</button>
+      ${(contatosFilters.de||contatosFilters.ate)?`<button type="button" class="chip-btn on" id="contatosLimpaIntervalo">${contatosFilters.de?fmtDate(contatosFilters.de).slice(0,5):''} a ${contatosFilters.ate?fmtDate(contatosFilters.ate).slice(0,5):''} ✕</button>`:''}
       ${['','Aguardando','Agendado','Não agendado'].map(st=>`<button class="chip-btn ${contatosFilters.status===st?'on':''}" data-cstatus="${st}">${st||'Todos'}${st?` <span style="opacity:.7;">${contagemStatus[st]||0}</span>`:''}</button>`).join('')}
       <select data-cfx="tipo">
         <option value="">Todos tipos</option>
@@ -2435,10 +2530,17 @@ function renderContatos(){
           <td onclick="event.stopPropagation()">${c.telefone?`<a href="https://api.whatsapp.com/send?phone=${(()=>{const d=c.telefone.replace(/\D/g,''); return d.length<=11?'55'+d:d;})()}" target="_blank" rel="noopener" title="Abrir conversa no WhatsApp" style="color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">${c.telefone} <span style="color:#25D366; font-size:11px; font-weight:800;">WhatsApp</span></a>`:'—'}</td>
           <td><span class="pill-muted">${1+(c.tentativas?.length||0)}x</span></td>
           <td>${c.motivoNaoAgendamento||'—'}</td>
-          <td>${contatoBadge(c.status)}</td>
+          <td>${contatoBadge(c.status)}${c.mesmoTelefonema?' <span class="pill-muted" title="Mesmo telefonema de outro animal">mesmo telefonema</span>':''}${recontatoPill(c)?'<div style="margin-top:4px;">'+recontatoPill(c)+'</div>':''}</td>
         </tr>`).join('')}
     </tbody></table></div>` : `<div class="pad">${emptyState('Nenhum contato registrado','Registre contatos recebidos que ainda não resultaram em agendamento.')}</div>`}
   </div>`;
+}
+function recontatoPill(c){
+  if(!c.recontatarEm || c.status!=='Aguardando') return '';
+  const t=todayISO(), d=c.recontatarEm;
+  const cls = d<t ? 'recontato atrasado' : (d===t ? 'recontato hoje' : 'recontato');
+  const txt = d<t ? `Recontatar atrasado, ${fmtDate(d)}` : (d===t ? 'Recontatar hoje' : `Recontatar em ${fmtDate(d)}`);
+  return `<span class="pill-muted ${cls}">${txt}</span>`;
 }
 function contatoBadge(status){
   const map = {'Aguardando':'Desmarcado','Agendado':'Agendado','Não agendado':'Cancelado'};
@@ -2770,7 +2872,7 @@ function renderVisaoAnual(){
     tiposLista.forEach(t=>{ porTipoMes[t] = porTipo(t); });
     return {
       label, mk,
-      contatos: DB.contatos.filter(c=>monthKey(c.dataContato)===mk).length,
+      contatos: DB.contatos.filter(c=>!c.mesmoTelefonema && monthKey(c.dataContato)===mk).length,
       ...porTipoMes,
     };
   });
@@ -2917,6 +3019,8 @@ function unirNotasFiscais(nf){
     closeModal();
     nf.itens = (nf.itens||[]).concat(...outras.map(o=>o.itens||[]));
     nf.valorTotal = total;
+    nf.cobrado = [nf].concat(outras).reduce((s,x)=>s+(x.cobrado!=null?x.cobrado:(x.valorTotal||0)),0);
+    nf.splits = [nf].concat(outras).reduce((s,x)=>s+(x.splits||0),0);
     outras.forEach(o=>{ DB.notasFiscais = DB.notasFiscais.filter(x=>x.id!==o.id); moveToTrash('nf', o); });
     logAction(`uniu ${outras.length+1} notas fiscais pendentes numa só (${fmt(total)})`);
     saveDB(); render(); toast('Notas unidas');
@@ -3022,6 +3126,17 @@ function renderNFCategoriasTab(){
   </div>`;
 }
 
+function nfCampo(label,id,name,valor,attrs){
+  return `<div class="field copiavel"><label>${label}</label><div class="copy-row"><input name="${name}" id="${id}" value="${valor||''}" ${attrs||''}><button type="button" class="copy-btn" data-copy-target="${id}" title="Copiar">${ICONS.copy}<span>Copiar</span></button></div></div>`;
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-copy-target]'); if(!b) return;
+  const el = document.getElementById(b.dataset.copyTarget); if(!el) return;
+  const txt = (el.value!==undefined && el.tagName!=='DIV') ? el.value : el.textContent;
+  const ok = ()=>{ toast('Copiado'); b.classList.add('copiado'); setTimeout(()=>b.classList.remove('copiado'),900); };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok).catch(()=>{ copiarFallback(txt); ok(); });
+  else { copiarFallback(txt); ok(); }
+});
 function formNotaFiscal(nf, presets){
   const editing = !!nf;
   let itens = editing ? JSON.parse(JSON.stringify(nf.itens||[])) : [];
@@ -3061,37 +3176,36 @@ function formNotaFiscal(nf, presets){
         </select>
         <div id="nfDadosTutorWrap" style="${usarDadosTutor?'':'display:none;'} margin-top:10px;">
           <div class="hint" style="margin-bottom:8px;">Esses dados são necessários pra emitir a nota. Se já estiverem no cadastro do tutor, vêm preenchidos sozinhos; senão, complete aqui (e ficam salvos no cadastro dele pra próxima vez).</div>
-          <div class="field"><label>Nome</label><input name="nomeTutorNF" id="nfNomeTutorInput"></div>
+          ${nfCampo('CPF','nfCpfTutorInput','cpfTutorNF','','placeholder="000.000.000-00"')}
+          ${nfCampo('Nome completo','nfNomeTutorInput','nomeTutorNF','')}
+          ${nfCampo('Rua','nfRuaInput','ruaTutorNF','')}
           <div class="field-row">
-            <div class="field"><label>CPF</label><input name="cpfTutorNF" id="nfCpfTutorInput" placeholder="000.000.000-00"></div>
-            <div class="field"><label>E-mail</label><input type="email" name="email" id="nfEmailInput" placeholder="cliente@email.com"></div>
+            ${nfCampo('Número','nfNumeroInput','numeroTutorNF','')}
+            ${nfCampo('Complemento','nfComplementoInput','complementoTutorNF','')}
           </div>
+          ${nfCampo('Bairro','nfBairroInput','bairroTutorNF','')}
+          ${nfCampo('Telefone','nfTelefoneInput','telefoneTutorNF','')}
           <div class="field-row">
-            <div class="field"><label>CEP</label><input name="cepTutorNF" id="nfCepTutorInput"></div>
-            <div class="field"><label>Cidade</label><input name="enderecoCidadeTutorNF" id="nfEnderecoCidadeInput"></div>
+            ${nfCampo('CEP','nfCepTutorInput','cepTutorNF','')}
+            ${nfCampo('Cidade','nfEnderecoCidadeInput','enderecoCidadeTutorNF','')}
           </div>
-          <div class="field"><label>Rua</label><input name="ruaTutorNF" id="nfRuaInput"></div>
-          <div class="field-row">
-            <div class="field"><label>Bairro</label><input name="bairroTutorNF" id="nfBairroInput"></div>
-            <div class="field"><label>Número</label><input name="numeroTutorNF" id="nfNumeroInput"></div>
-          </div>
+          ${nfCampo('E-mail','nfEmailInput','email','','type="email" placeholder="cliente@email.com"')}
         </div>
         <div id="nfDadosAlternativosWrap" style="${usarDadosTutor?'display:none;':''} margin-top:10px;">
-          <div class="field"><label>Nome para a nota *</label><input name="nomeAlternativo" value="${nf?.nomeAlternativo||''}"></div>
+          ${nfCampo('CPF *','nfAltCpf','cpfAlternativo',nf?.cpfAlternativo,'placeholder="000.000.000-00"')}
+          ${nfCampo('Nome para a nota *','nfAltNome','nomeAlternativo',nf?.nomeAlternativo)}
+          ${nfCampo('Rua (opcional)','nfAltRua','ruaAlternativo',nf?.ruaAlternativo)}
           <div class="field-row">
-            <div class="field"><label>CPF *</label><input name="cpfAlternativo" placeholder="000.000.000-00" value="${nf?.cpfAlternativo||''}"></div>
-            <div class="field"><label>Telefone (opcional)</label><input name="telefoneAlternativo" value="${nf?.telefoneAlternativo||''}"></div>
+            ${nfCampo('Número (opcional)','nfAltNumero','numeroAlternativo',nf?.numeroAlternativo)}
+            ${nfCampo('Complemento (opcional)','nfAltCompl','complementoAlternativo',nf?.complementoAlternativo)}
           </div>
+          ${nfCampo('Bairro (opcional)','nfAltBairro','bairroAlternativo',nf?.bairroAlternativo)}
+          ${nfCampo('Telefone (opcional)','nfAltTel','telefoneAlternativo',nf?.telefoneAlternativo)}
           <div class="field-row">
-            <div class="field"><label>CEP (opcional)</label><input name="cepAlternativo" value="${nf?.cepAlternativo||''}"></div>
-            <div class="field"><label>Cidade (opcional)</label><input name="enderecoCidadeAlternativo" value="${nf?.enderecoCidadeAlternativo||''}"></div>
+            ${nfCampo('CEP (opcional)','nfAltCep','cepAlternativo',nf?.cepAlternativo)}
+            ${nfCampo('Cidade (opcional)','nfAltCidade','enderecoCidadeAlternativo',nf?.enderecoCidadeAlternativo)}
           </div>
-          <div class="field-row">
-            <div class="field"><label>Rua (opcional)</label><input name="ruaAlternativo" value="${nf?.ruaAlternativo||''}"></div>
-            <div class="field"><label>Bairro (opcional)</label><input name="bairroAlternativo" value="${nf?.bairroAlternativo||''}"></div>
-          </div>
-          <div class="field"><label>Número (opcional)</label><input name="numeroAlternativo" value="${nf?.numeroAlternativo||''}"></div>
-          <div class="field"><label>E-mail (opcional)</label><input type="email" name="emailAlternativo" placeholder="cliente@email.com" value="${nf?.usarDadosTutor===false?(nf?.email||''):''}"></div>
+          ${nfCampo('E-mail (opcional)','nfAltEmail','emailAlternativo',nf?.usarDadosTutor===false?(nf?.email||''):'','type="email" placeholder="cliente@email.com"')}
         </div>
       </div>
 
@@ -3110,9 +3224,13 @@ function formNotaFiscal(nf, presets){
         <div id="nfItensList"></div>
         <button type="button" class="btn btn-secondary btn-sm" id="nfAddItemBtn" style="margin-top:8px;">${ICONS.plus} Adicionar item</button>
       </div>
-      <div class="alert alert-sage" style="margin-top:10px;"><div>Valor total: <strong id="nfValorTotal">R$ 0,00</strong></div></div>
+      <div class="field-row" style="margin-top:10px;">
+        <div class="field"><label>Valor cobrado</label><div class="nf-valor" id="nfCobrado">R$ 0,00</div></div>
+        <div class="field"><label>Splits (repasses)</label><input type="number" step="0.01" min="0" name="splits" id="nfSplitsInput" placeholder="0,00" value="${nf?.splits||''}"></div>
+      </div>
+      <div class="field copiavel"><label>Valor na nota (cobrado menos splits)</label><div class="copy-row"><div class="nf-valor nf-valor-nota" id="nfValorTotal">R$ 0,00</div><button type="button" class="copy-btn" data-copy-target="nfValorNotaNum" title="Copiar">${ICONS.copy}<span>Copiar</span></button></div><span id="nfValorNotaNum" style="display:none;"></span></div>
 
-      <div class="field" style="margin-top:14px;"><label>Observações (opcional)</label><textarea name="observacoes">${nf?.observacoes||''}</textarea></div>
+      <div class="field copiavel" style="margin-top:14px;"><label>Observações (opcional)</label><div class="copy-row" style="align-items:flex-start;"><textarea name="observacoes" id="nfObsInput">${nf?.observacoes||''}</textarea><button type="button" class="copy-btn" data-copy-target="nfObsInput" title="Copiar">${ICONS.copy}<span>Copiar</span></button></div></div>
 
       <div class="field-row" style="margin-top:4px;">
         <div class="field"><label>Status</label>
@@ -3150,6 +3268,8 @@ function formNotaFiscal(nf, presets){
     document.getElementById('nfRuaInput').value = t?.rua||'';
     document.getElementById('nfBairroInput').value = t?.bairro||'';
     document.getElementById('nfNumeroInput').value = t?.numero||'';
+    document.getElementById('nfComplementoInput').value = t?.complemento||'';
+    document.getElementById('nfTelefoneInput').value = t?.telefone||'';
   }
   function renderItens(){
     const cont = document.getElementById('nfItensList');
@@ -3178,9 +3298,14 @@ function formNotaFiscal(nf, presets){
     }));
   }
   function atualizarTotal(){
-    const total = itens.reduce((s,it)=>s+(Number(it.valor)||0),0);
-    document.getElementById('nfValorTotal').textContent = 'R$ '+total.toFixed(2).replace('.',',');
+    const cobrado = itens.reduce((s,it)=>s+(Number(it.valor)||0),0);
+    const splits = Number(document.getElementById('nfSplitsInput')?.value)||0;
+    const nota = Math.max(0, cobrado-splits);
+    document.getElementById('nfCobrado').textContent = 'R$ '+cobrado.toFixed(2).replace('.',',');
+    document.getElementById('nfValorTotal').textContent = 'R$ '+nota.toFixed(2).replace('.',',');
+    document.getElementById('nfValorNotaNum').textContent = nota.toFixed(2).replace('.',',');
   }
+  document.getElementById('nfSplitsInput').addEventListener('input', atualizarTotal);
   renderItens(); atualizarTotal(); preencherDadosTutor();
 
   document.getElementById('nfAddItemBtn').addEventListener('click', ()=>{
@@ -3242,7 +3367,10 @@ function formNotaFiscal(nf, presets){
         if(data.ruaTutorNF) t.rua = data.ruaTutorNF;
         if(data.bairroTutorNF) t.bairro = data.bairroTutorNF;
         if(data.numeroTutorNF) t.numero = data.numeroTutorNF;
+        if(data.complementoTutorNF) t.complemento = data.complementoTutorNF;
+        if(data.telefoneTutorNF) t.telefone = data.telefoneTutorNF;
       }
+      delete data.complementoTutorNF; delete data.telefoneTutorNF; delete data.complementoAlternativo;
       delete data.nomeTutorNF; delete data.cpfTutorNF; delete data.cepTutorNF; delete data.enderecoCidadeTutorNF; delete data.ruaTutorNF; delete data.bairroTutorNF; delete data.numeroTutorNF;
       delete data.nomeAlternativo; delete data.cpfAlternativo; delete data.telefoneAlternativo; delete data.emailAlternativo;
       delete data.cepAlternativo; delete data.enderecoCidadeAlternativo; delete data.ruaAlternativo; delete data.bairroAlternativo; delete data.numeroAlternativo;
@@ -3256,7 +3384,11 @@ function formNotaFiscal(nf, presets){
     if(!data.animalId) delete data.animalId;
     if(!data.agendamentoId) delete data.agendamentoId;
     if(data.status!=='Feita') delete data.dataFeita;
-    const valorTotal = itensValidos.reduce((s,it)=>s+(Number(it.valor)||0),0);
+    const cobrado = itensValidos.reduce((s,it)=>s+(Number(it.valor)||0),0);
+    const splits = Math.min(cobrado, Number(data.splits)||0);
+    delete data.splits;
+    const valorTotal = Math.max(0, cobrado-splits);
+    data.cobrado = cobrado; data.splits = splits;
     const tutorNome = tutorById(data.tutorId)?.nome||'—';
     if(editing){
       Object.assign(nf, data, {itens:itensValidos, valorTotal});
@@ -3386,7 +3518,7 @@ function metricasDoMes(mk){
   const ags = DB.agendamentos.filter(a=>monthKey(a.data||'')===mk);
   const valido = a=>!['Cancelado','Desmarcado','Reagendado'].includes(a.status);
   return {
-    contatos: DB.contatos.filter(c=>monthKey(c.dataContato||'')===mk).length,
+    contatos: DB.contatos.filter(c=>!c.mesmoTelefonema && monthKey(c.dataContato||'')===mk).length,
     agendados: ags.filter(valido).length,
     realizados: ags.filter(a=>a.status==='Realizado').length,
     desmarcados: ags.filter(a=>['Cancelado','Desmarcado'].includes(a.status)).length,
@@ -3394,46 +3526,213 @@ function metricasDoMes(mk){
     notas: (DB.notasFiscais||[]).filter(n=>monthKey(n.data||'')===mk).reduce((t,n)=>t+(n.valorTotal||0),0),
   };
 }
-function comparativoMesesHtml(){
-  const atual = relatMes, ant = metaStepMonth(relatMes,-1);
-  const A = metricasDoMes(atual), B = metricasDoMes(ant);
-  const linhas = [
-    ['Contatos recebidos','contatos',false],['Atendimentos agendados','agendados',false],['Realizados','realizados',false],
-    ['Desmarcados/cancelados','desmarcados',true],['Faltas','faltas',true],['Notas fiscais (R$)','notas',false,true]
+/* ---------- Relatório automático (mensal e semanal) ---------- */
+let relatTab = 'mensal';
+let relatSemana = (()=>{ const t=todayISO(); const d=new Date(t+'T00:00:00'); return addDays(t, -((d.getDay()+6)%7)); })();
+function segundaDe(iso){ const d=new Date(iso+'T00:00:00'); return addDays(iso, -((d.getDay()+6)%7)); }
+function ultimoDiaMes(mk){ const [y,m]=mk.split('-').map(Number); return mk+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0'); }
+function periodoRel(){
+  if(relatTab==='semanal'){
+    const ini=relatSemana, fim=addDays(ini,6), pIni=addDays(ini,-7), pFim=addDays(ini,-1);
+    return {ini,fim,pIni,pFim, key:'s:'+ini, rotulo:`semana de ${fmtDate(ini)} a ${fmtDate(fim)}`, anterior:'a semana anterior', emAnt:'na semana anterior', titulo:'Relatório semanal', mesRef:ini.slice(0,7)};
+  }
+  const mk=relatMes, pk=metaStepMonth(mk,-1);
+  return {ini:mk+'-01', fim:ultimoDiaMes(mk), pIni:pk+'-01', pFim:ultimoDiaMes(pk), key:'m:'+mk, rotulo:'mês de '+metaMesLabel(mk).toLowerCase(), anterior:'o mês anterior', emAnt:'no mês anterior', titulo:'Relatório mensal', mesRef:mk};
+}
+function metricasPeriodo(ini,fim){
+  const noPer = d=> d && d>=ini && d<=fim;
+  const ags = (DB.agendamentos||[]).filter(a=>noPer(a.data));
+  const valido = a=>!['Cancelado','Desmarcado','Reagendado'].includes(a.status);
+  const cts = (DB.contatos||[]).filter(c=>!c.mesmoTelefonema && noPer(c.dataContato));
+  const desm = ags.filter(a=>['Cancelado','Desmarcado'].includes(a.status));
+  const nao = cts.filter(c=>c.status==='Não agendado');
+  const motivos = {};
+  const add = m=>{ if(m) motivos[m]=(motivos[m]||0)+1; };
+  desm.forEach(a=>add(a.motivoStatus)); nao.forEach(c=>add(c.motivoNaoAgendamento));
+  const detalhes = [];
+  desm.forEach(a=>detalhes.push({data:a.data, hora:a.horario||'', atend:a.tipo||'Sem tipo', animal:a.animalId?(animalById(a.animalId)?.nome||''):(a.animalAvulso||''), quem:agTutorNome(a), tel:(a.tutorId?tutorById(a.tutorId)?.telefone:a.telefoneAvulso)||'', tipo:a.status==='Cancelado'?'Cancelou':'Desmarcou', motivo:a.motivoStatus||'', texto:a.observacoes||''}));
+  nao.forEach(c=>detalhes.push({data:c.dataContato, hora:'', atend:c.tipoAtendimento||'Sem tipo', animal:c.animalId?(animalById(c.animalId)?.nome||''):(c.animalAvulso||''), quem:c.tutorId?(tutorById(c.tutorId)?.nome||''):(c.nomeAvulso||''), tel:c.telefone||(c.tutorId?tutorById(c.tutorId)?.telefone:'')||'', tipo:'Não agendou', motivo:c.motivoNaoAgendamento||'', texto:c.observacoes||''}));
+  detalhes.sort((a,b)=>b.data.localeCompare(a.data));
+  return {
+    contatos: cts.length,
+    cliente: cts.filter(c=>c.origem!=='Realizado').length,
+    nos: cts.filter(c=>c.origem==='Realizado').length,
+    agendados: ags.filter(valido).length,
+    consultas: ags.filter(a=>valido(a) && ['Consulta','Acompanhamento'].includes(a.tipo)).length,
+    cirurgias: ags.filter(a=>valido(a) && a.tipo==='Cirurgia').length,
+    realizados: ags.filter(a=>a.status==='Realizado').length,
+    desmarques: desm.length,
+    naoAgendaram: nao.length,
+    motivos, detalhes
+  };
+}
+function relPl(n,s,p){ return `${n} ${n===1?s:p}`; }
+function relVar(a,b){
+  if(a===b) return {txt:'igual', cls:'eq', dir:0};
+  if(b===0) return {txt:'novo', cls:'up', dir:1};
+  const p = Math.min(100, Math.round(Math.abs(a-b)/b*100));
+  return a>b ? {txt:'▲ '+p+'%', cls:'up', dir:1} : {txt:'▼ '+p+'%', cls:'down', dir:-1};
+}
+function relComp(a,b,ant,emAnt){
+  if(a===b) return `igual a ${ant}, que também teve ${b}`;
+  if(b===0) return `sem nenhum ${emAnt}`;
+  const p = Math.min(100, Math.round(Math.abs(a-b)/b*100));
+  return `${p}% ${a>b?'a mais':'a menos'} que ${ant}, que teve ${b}`;
+}
+function relResumoTexto(P, A, B){
+  const ant = P.anterior, frases=[];
+  frases.push(`Tivemos ${relPl(A.contatos,'contato','contatos')}, ${relComp(A.contatos,B.contatos,ant,P.emAnt)}. Desses, ${A.cliente} ${A.cliente===1?'veio do próprio cliente':'vieram do próprio cliente'} e ${A.nos} ${A.nos===1?'partiu':'partiram'} de nós.`);
+  frases.push(`Foram marcados ${relPl(A.agendados,'atendimento','atendimentos')}, ${relComp(A.agendados,B.agendados,ant,P.emAnt)}, sendo ${relPl(A.consultas,'consulta ou acompanhamento','consultas ou acompanhamentos')} e ${relPl(A.cirurgias,'cirurgia','cirurgias')}.`);
+  const ev = (a,b,umS,umP,nenhum)=> a===0 ? `${nenhum}${b>0?`, contra ${b} ${P.emAnt}`:''}` : `${relPl(a,umS,umP)}, ${relComp(a,b,ant,P.emAnt)}`;
+  let f = `${A.desmarques===0?'':'Houve '}${ev(A.desmarques,B.desmarques,'desmarque','desmarques','Não houve desmarques')} e ${A.naoAgendaram===0?'nenhum contato deixou de agendar':ev(A.naoAgendaram,B.naoAgendaram,'contato que não agendou','contatos que não agendaram','')}.`;
+  const top = Object.entries(A.motivos).sort((x,y)=>y[1]-x[1]).slice(0,3).map(x=>x[0]);
+  if(top.length) f += ` Os principais motivos foram ${top.length>1 ? top.slice(0,-1).join(', ')+' e '+top[top.length-1] : top[0]}.`;
+  frases.push(f);
+  return frases;
+}
+function relSanitiza(html){
+  const doc = new DOMParser().parseFromString('<div>'+(html||'')+'</div>','text/html');
+  const ok = ['B','STRONG','U','I','BR','DIV','P','SPAN'];
+  (function limpa(n){ [...n.childNodes].forEach(c=>{
+    if(c.nodeType===1){ if(!ok.includes(c.tagName)){ c.replaceWith(doc.createTextNode(c.textContent)); return; } [...c.attributes].forEach(at=>c.removeAttribute(at.name)); limpa(c); }
+  }); })(doc.body.firstChild);
+  return doc.body.firstChild.innerHTML;
+}
+function relTabelaMeses(P){
+  const meses=[]; let mk=P.mesRef; for(let i=0;i<6;i++){ meses.unshift(mk); mk=metaStepMonth(mk,-1); }
+  const M = meses.map(m=>metricasPeriodo(m+'-01', ultimoDiaMes(m)));
+  const motivos = [...new Set(M.flatMap(x=>Object.keys(x.motivos)))].sort();
+  const linhas = [['Total de contatos','contatos'],['Total de agendamentos','agendados'],['Consultas e acompanhamentos','consultas'],['Cirurgias','cirurgias'],['Desmarques','desmarques'],['Não agendamentos','naoAgendaram']];
+  return `<table class="rel-tab"><thead><tr><th>Indicador</th>${meses.map(m=>`<th>${MESES_ABREV[+m.slice(5)-1]}/${m.slice(2,4)}</th>`).join('')}</tr></thead><tbody>
+    ${linhas.map(([n,k])=>`<tr><td>${n}</td>${M.map(x=>`<td>${x[k]}</td>`).join('')}</tr>`).join('')}
+    ${motivos.map(mo=>`<tr class="mot"><td>${mo}</td>${M.map(x=>`<td>${x.motivos[mo]||0}</td>`).join('')}</tr>`).join('')}
+  </tbody></table>`;
+}
+function renderRelatorioAuto(){
+  const P = periodoRel();
+  const A = metricasPeriodo(P.ini,P.fim), B = metricasPeriodo(P.pIni,P.pFim);
+  DB.relatObs = DB.relatObs||{};
+  const obs = DB.relatObs[P.key] || {html:'', size:15};
+  const hojeMes = todayISO().slice(0,7);
+  const nav = relatTab==='mensal' ? `
+    <button class="icon-btn" id="relatPrev" title="Mês anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <button class="dash-nav-label" data-mes-pick="relat" title="Escolher mês" style="min-width:140px;">${metaMesLabel(relatMes)}</button>
+    <input type="month" id="mesInput_relat" value="${relatMes}" style="position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;">
+    <button class="icon-btn" id="relatNext" title="Próximo mês"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button>
+    ${relatMes!==hojeMes?`<button class="btn btn-secondary btn-sm" id="relatHoje">Mês atual</button>`:''}`
+  : `
+    <button class="icon-btn" id="relatPrev" title="Semana anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <button class="dash-nav-label" id="relatSemPick" title="Escolher data" style="min-width:170px;">${fmtDate(P.ini)} a ${fmtDate(P.fim)}</button>
+    <input type="date" id="relatSemInput" value="${P.ini}" style="position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;">
+    <button class="icon-btn" id="relatNext" title="Próxima semana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button>
+    ${relatSemana!==segundaDe(todayISO())?`<button class="btn btn-secondary btn-sm" id="relatHoje">Semana atual</button>`:''}`;
+  const cartoes = [
+    ['Contatos','contatos',false],['Vieram do cliente','cliente',false],['Partiram de nós','nos',false],
+    ['Agendamentos','agendados',false],['Consultas e acompanhamentos','consultas',false],['Cirurgias','cirurgias',false],
+    ['Realizados','realizados',false],['Desmarques','desmarques',true],['Não agendaram','naoAgendaram',true]
   ];
-  const fmtV=(v,money)=> money ? 'R$ '+v.toFixed(2).replace('.',',') : v;
+  const resumo = relResumoTexto(P,A,B);
+  const _tiposDet = ['Consulta','Cirurgia','Acompanhamento'];
+  const _det = A.detalhes.filter(d=>!relDetTipo || d.atend===relDetTipo);
+  const _mot = {}; _det.forEach(d=>{ if(d.motivo) _mot[d.motivo]=(_mot[d.motivo]||0)+1; });
+  const motivosOrd = Object.entries(_mot).sort((x,y)=>y[1]-x[1]);
   return `
-  <div class="card pad" style="margin-bottom:18px;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
-      <div class="section-title" style="margin-bottom:0;">Comparativo com o mês anterior</div>
-      <div class="dash-nav-ctrl" style="display:flex; align-items:center; gap:6px;">
-        <button class="icon-btn" id="relatPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
-        <button class="dash-nav-label" data-mes-pick="relat" title="Escolher mês" style="min-width:130px;">${metaMesLabel(atual)}</button>
-        <input type="month" id="mesInput_relat" value="${atual}" style="position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;">
-        <button class="icon-btn" id="relatNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button>
-        ${atual!==todayISO().slice(0,7)?`<button class="btn btn-secondary btn-sm" id="relatHoje">Mês atual</button>`:''}
-      </div>
+  <div class="rel-area">
+  <div class="rel-print-head">
+    <div class="rel-print-brand">Olhatta</div>
+    <div class="rel-print-title">${P.titulo}</div>
+    <div class="rel-print-per">${P.rotulo.charAt(0).toUpperCase()+P.rotulo.slice(1)}</div>
+  </div>
+  <div class="view-head rel-noprint">
+    <div class="dash-nav-ctrl" style="background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 10px;">${nav}</div>
+    <button class="btn btn-primary" id="relatPdf">${ICONS.download} Exportar PDF</button>
+  </div>
+  <div class="grid g3 rel-noprint" style="margin-bottom:18px;">
+    ${cartoes.map(([n,k,ruim])=>{ const v=relVar(A[k],B[k]); const bom = v.dir===0?null:(ruim? v.dir<0 : v.dir>0);
+      const cor = bom===null?'ink':(bom?'ok':'bad');
+      return `<div class="stat-card"><div class="label">${n}</div><div class="value">${A[k]}</div><div class="delta rel-var ${cor}">${v.txt}<span class="rel-prev"> · antes ${B[k]}</span></div></div>`; }).join('')}
+  </div>
+  <div class="card pad rel-resumo" style="margin-bottom:18px;">
+    <div class="section-title">Resumo do período</div>
+    <div class="rel-texto">${resumo.map(f=>`<p>${f}</p>`).join('')}</div>
+  </div>
+  <div class="rel-print-only" style="margin-bottom:18px;">${relTabelaMeses(P)}</div>
+  ${(A.desmarques||A.naoAgendaram)?`
+  <div class="card pad rel-noprint" style="margin-bottom:18px;">
+    <div class="section-title">Motivos de desmarque e não agendamento</div>
+    <div class="rel-motivos">
+      <button type="button" class="chip-btn ${!relDetTipo?'on':''}" data-reldettipo="">Todos ${A.detalhes.length}</button>
+      ${_tiposDet.map(t=>`<button type="button" class="chip-btn ${relDetTipo===t?'on':''}" data-reldettipo="${t}">${t} ${A.detalhes.filter(d=>d.atend===t).length}</button>`).join('')}
     </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Indicador</th><th style="text-align:center;">${metaMesLabel(ant)}</th><th style="text-align:center;">${metaMesLabel(atual)}</th><th style="text-align:center;">Variação</th></tr></thead>
-      <tbody>${linhas.map(([nome,k,ruim,money])=>{
-        const a=A[k], b=B[k], diff=a-b;
-        const pct = b>0 ? Math.round(diff/b*100) : (a>0?100:0);
-        const bom = diff===0 ? null : (ruim ? diff<0 : diff>0);
-        const cor = bom===null ? 'var(--ink-soft)' : (bom ? 'var(--st-realizado)' : 'var(--st-cancelado)');
-        const seta = diff>0?'▲':(diff<0?'▼':'•');
-        return `<tr><td>${nome}</td><td style="text-align:center;">${fmtV(b,money)}</td><td style="text-align:center; font-weight:800;">${fmtV(a,money)}</td><td style="text-align:center; color:${cor}; font-weight:800;">${seta} ${diff===0?'igual':Math.abs(pct)+'%'}</td></tr>`;
-      }).join('')}</tbody>
-    </table></div>
-    <div class="hint" style="margin-top:8px;">Verde = melhorou em relação ao mês anterior, vermelho = piorou. Desmarcados e faltas são melhores quando diminuem.</div>
+    ${motivosOrd.length?`<div class="rel-motivos">${motivosOrd.map(([m,n])=>`<span class="pill-muted">${m} <strong>${n}</strong></span>`).join('')}</div>`:''}
+    ${_det.length?`<div class="rel-detalhes rolagem-lista">${_det.map(d=>`
+      <div class="rel-det">
+        <div class="rel-det-top"><strong>${d.atend}${d.animal?' · '+d.animal:''}</strong><span class="pill-muted">${d.tipo}${d.motivo?' · '+d.motivo:' · sem motivo'}</span><span class="rel-det-data">${fmtDate(d.data)}${d.hora?' '+d.hora:''}</span></div>
+        <div class="rel-det-cli">${d.quem||'Sem nome'}${d.tel?' · '+d.tel:''}</div>
+        ${d.texto?`<div class="rel-det-txt">${d.texto}</div>`:''}
+      </div>`).join('')}</div>`:`<div class="hint">Nada deste tipo no período.</div>`}
+  </div>`:''}
+  <div class="card pad rel-noprint" style="margin-bottom:18px;">
+    <div class="section-title" style="justify-content:space-between;">
+      <span>Observações</span>
+      <span class="rel-fmt">
+        <button class="icon-btn rel-fmt-btn" data-relfmt="menos" title="Diminuir letra">A-</button>
+        <button class="icon-btn rel-fmt-btn" data-relfmt="normal" title="Tamanho normal">A</button>
+        <button class="icon-btn rel-fmt-btn" data-relfmt="mais" title="Aumentar letra">A+</button>
+        <button class="icon-btn rel-fmt-btn" data-relfmt="bold" title="Negrito"><strong>N</strong></button>
+        <button class="icon-btn rel-fmt-btn" data-relfmt="underline" title="Sublinhado"><u>S</u></button>
+      </span>
+    </div>
+    <div id="relObs" class="rel-obs" contenteditable="true" data-key="${P.key}" style="font-size:${obs.size||15}px;">${relSanitiza(obs.html)}</div>
+  </div>
   </div>`;
 }
+let relDetTipo = '';
+function relatorioTabHandlers(){
+  document.querySelectorAll('[data-reldettipo]').forEach(b=>b.addEventListener('click', ()=>{ relDetTipo=b.dataset.reldettipo; render(); }));
+  const P = periodoRel();
+  document.getElementById('relatPdf')?.addEventListener('click', ()=>{
+    document.body.classList.add('imprimindo-rel');
+    const fim=()=>{ document.body.classList.remove('imprimindo-rel'); window.removeEventListener('afterprint', fim); };
+    window.addEventListener('afterprint', fim);
+    setTimeout(()=>window.print(), 60);
+  });
+  const ed = document.getElementById('relObs');
+  if(ed){
+    let t;
+    const salva = ()=>{ DB.relatObs = DB.relatObs||{}; const cur = DB.relatObs[ed.dataset.key]||{size:15};
+      DB.relatObs[ed.dataset.key] = {html: relSanitiza(ed.innerHTML), size: cur.size||15}; saveDB(); };
+    ed.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(salva, 600); });
+    ed.addEventListener('blur', ()=>{ clearTimeout(t); salva(); });
+    document.querySelectorAll('[data-relfmt]').forEach(b=>{
+      b.addEventListener('mousedown', e=>e.preventDefault());
+      b.addEventListener('click', ()=>{
+        const k=b.dataset.relfmt; const cur = (DB.relatObs&&DB.relatObs[ed.dataset.key])||{html:'',size:15};
+        if(k==='bold') document.execCommand('bold');
+        else if(k==='underline') document.execCommand('underline');
+        else { let s=cur.size||15; s = k==='mais'?Math.min(26,s+1):(k==='menos'?Math.max(11,s-1):15); ed.style.fontSize=s+'px'; DB.relatObs=DB.relatObs||{}; DB.relatObs[ed.dataset.key]={html:relSanitiza(ed.innerHTML), size:s}; saveDB(); return; }
+        salva();
+      });
+    });
+  }
+  document.getElementById('relatSemPick')?.addEventListener('click', ()=>{ const i=document.getElementById('relatSemInput'); try{ i.showPicker?i.showPicker():i.focus(); }catch(e){ i.focus(); } });
+  document.getElementById('relatSemInput')?.addEventListener('change', e=>{ if(e.target.value){ relatSemana=segundaDe(e.target.value); render(); } });
+}
+
 function renderRelatorios(){
+  const abas = `<div class="tabs rel-noprint">
+    <button class="tab ${relatTab==='mensal'?'active':''}" data-reltab="mensal">Mensal</button>
+    <button class="tab ${relatTab==='semanal'?'active':''}" data-reltab="semanal">Semanal</button>
+    <button class="tab ${relatTab==='reunioes'?'active':''}" data-reltab="reunioes">Reuniões</button>
+  </div>`;
+  if(relatTab!=='reunioes') return abas + renderRelatorioAuto();
+  return abas + renderRelatoriosReunioes();
+}
+function renderRelatoriosReunioes(){
   let list = (DB.relatorios||[]).slice();
   if(relatoriosFiltroTipo) list = list.filter(r=>r.tipo===relatoriosFiltroTipo);
   list.sort((a,b)=>b.data.localeCompare(a.data));
   return `
-  ${comparativoMesesHtml()}
   <div class="view-head">
     <div class="filters" style="margin-bottom:0;">
       <select data-relfx="tipo">
@@ -4731,8 +5030,13 @@ function formContato(contato){
           <option value="Recebido" ${(!contato||contato.origem==='Recebido')?'selected':''}>Cliente entrou em contato (recebido)</option>
           <option value="Realizado" ${contato?.origem==='Realizado'?'selected':''}>Clínica entrou em contato (realizado)</option>
         </select></div>
-        <div class="field"><label>Status</label><select name="status">${['Aguardando','Agendado','Não agendado'].map(s=>`<option ${contato?.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Status</label><select name="status" id="ctStatusSel">${['Aguardando','Agendado','Não agendado'].map(s=>`<option ${contato?.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
       </div>
+      <div class="field" id="ctRecontatoWrap" style="${(!contato||contato.status==='Aguardando')?'':'display:none;'}">
+        <label>Contatar novamente em (opcional)</label>
+        <input type="date" name="recontatarEm" value="${contato?.recontatarEm||''}">
+      </div>
+      <label class="check-line" style="display:flex; align-items:center; gap:8px; margin:2px 0 12px; font-size:13px; cursor:pointer;"><input type="checkbox" name="mesmoTelefonema" style="width:auto;" ${contato?.mesmoTelefonema?'checked':''}> Mesmo telefonema de outro animal, não conta como contato novo</label>
       <div class="field"><label>Motivo (se não agendou)</label>
         <select name="motivoNaoAgendamento" id="ctMotivoSel"><option value="">—</option>${(DB.motivosPadrao||[]).map(m=>`<option ${contato?.motivoNaoAgendamento===m?'selected':''}>${m}</option>`).join('')}</select>
       </div>
@@ -4783,6 +5087,9 @@ function formContato(contato){
   document.getElementById('ctTelefoneInput').addEventListener('input', checarTelefoneDuplicado);
   aplicarMascaraTelefone(document.getElementById('ctTelefoneInput'));
   checarTelefoneDuplicado();
+  document.getElementById('ctStatusSel').addEventListener('change', e=>{
+    document.getElementById('ctRecontatoWrap').style.display = e.target.value==='Aguardando'?'':'none';
+  });
   document.getElementById('ctMotivoSel').addEventListener('change', e=>{
     document.getElementById('ctMotivoOutroWrap').style.display = e.target.value==='Outro motivo'?'':'none';
   });
@@ -4798,8 +5105,10 @@ function formContato(contato){
       data.motivoNaoAgendamento = data.motivoOutroTexto.trim();
     }
     delete data.motivoOutroTexto;
+    data.mesmoTelefonema = !!data.mesmoTelefonema;
+    if(data.status!=='Aguardando' || !data.recontatarEm) delete data.recontatarEm;
     const nomeRef = (data.tutorId&&tutorById(data.tutorId)?.nome) || data.nomeAvulso || 'contato';
-    if(editing){ Object.assign(contato, data); logAction(`editou o contato de ${nomeRef}`); toast('Contato atualizado'); }
+    if(editing){ if(!data.recontatarEm) delete contato.recontatarEm; Object.assign(contato, data); logAction(`editou o contato de ${nomeRef}`); toast('Contato atualizado'); }
     else { const c={id:uid(), tentativas:[], criadoPor:getCurrentUser(), ...data}; DB.contatos.push(c); logAction(`registrou um contato de ${nomeRef}`); toast('Contato registrado'); }
     saveDB(); closeModal(); render();
   });
@@ -5269,7 +5578,34 @@ function openContatoDrawer(cId){
 /* =========================================================
    HANDLERS GLOBAIS (delegação de eventos)
 ========================================================= */
+function ativarTabelasInteligentes(){
+  document.querySelectorAll('.view table').forEach(t=>{
+    const tb=t.tBodies[0]; if(!tb || t.dataset.sortOk) return; t.dataset.sortOk='1';
+    t.querySelectorAll('thead th').forEach((th,i)=>{
+      if(!th.textContent.trim() || /^(ações|acoes)$/i.test(th.textContent.trim())) return;
+      th.classList.add('sortavel');
+      th.addEventListener('click', ()=>{
+        const dir = th.dataset.dir==='asc' ? 'desc' : 'asc';
+        t.querySelectorAll('thead th').forEach(x=>{ delete x.dataset.dir; });
+        th.dataset.dir=dir;
+        const rows=[...tb.rows].filter(r=>r.cells.length>i && r.cells.length>1);
+        const val=r=>{ const x=(r.cells[i].textContent||'').trim(); const m=x.match(/^(\d{2})\/(\d{2})(?:\/(\d{4}))?/); if(m) return (m[3]||'0000')+m[2]+m[1]; const n=parseFloat(x.replace(/[^\d,.-]/g,'').replace('.','').replace(',','.')); return (/^[\sR$\d.,-]+$/.test(x) && !isNaN(n)) ? n : x.toLowerCase(); };
+        rows.sort((a,b)=>{ const va=val(a), vb=val(b); const r = (typeof va==='number'&&typeof vb==='number') ? va-vb : String(va).localeCompare(String(vb),'pt-BR',{numeric:true}); return dir==='asc'?r:-r; });
+        rows.forEach(r=>tb.appendChild(r));
+      });
+    });
+  });
+  document.querySelectorAll('.view .table-wrap').forEach(w=>{
+    if(w.dataset.drag) return; w.dataset.drag='1';
+    let down=false, sx=0, sl=0, moved=false;
+    w.addEventListener('mousedown', e=>{ if(e.button!==0 || e.target.closest('button,a,input,select,textarea')) return; down=true; moved=false; sx=e.pageX; sl=w.scrollLeft; });
+    window.addEventListener('mousemove', e=>{ if(!down) return; const dx=e.pageX-sx; if(Math.abs(dx)>4){ moved=true; w.classList.add('arrastando'); } if(moved) w.scrollLeft=sl-dx; });
+    window.addEventListener('mouseup', ()=>{ down=false; w.classList.remove('arrastando'); });
+    w.addEventListener('click', e=>{ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } }, true);
+  });
+}
 function attachViewHandlers(){
+  setTimeout(ativarTabelasInteligentes,0);
   document.querySelectorAll('[data-open-lembrete-pend]').forEach(el=>el.addEventListener('click', e=>{ e.stopPropagation(); formLembrete(DB.lembretes.find(l=>l.id===el.dataset.openLembretePend)); }));
   document.querySelectorAll('[data-open-tutor]').forEach(el=>el.addEventListener('click', e=>{ e.stopPropagation(); openTutorDrawer(el.dataset.openTutor); }));
   document.querySelectorAll('[data-open-animal]').forEach(el=>el.addEventListener('click', e=>{ e.stopPropagation(); openAnimalDrawer(el.dataset.openAnimal); }));
@@ -5585,9 +5921,11 @@ function attachViewHandlers(){
 
   // Relatórios
   document.getElementById('novoRelatorio')?.addEventListener('click', ()=>formRelatorio());
-  document.getElementById('relatPrev')?.addEventListener('click', ()=>{ relatMes = metaStepMonth(relatMes,-1); render(); });
-  document.getElementById('relatNext')?.addEventListener('click', ()=>{ relatMes = metaStepMonth(relatMes,1); render(); });
-  document.getElementById('relatHoje')?.addEventListener('click', ()=>{ relatMes = todayISO().slice(0,7); render(); });
+  document.querySelectorAll('[data-reltab]').forEach(el=>el.addEventListener('click', ()=>{ relatTab=el.dataset.reltab; render(); }));
+  document.getElementById('relatPrev')?.addEventListener('click', ()=>{ if(relatTab==='semanal') relatSemana=addDays(relatSemana,-7); else relatMes = metaStepMonth(relatMes,-1); render(); });
+  document.getElementById('relatNext')?.addEventListener('click', ()=>{ if(relatTab==='semanal') relatSemana=addDays(relatSemana,7); else relatMes = metaStepMonth(relatMes,1); render(); });
+  document.getElementById('relatHoje')?.addEventListener('click', ()=>{ if(relatTab==='semanal') relatSemana=segundaDe(todayISO()); else relatMes = todayISO().slice(0,7); render(); });
+  if(state.view==='relatorios' && relatTab!=='reunioes') relatorioTabHandlers();
   document.querySelectorAll('[data-mes-pick]').forEach(btn=>{
     const k = btn.dataset.mesPick, inp = document.getElementById('mesInput_'+k);
     btn.addEventListener('click', ()=>{ try{ inp.showPicker ? inp.showPicker() : inp.focus(); }catch(e){ inp.focus(); } });
@@ -5892,10 +6230,19 @@ function attachViewHandlers(){
     agendaFilters[el.dataset.fx] = el.value; render();
     setTimeout(()=>{ const f=document.querySelector(`[data-fx="${el.dataset.fx}"]`); if(f){ f.focus(); f.setSelectionRange(f.value.length,f.value.length);} },0);
   }));
+  document.querySelectorAll('[data-go]').forEach(el=>{
+    const ir = ()=>{ const [v,st] = el.dataset.go.split(':');
+      if(v==='agenda'){ agendaViewMode='lista'; agendaFilters = {tutor:'',animal:'',data:'',status:st||'',tipo:'',cidade:'',modoData:'agendamento',todos:false}; }
+      if(v==='contatos'){ contatosFilters = {status:st||'', motivo:'', tipo:'', q:'', todos:false}; }
+      goTo(v); };
+    el.addEventListener('click', ir);
+    el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); ir(); } });
+  });
   document.querySelectorAll('[data-agstatus]').forEach(el=>el.addEventListener('click', ()=>{ agendaFilters.status=el.dataset.agstatus; render(); }));
   document.getElementById('clearAgendaFx')?.addEventListener('click', ()=>{ agendaFilters={tutor:'',animal:'',data:'',status:'',tipo:'',cidade:'',modoData:agendaFilters.modoData,todos:agendaFilters.todos}; render(); });
   document.querySelectorAll('[data-agenda-view]').forEach(el=>el.addEventListener('click', ()=>{ agendaViewMode=el.dataset.agendaView; render(); }));
   document.querySelectorAll('[data-cal-dia]').forEach(el=>el.addEventListener('click', ()=>{ abrirDiaCalendario(el.dataset.calDia); }));
+  document.getElementById('agendaUlt7')?.addEventListener('click', ()=>{ agendaFilters.ult7=!agendaFilters.ult7; render(); });
   document.getElementById('agendaTodosPeriodos')?.addEventListener('change', e=>{ agendaFilters.todos = e.target.checked; render(); });
   document.getElementById('novoAgendamento')?.addEventListener('click', ()=>formAgendamento());
 
@@ -5934,7 +6281,11 @@ function attachViewHandlers(){
     contatosFilters.q = e.target.value; render();
     setTimeout(()=>{ const f=document.getElementById('contatosBusca'); if(f){ f.focus(); f.setSelectionRange(f.value.length,f.value.length); } },0);
   });
-  document.getElementById('contatosTodosPeriodos')?.addEventListener('change', e=>{ contatosFilters.todos = e.target.checked; render(); });
+  document.getElementById('contatosUlt7')?.addEventListener('click', ()=>{ contatosFilters.ult7=!contatosFilters.ult7; contatosFilters.de=''; contatosFilters.ate=''; render(); });
+  document.getElementById('contatosLimpaIntervalo')?.addEventListener('click', ()=>{ contatosFilters.de=''; contatosFilters.ate=''; render(); });
+  document.getElementById('semanasRecBtn')?.addEventListener('click', ()=>{ semanasRecolhido=!semanasRecolhido; try{ localStorage.setItem('olh_semanasRec', semanasRecolhido?'1':'0'); }catch(e){} render(); });
+  document.querySelectorAll('[data-semana-de]').forEach(el=>el.addEventListener('click', ()=>{ contatosFilters.ult7=false; contatosFilters.de=el.dataset.semanaDe; contatosFilters.ate=el.dataset.semanaAte; render(); }));
+  document.getElementById('contatosTodosPeriodos')?.addEventListener('click', ()=>{ contatosFilters.todos = !contatosFilters.todos; if(contatosFilters.todos){ contatosFilters.ult7=false; contatosFilters.de=''; contatosFilters.ate=''; } render(); });
   document.querySelectorAll('[data-desmtipo]').forEach(el=>el.addEventListener('click', ()=>{ desmarcacoesFilters.tipo=el.dataset.desmtipo; render(); }));
   document.getElementById('desmBusca')?.addEventListener('input', e=>{
     desmarcacoesFilters.q=e.target.value; render();
