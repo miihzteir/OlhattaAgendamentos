@@ -41,6 +41,11 @@ button, .btn, .chip-btn, .pill-muted, .tag, .nav-badge{overflow-wrap:normal; wor
 input, select, textarea, button{max-width:100%;}
 img, svg, video{max-width:100%;}
 .grid > *, .view > *, .view-head > *, .card > *{min-width:0;}
+/* linhas de tabela com a mesma altura; cards lado a lado com a mesma altura */
+.table-wrap tbody tr{height:52px;}
+.grid{align-items:stretch;}
+.grid > .card, .grid > .stat-card{height:100%;}
+.table-wrap, .rolagem-lista, .pend-list{-webkit-overflow-scrolling:touch; overscroll-behavior:auto;}
 /* tabelas que crescem: rolagem própria em vez de esticar a tela */
 .table-wrap{max-width:100%; overflow-x:auto;}
 .table-wrap{max-height:72vh; overflow-y:auto;}
@@ -1024,6 +1029,33 @@ function confirmarSairSemSalvarAnotacao(depois){
   document.getElementById('btnSimSalvarSair').addEventListener('click', ()=>{ salvarAnotacaoAtual(false); closeModal(); depois(); });
 }
 const scrollPorTela = {};
+const ROTA_SUB = {
+  clientes:{get:()=>clientesTab!=='tutores'?clientesTab:'', set:v=>{clientesTab=v==='animais'?'animais':'tutores';}},
+  notasfiscais:{get:()=>notasFiscaisTab!=='notas'?notasFiscaisTab:'', set:v=>{notasFiscaisTab=v==='categorias'?'categorias':'notas';}},
+  agenda:{get:()=>agendaViewMode!=='calendario'?agendaViewMode:'', set:v=>{agendaViewMode=v==='lista'?'lista':'calendario';}},
+  avaliacoes:{get:()=>avaliacoesFiltro||'', set:v=>{avaliacoesFiltro=['vouPedir','aguardando','avaliou','naoAvaliou'].includes(v)?v:'';}},
+  contatos:{get:()=>({'Aguardando':'aguardando','Agendado':'agendado','Não agendado':'nao-agendado'})[contatosFilters.status]||'', set:v=>{contatosFilters.status=({'aguardando':'Aguardando','agendado':'Agendado','nao-agendado':'Não agendado'})[v]||'';}}
+};
+function rotaAtual(){
+  const sub = ROTA_SUB[state.view] ? ROTA_SUB[state.view].get() : '';
+  return '#/'+state.view+(sub?'/'+sub:'');
+}
+let __aplicandoRota = false;
+function aplicarRota(hash){
+  const m = /^#\/([a-z]+)(?:\/([A-Za-z-]+))?/.exec(hash||'');
+  if(!m || !VIEWS.some(v=>v.id===m[1])) return false;
+  __aplicandoRota = true;
+  try{
+    if(ROTA_SUB[m[1]]) ROTA_SUB[m[1]].set(m[2]||'');
+    goTo(m[1], {fromPop:true});
+  } finally { __aplicandoRota = false; }
+  return true;
+}
+function sincronizarRota(){
+  if(!window.__histPronto || __aplicandoRota) return;
+  const r = rotaAtual();
+  if(location.hash!==r){ try{ history.pushState({olh:1}, '', r); }catch(e){} }
+}
 function goTo(viewId, opts){
   opts = opts||{};
   if(state.view==='pendencias' && pendenciasDirty && viewId!=='pendencias'){
@@ -1032,7 +1064,6 @@ function goTo(viewId, opts){
   }
   const mudou = viewId!==state.view;
   scrollPorTela[state.view] = window.scrollY;
-  if(mudou && !opts.fromPop && window.__histPronto) histPushView(viewId);
   state.view = viewId; state.drawer=null;
   renderNav();
   const v = VIEWS.find(x=>x.id===viewId);
@@ -1413,6 +1444,7 @@ function render(){
   attachViewHandlers();
   renderUserSelect();
   if(Math.abs(window.scrollY - yAntes) > 2) window.scrollTo(0, yAntes);
+  sincronizarRota();
 }
 
 /* =========================================================
@@ -1738,7 +1770,7 @@ function renderDashboard(){
       return `<div style="display:flex; flex-wrap:wrap; gap:8px;">
         ${recentes.map(r=>`
           <span class="pill-muted rowlink" style="cursor:pointer;" ${r.tipo==='Tutor'?`data-edit-tutor-recente="${r.item.id}"`:`data-edit-animal-recente="${r.item.id}"`}>
-            ${r.tipo==='Tutor'?ICONS.paw:'🐾'} ${r.item.nome}${r.tipo==='Tutor'&&r.item.codigo?' #'+r.item.codigo:''} <span style="opacity:.6;">· ${r.tipo}</span>
+            ${r.tipo==='Tutor'?ICONS.paw:ICONS.paw} ${r.item.nome}${r.tipo==='Tutor'&&r.item.codigo?' #'+r.item.codigo:''} <span style="opacity:.6;">· ${r.tipo}</span>
           </span>`).join('')}
       </div>`;
     })()}
@@ -2148,7 +2180,7 @@ function abrirDiaCalendario(dataStr){
         <div class="pend-row" style="align-items:center; gap:8px;">
           <div class="rowlink" data-open-ag-modal="${a.id}" style="flex:1; display:flex; align-items:center; gap:8px; cursor:pointer;">
             <span class="pend-dot" style="background:${agColor(a)};"></span>
-            <span><strong>${a.horario}${a.horarioFim?' até '+a.horarioFim:''}</strong> ${agTutorNome(a)} · ${agAnimalNome(a)}${agSemCadastro(a)?' ⚠':''} — ${a.tipo}${a.clinica?' - '+a.clinica:''}${(a.profissionais||[]).length?' com '+a.profissionais.join(', '):''} · ${badge(a.status)}</span>
+            <span><strong>${a.horario}${a.horarioFim?' até '+a.horarioFim:''}</strong> ${agTutorNome(a)} · ${agAnimalNome(a)}${agSemCadastro(a)?' (sem cadastro)':''} — ${a.tipo}${a.clinica?' - '+a.clinica:''}${(a.profissionais||[]).length?' com '+a.profissionais.join(', '):''} · ${badge(a.status)}</span>
           </div>
           ${!['Confirmado','Realizado'].includes(a.status)?`<button class="btn btn-secondary btn-sm" data-confirmar-modal="${a.id}" title="Marcar como confirmado">${ICONS.check} Confirmar</button>`:''}
           ${(tutorById(a.tutorId)?.telefone||a.telefoneAvulso)?`<a href="${linkWhatsappConfirmacao(a)}" target="_blank" rel="noopener" class="icon-btn" title="Confirmar por WhatsApp" style="color:#25D366;">${ICONS.check}</a>`:''}
@@ -2271,7 +2303,7 @@ function renderAgenda(){
         });
         return grupos.map(grupo=>grupo.map((a,i)=>`
         <tr class="rowlink" data-open-ag="${a.id}">
-          ${i===0?`<td rowspan="${grupo.length}">${fmtDate(a.data)}</td><td rowspan="${grupo.length}"><strong>${a.horario}</strong></td><td rowspan="${grupo.length}">${agTutorNome(a)}${agSemCadastro(a)?` <span class="pill-muted" style="background:var(--st-aguardando-bg); color:var(--st-aguardando);">⚠ sem cadastro</span>`:''}</td>`:''}
+          ${i===0?`<td rowspan="${grupo.length}">${fmtDate(a.data)}</td><td rowspan="${grupo.length}"><strong>${a.horario}</strong></td><td rowspan="${grupo.length}">${agTutorNome(a)}${agSemCadastro(a)?` <span class="pill-muted" style="background:var(--st-aguardando-bg); color:var(--st-aguardando);">sem cadastro</span>`:''}</td>`:''}
           <td>${agAnimalNome(a)}</td>
           <td>${tipoPill(a.tipo)}${a.cidade?`<br><span class="pill-muted" style="margin-top:3px; display:inline-block;">${a.cidade}${a.clinica?' · '+a.clinica:''}</span>`:''}</td>
           <td>${badge(a.status)}${(a.status==='Reagendado' && a.reagendadoPara)?`<br><span class="pill" style="margin-top:3px; display:inline-block;">Novo: ${fmtDate(a.reagendadoPara)}</span>`:''}</td>
@@ -2651,7 +2683,7 @@ function renderMetas(){
       let status = 'Sem meta definida para este mês';
       let statusColor = 'var(--ink-faint)';
       if(meta){
-        if(supermeta && real>=supermeta){ status='Supermeta batida! 🎉'; statusColor='var(--st-realizado)'; }
+        if(supermeta && real>=supermeta){ status='Supermeta batida!'; statusColor='var(--st-realizado)'; }
         else if(real>=meta){ status='Meta batida!'; statusColor='var(--st-realizado)'; }
         else { status='Meta em andamento'; statusColor='var(--brown-dark)'; }
       }
@@ -3613,7 +3645,7 @@ function renderAvaliacoes(){
           <td>
             ${a.status==='Vou pedir'?`<button class="btn btn-secondary btn-sm" data-marcar-ja-pedi="${a.id}">Marcar "Já pedi"</button>`
               : a.avaliou===null?`<div style="display:flex; gap:6px;"><button class="btn btn-secondary btn-sm" data-marcar-avaliou="${a.id}" data-valor="nao">Ainda não</button><button class="btn btn-primary btn-sm" data-marcar-avaliou="${a.id}" data-valor="sim">Avaliou</button></div>`
-              : a.avaliou? `<div style="display:flex; align-items:center; gap:8px;"><span class="badge st-Realizado">Sim ⭐</span>${a.link?`<a href="${a.link}" target="_blank" rel="noopener" style="font-size:12px;">Ver avaliação</a>`:`<button class="btn btn-secondary btn-sm" data-add-link-avaliacao="${a.id}">+ Link</button>`}</div>` : `<span class="badge st-Cancelado">Não</span>`}
+              : a.avaliou? `<div style="display:flex; align-items:center; gap:8px;"><span class="badge st-Realizado">Sim</span>${a.link?`<a href="${a.link}" target="_blank" rel="noopener" style="font-size:12px;">Ver avaliação</a>`:`<button class="btn btn-secondary btn-sm" data-add-link-avaliacao="${a.id}">+ Link</button>`}</div>` : `<span class="badge st-Cancelado">Não</span>`}
           </td>
           <td style="max-width:180px;">
             <div style="display:flex; align-items:center; gap:6px;">
@@ -3680,7 +3712,7 @@ function renderPendencias(){
         <button type="button" class="icon-btn" id="pendenciasFontIncBtn" title="Aumentar letra" style="font-weight:800;">A+</button>
         <button type="button" class="icon-btn" id="pendenciasFontDecBtn" title="Diminuir letra" style="font-weight:800; font-size:11px;">A-</button>
         <label class="icon-btn" title="Cor do texto" style="cursor:pointer; padding:4px;">
-          🎨<input type="color" id="pendenciasColorInput" style="width:0; height:0; opacity:0; position:absolute;">
+          ${ICONS.sparkle}<input type="color" id="pendenciasColorInput" style="width:0; height:0; opacity:0; position:absolute;">
         </label>
         <span style="width:1px; height:20px; background:var(--line); margin:0 2px;"></span>
         <button type="button" class="icon-btn" id="pendenciasResetBtn" title="Limpar formatação (voltar ao padrão)" style="font-size:11px; font-weight:700;">Limpar</button>
@@ -6050,6 +6082,7 @@ function showApp(){
   hideInitialLoader();
   document.getElementById('loginScreen').classList.add('hide');
   document.getElementById('app').classList.remove('app-hidden');
+  if(!window.__histPronto) aplicarRota(location.hash);
   renderNav(); render(); renderUserSelect(); renderQuickLinks();
   iniciarHistorico();
 }
@@ -6199,11 +6232,10 @@ setTimeout(()=>{
 ========================================================= */
 const __camadas = [];   // pilha de janelas/gavetas abertas
 let __navSkip = 0;
-function histPushView(viewId){ try{ history.pushState({olh:1, view:viewId}, ''); }catch(e){} }
 function iniciarHistorico(){
   if(window.__histPronto) return;
   window.__histPronto = true;
-  try{ history.replaceState({olh:1, view:state.view}, ''); }catch(e){}
+  try{ history.replaceState({olh:1}, '', rotaAtual()); }catch(e){}
 }
 function observarCamada(id, tag){
   const el = document.getElementById(id); if(!el) return;
@@ -6232,9 +6264,7 @@ window.addEventListener('popstate', ev=>{
     else document.getElementById('drawerRoot').innerHTML='';
     return;
   }
-  const v = ev.state && ev.state.view;
-  if(v && v!==state.view) goTo(v, {fromPop:true});
-  else if(!v){ try{ history.pushState({olh:1, view:state.view}, ''); }catch(e){} } // evita sair por engano
+  if(!aplicarRota(location.hash)){ try{ history.replaceState({olh:1}, '', rotaAtual()); }catch(e){} }
 });
 let __scrollT; window.addEventListener('scroll', ()=>{ clearTimeout(__scrollT); __scrollT=setTimeout(()=>{ scrollPorTela[state.view]=window.scrollY; },120); }, {passive:true});
 
