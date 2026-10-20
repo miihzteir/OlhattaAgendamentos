@@ -1658,7 +1658,7 @@ function renderDashboard(){
     if(t) map[norm].tutores.add(t.nome);
   }
   const motivosMap = {};
-  DB.contatos.forEach(c=>{ addMotivo(motivosMap, c.motivoNaoAgendamento, c.tutorId); });
+  DB.contatos.forEach(c=>{ if(c.status==='Não agendado' && !c.mesmoTelefonema) addMotivo(motivosMap, c.motivoNaoAgendamento, c.tutorId); });
   const motivosArr = Object.values(motivosMap).sort((a,b)=>b.count-a.count).map(m=>[m.label, m.count, [...m.tutores]]);
   const motivosDesmMap = {};
   DB.agendamentos.forEach(a=>{ if(a.motivoStatus && ['Desmarcado','Cancelado'].includes(a.status)) addMotivo(motivosDesmMap, a.motivoStatus, a.tutorId); });
@@ -3612,6 +3612,7 @@ function relVar(a,b){
   const p = Math.min(100, Math.round(Math.abs(a-b)/b*100));
   return a>b ? {txt:'▲ '+p+'%', cls:'up', dir:1} : {txt:'▼ '+p+'%', cls:'down', dir:-1};
 }
+function relTopMotivos(A,n){ return Object.entries(A.motivosNao).sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0],'pt-BR')).slice(0,n); }
 function relDif(a,b){
   if(a===b) return 'igual';
   if(b===0) return 'novo';
@@ -3630,7 +3631,7 @@ function relResumoTexto(P, A, B){
   if(A.naoAgendaram) nao += `, sendo ${A.naoCons} de consulta, ${A.naoAcomp} de acompanhamento, ${A.naoCir} de cirurgia${A.naoOutros?` e ${A.naoOutros} sem tipo`:''}`;
   nao += `. ${cmp(A.naoAgendaram,B.naoAgendaram)}`;
   f.push(L('Não agendaram', nao));
-  const top = Object.entries(A.motivosNao).sort((x,y)=>y[1]-x[1]).slice(0,3);
+  const top = relTopMotivos(A,3);
   if(top.length) f.push(L('Principais motivos', top.map(([m,n])=>`${m} (${n})`).join(', ')+'.'));
   return f;
 }
@@ -3645,8 +3646,7 @@ function relSanitiza(html){
 function relTabelaMeses(P){
   const meses=[]; let mk=P.mesRef; for(let i=0;i<6;i++){ meses.unshift(mk); mk=metaStepMonth(mk,-1); }
   const M = meses.map(m=>metricasPeriodo(m+'-01', ultimoDiaMes(m)));
-  const tot = {}; M.forEach(x=>Object.entries(x.motivosNao).forEach(([k,v])=>tot[k]=(tot[k]||0)+v));
-  const top5 = Object.entries(tot).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x[0]);
+  const top5 = relTopMotivos(metricasPeriodo(P.ini,P.fim),5).map(x=>x[0]);
   const cel = (i,v)=>`<td class="${meses[i]===P.mesRef?'cur':''}">${v}</td>`;
   const linha = (n,fn,cls)=>`<tr class="${cls||''}"><td>${n}</td>${M.map((x,i)=>cel(i,fn(x))).join('')}</tr>`;
   const sec = n=>`<tr class="sec"><td colspan="${meses.length+1}">${n}</td></tr>`;
@@ -3689,8 +3689,8 @@ function renderRelatorioAuto(){
   const resumo = relResumoTexto(P,A,B);
   const _tiposDet = ['Consulta','Cirurgia','Acompanhamento'];
   const _det = A.detalhes.filter(d=>!relDetTipo || d.atend===relDetTipo);
-  const _mot = {}; _det.forEach(d=>{ if(d.motivo) _mot[d.motivo]=(_mot[d.motivo]||0)+1; });
-  const motivosOrd = Object.entries(_mot).sort((x,y)=>y[1]-x[1]);
+  const _contaMot = f=>{ const m={}; _det.filter(f).forEach(d=>{ if(d.motivo) m[d.motivo]=(m[d.motivo]||0)+1; }); return Object.entries(m).sort((x,y)=>y[1]-x[1]); };
+  const motNao = _contaMot(d=>d.tipo==='Não agendou'), motDesm = _contaMot(d=>d.tipo!=='Não agendou');
   return `
   <div class="rel-area">
   <div class="rel-print-head">
@@ -3719,7 +3719,8 @@ function renderRelatorioAuto(){
       <button type="button" class="chip-btn ${!relDetTipo?'on':''}" data-reldettipo="">Todos ${A.detalhes.length}</button>
       ${_tiposDet.map(t=>`<button type="button" class="chip-btn ${relDetTipo===t?'on':''}" data-reldettipo="${t}">${t} ${A.detalhes.filter(d=>d.atend===t).length}</button>`).join('')}
     </div>
-    ${motivosOrd.length?`<div class="rel-motivos">${motivosOrd.map(([m,n])=>`<span class="pill-muted">${m} <strong>${n}</strong></span>`).join('')}</div>`:''}
+    ${motNao.length?`<div class="hint" style="margin-bottom:6px;">Motivos de não agendamento</div><div class="rel-motivos">${motNao.map(([m,n])=>`<span class="pill-muted">${m} <strong>${n}</strong></span>`).join('')}</div>`:''}
+    ${motDesm.length?`<div class="hint" style="margin-bottom:6px;">Motivos de desmarque e cancelamento</div><div class="rel-motivos">${motDesm.map(([m,n])=>`<span class="pill-muted">${m} <strong>${n}</strong></span>`).join('')}</div>`:''}
     ${_det.length?`<div class="rel-detalhes rolagem-lista">${_det.map(d=>`
       <div class="rel-det">
         <div class="rel-det-top"><strong>${d.atend}${d.animal?' · '+d.animal:''}</strong><span class="pill-muted">${d.tipo}${d.motivo?' · '+d.motivo:' · sem motivo'}</span><span class="rel-det-data">${fmtDate(d.data)}${d.hora?' '+d.hora:''}</span></div>
