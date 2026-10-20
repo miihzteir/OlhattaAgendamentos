@@ -4934,6 +4934,13 @@ function formAgendamento(ag, presets){
     const an = data.animalId ? animalById(data.animalId) : {nome: data.animalAvulso};
     if(editing){
       const prevStatus = ag.status;
+      if(['Cancelado','Desmarcado'].includes(data.status) && prevStatus!==data.status){
+        const novoStatus = data.status; data.status = prevStatus;
+        Object.assign(ag, data, {alteradoEm:new Date().toISOString()});
+        logAction(`editou o agendamento de ${an?.nome||'—'}`); saveDB();
+        abrirMotivoStatusModal(ag, novoStatus);
+        return;
+      }
       Object.assign(ag, data, {alteradoEm:new Date().toISOString()});
       if(['Cancelado','Desmarcado'].includes(data.status) && prevStatus!==data.status){ ag.dataOriginal = ag.dataOriginal||ag.data; }
       if(prevStatus!==data.status) logAction(`alterou o status do agendamento de ${an?.nome||'—'} para ${statusLabel(data.status)}`);
@@ -5249,11 +5256,7 @@ function openQuickAgSearch(){
     el.querySelectorAll('[data-qa-status]').forEach(btn=>btn.addEventListener('click', ()=>{
       const ag = DB.agendamentos.find(x=>x.id===btn.dataset.qaStatus);
       const status = btn.dataset.status;
-      if(['Desmarcado','Cancelado'].includes(status)){
-        const motivo = prompt('Motivo (opcional):','');
-        ag.dataOriginal = ag.dataOriginal || ag.data;
-        ag.motivoStatus = motivo||'';
-      }
+      if(['Desmarcado','Cancelado'].includes(status)){ abrirMotivoStatusModal(ag, status); return; }
       ag.status = status; ag.alteradoEm = new Date().toISOString();
       logAction(`alterou o status do agendamento de ${animalById(ag.animalId)?.nome||'—'} para ${statusLabel(status)}`);
       saveDB(); toast('Status atualizado: '+statusLabel(status));
