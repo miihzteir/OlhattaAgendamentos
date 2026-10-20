@@ -93,10 +93,22 @@ a, button, [role=button], .rowlink, .navlink{-webkit-touch-callout:none; touch-a
 .rel-tab th:first-child, .rel-tab td:first-child{text-align:left;}
 .rel-tab thead th{background:#5C7355; color:#fff;}
 .rel-tab tr.mot td{color:#555;}
+.rel-tab tr.sec td{background:#F3F1E8; font-weight:800; font-size:11.5px; letter-spacing:.04em; text-transform:uppercase; color:#6B6E63; text-align:left !important;}
+.rel-tab td.cur{box-shadow:inset 2px 0 0 #5C7355, inset -2px 0 0 #5C7355;}
 .rel-tab thead th.cur{background:#33452F;}
 .rel-tab td.cur{background:#E9EFE2; font-weight:700; color:#2E3A2A;}
 @media print{
-  @page{margin:16mm;}
+  @page{size:A4; margin:14mm;}
+  body.imprimindo-rel, body.imprimindo-rel html{overflow:visible !important;}
+  html:has(body.imprimindo-rel){overflow:visible !important; height:auto !important;}
+  body.imprimindo-rel #app{display:block !important; min-height:0 !important; max-width:none !important; width:auto !important;}
+  body.imprimindo-rel main{display:block !important; width:auto !important; max-width:none !important; overflow:visible !important;}
+  body.imprimindo-rel .view, body.imprimindo-rel .rel-area{width:auto !important; max-width:none !important; overflow:visible !important; height:auto !important;}
+  body.imprimindo-rel .rel-tab{width:100% !important; table-layout:fixed; font-size:11.5px;}
+  body.imprimindo-rel .rel-tab th, body.imprimindo-rel .rel-tab td{padding:6px 5px; overflow-wrap:break-word;}
+  body.imprimindo-rel .rel-tab th:first-child, body.imprimindo-rel .rel-tab td:first-child{width:34%;}
+  body.imprimindo-rel .rel-tab tr{break-inside:avoid;}
+  body.imprimindo-rel .rel-texto p{break-inside:avoid; margin:0 0 6px;}
   body.imprimindo-rel{background:#fff !important;}
   body.imprimindo-rel .sidebar, body.imprimindo-rel .topbar, body.imprimindo-rel .sidebar-scrim, body.imprimindo-rel #modalRoot, body.imprimindo-rel #drawerRoot, body.imprimindo-rel .mobile-toggle, body.imprimindo-rel .toast, body.imprimindo-rel .rel-noprint{display:none !important;}
   body.imprimindo-rel main{margin:0 !important;}
@@ -3569,6 +3581,7 @@ function metricasPeriodo(ini,fim){
   const motivos = {};
   const add = m=>{ if(m) motivos[m]=(motivos[m]||0)+1; };
   desm.forEach(a=>add(a.motivoStatus)); nao.forEach(c=>add(c.motivoNaoAgendamento));
+  const motivosNao = {}; nao.forEach(c=>{ if(c.motivoNaoAgendamento) motivosNao[c.motivoNaoAgendamento]=(motivosNao[c.motivoNaoAgendamento]||0)+1; });
   const detalhes = [];
   desm.forEach(a=>detalhes.push({data:a.data, hora:a.horario||'', atend:a.tipo||'Sem tipo', animal:a.animalId?(animalById(a.animalId)?.nome||''):(a.animalAvulso||''), quem:agTutorNome(a), tel:(a.tutorId?tutorById(a.tutorId)?.telefone:a.telefoneAvulso)||'', tipo:a.status==='Cancelado'?'Cancelou':'Desmarcou', motivo:a.motivoStatus||'', texto:a.observacoes||''}));
   nao.forEach(c=>detalhes.push({data:c.dataContato, hora:'', atend:c.tipoAtendimento||'Sem tipo', animal:c.animalId?(animalById(c.animalId)?.nome||''):(c.animalAvulso||''), quem:c.tutorId?(tutorById(c.tutorId)?.nome||''):(c.nomeAvulso||''), tel:c.telefone||(c.tutorId?tutorById(c.tutorId)?.telefone:'')||'', tipo:'Não agendou', motivo:c.motivoNaoAgendamento||'', texto:c.observacoes||''}));
@@ -3578,7 +3591,13 @@ function metricasPeriodo(ini,fim){
     cliente: cts.filter(c=>c.origem!=='Realizado').length,
     nos: cts.filter(c=>c.origem==='Realizado').length,
     agendados: ags.filter(valido).length,
-    consultas: ags.filter(a=>valido(a) && ['Consulta','Acompanhamento'].includes(a.tipo)).length,
+    consultas: ags.filter(a=>valido(a) && a.tipo==='Consulta').length,
+    acompanhamentos: ags.filter(a=>valido(a) && a.tipo==='Acompanhamento').length,
+    naoCons: nao.filter(c=>c.tipoAtendimento==='Consulta').length,
+    naoAcomp: nao.filter(c=>c.tipoAtendimento==='Acompanhamento').length,
+    naoCir: nao.filter(c=>c.tipoAtendimento==='Cirurgia').length,
+    naoOutros: nao.filter(c=>!['Consulta','Acompanhamento','Cirurgia'].includes(c.tipoAtendimento)).length,
+    motivosNao,
     cirurgias: ags.filter(a=>valido(a) && a.tipo==='Cirurgia').length,
     realizados: ags.filter(a=>a.status==='Realizado').length,
     desmarques: desm.length,
@@ -3593,22 +3612,27 @@ function relVar(a,b){
   const p = Math.min(100, Math.round(Math.abs(a-b)/b*100));
   return a>b ? {txt:'▲ '+p+'%', cls:'up', dir:1} : {txt:'▼ '+p+'%', cls:'down', dir:-1};
 }
-function relComp(a,b,ant,emAnt){
-  if(a===b) return `igual a ${ant}, que também teve ${b}`;
-  if(b===0) return `sem nenhum ${emAnt}`;
-  const p = Math.min(100, Math.round(Math.abs(a-b)/b*100));
-  return `${p}% ${a>b?'a mais':'a menos'} que ${ant}, que teve ${b}`;
+function relDif(a,b){
+  if(a===b) return 'igual';
+  if(b===0) return 'novo';
+  return Math.min(999,Math.round(Math.abs(a-b)/b*100))+'% '+(a>b?'a mais':'a menos');
 }
 function relResumoTexto(P, A, B){
-  const ant = P.anterior, frases=[];
-  frases.push(`Tivemos ${relPl(A.contatos,'contato','contatos')}, ${relComp(A.contatos,B.contatos,ant,P.emAnt)}. Desses, ${A.cliente} ${A.cliente===1?'veio do próprio cliente':'vieram do próprio cliente'} e ${A.nos} ${A.nos===1?'partiu':'partiram'} de nós.`);
-  frases.push(`Foram marcados ${relPl(A.agendados,'atendimento','atendimentos')}, ${relComp(A.agendados,B.agendados,ant,P.emAnt)}, sendo ${relPl(A.consultas,'consulta ou acompanhamento','consultas ou acompanhamentos')} e ${relPl(A.cirurgias,'cirurgia','cirurgias')}.`);
-  const ev = (a,b,umS,umP,nenhum)=> a===0 ? `${nenhum}${b>0?`, contra ${b} ${P.emAnt}`:''}` : `${relPl(a,umS,umP)}, ${relComp(a,b,ant,P.emAnt)}`;
-  let f = `${A.desmarques===0?'':'Houve '}${ev(A.desmarques,B.desmarques,'desmarque','desmarques','Não houve desmarques')} e ${A.naoAgendaram===0?'nenhum contato deixou de agendar':ev(A.naoAgendaram,B.naoAgendaram,'contato que não agendou','contatos que não agendaram','')}.`;
-  const top = Object.entries(A.motivos).sort((x,y)=>y[1]-x[1]).slice(0,3).map(x=>x[0]);
-  if(top.length) f += ` Os principais motivos foram ${top.length>1 ? top.slice(0,-1).join(', ')+' e '+top[top.length-1] : top[0]}.`;
-  frases.push(f);
-  return frases;
+  const ant = P.anterior.replace(/^(o|a) /,'').replace(/^./,c=>c.toUpperCase());
+  const L = (rot,txt)=>`<strong>${rot}:</strong> ${txt}`;
+  const cmp = (a,b)=>`${ant}: ${b} (${relDif(a,b)}).`;
+  const f = [];
+  f.push(L('Contatos', `${A.contatos}, sendo ${A.cliente} do cliente e ${A.nos} nossos. ${cmp(A.contatos,B.contatos)}`));
+  f.push(L('Agendados', `${relPl(A.consultas,'consulta','consultas')}, ${relPl(A.acompanhamentos,'acompanhamento','acompanhamentos')} e ${relPl(A.cirurgias,'cirurgia','cirurgias')}. ${ant}: ${B.consultas}, ${B.acompanhamentos} e ${B.cirurgias}.`));
+  f.push(L('Realizados', `${A.realizados}. ${cmp(A.realizados,B.realizados)}`));
+  f.push(L('Desmarques', `${A.desmarques}. ${cmp(A.desmarques,B.desmarques)}`));
+  let nao = `${A.naoAgendaram}`;
+  if(A.naoAgendaram) nao += `, sendo ${A.naoCons} de consulta, ${A.naoAcomp} de acompanhamento, ${A.naoCir} de cirurgia${A.naoOutros?` e ${A.naoOutros} sem tipo`:''}`;
+  nao += `. ${cmp(A.naoAgendaram,B.naoAgendaram)}`;
+  f.push(L('Não agendaram', nao));
+  const top = Object.entries(A.motivosNao).sort((x,y)=>y[1]-x[1]).slice(0,3);
+  if(top.length) f.push(L('Principais motivos', top.map(([m,n])=>`${m} (${n})`).join(', ')+'.'));
+  return f;
 }
 function relSanitiza(html){
   const doc = new DOMParser().parseFromString('<div>'+(html||'')+'</div>','text/html');
@@ -3621,11 +3645,22 @@ function relSanitiza(html){
 function relTabelaMeses(P){
   const meses=[]; let mk=P.mesRef; for(let i=0;i<6;i++){ meses.unshift(mk); mk=metaStepMonth(mk,-1); }
   const M = meses.map(m=>metricasPeriodo(m+'-01', ultimoDiaMes(m)));
-  const motivos = [...new Set(M.flatMap(x=>Object.keys(x.motivos)))].sort();
-  const linhas = [['Total de contatos','contatos'],['Total de agendamentos','agendados'],['Consultas e acompanhamentos','consultas'],['Cirurgias','cirurgias'],['Desmarques','desmarques'],['Não agendamentos','naoAgendaram']];
+  const tot = {}; M.forEach(x=>Object.entries(x.motivosNao).forEach(([k,v])=>tot[k]=(tot[k]||0)+v));
+  const top5 = Object.entries(tot).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x[0]);
+  const cel = (i,v)=>`<td class="${meses[i]===P.mesRef?'cur':''}">${v}</td>`;
+  const linha = (n,fn,cls)=>`<tr class="${cls||''}"><td>${n}</td>${M.map((x,i)=>cel(i,fn(x))).join('')}</tr>`;
+  const sec = n=>`<tr class="sec"><td colspan="${meses.length+1}">${n}</td></tr>`;
+  const temOutros = M.some(x=>x.naoOutros>0);
   return `<table class="rel-tab"><thead><tr><th>Indicador</th>${meses.map(m=>`<th class="${m===P.mesRef?'cur':''}">${MESES_ABREV[+m.slice(5)-1]}/${m.slice(2,4)}</th>`).join('')}</tr></thead><tbody>
-    ${linhas.map(([n,k])=>`<tr><td>${n}</td>${M.map((x,i)=>`<td class="${meses[i]===P.mesRef?'cur':''}">${x[k]}</td>`).join('')}</tr>`).join('')}
-    ${motivos.map(mo=>`<tr class="mot"><td>${mo}</td>${M.map((x,i)=>`<td class="${meses[i]===P.mesRef?'cur':''}">${x.motivos[mo]||0}</td>`).join('')}</tr>`).join('')}
+    ${linha('Total de contatos',x=>x.contatos)}
+    ${sec('Agendados')}
+    ${linha('Consultas',x=>x.consultas)}${linha('Acompanhamentos',x=>x.acompanhamentos)}${linha('Cirurgias',x=>x.cirurgias)}
+    ${sec('Desmarques')}
+    ${linha('Desmarques e cancelamentos',x=>x.desmarques)}
+    ${sec('Não agendados')}
+    ${linha('Consultas',x=>x.naoCons)}${linha('Acompanhamentos',x=>x.naoAcomp)}${linha('Cirurgias',x=>x.naoCir)}${temOutros?linha('Sem tipo',x=>x.naoOutros):''}
+    ${top5.length?sec('Principais motivos de não agendamento'):''}
+    ${top5.map(mo=>linha(mo,x=>x.motivosNao[mo]||0,'mot')).join('')}
   </tbody></table>`;
 }
 function renderRelatorioAuto(){
@@ -3648,7 +3683,7 @@ function renderRelatorioAuto(){
     ${relatSemana!==segundaDe(todayISO())?`<button class="btn btn-secondary btn-sm" id="relatHoje">Semana atual</button>`:''}`;
   const cartoes = [
     ['Contatos','contatos',false],['Vieram do cliente','cliente',false],['Partiram de nós','nos',false],
-    ['Agendamentos','agendados',false],['Consultas e acompanhamentos','consultas',false],['Cirurgias','cirurgias',false],
+    ['Consultas agendadas','consultas',false],['Acompanhamentos agendados','acompanhamentos',false],['Cirurgias agendadas','cirurgias',false],
     ['Realizados','realizados',false],['Desmarques','desmarques',true],['Não agendaram','naoAgendaram',true]
   ];
   const resumo = relResumoTexto(P,A,B);
