@@ -410,6 +410,7 @@ td.est-c, th.est-c{text-align:center;}
     chevron: '<path d="m9 6 6 6-6 6"/>',
     print: '<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>',
     tag: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+    pata: '<circle cx="12" cy="16" r="4"/><circle cx="5" cy="9" r="2"/><circle cx="19" cy="9" r="2"/><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/>',
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
   };
   var ic = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n] || ""}</svg>`;
@@ -1621,6 +1622,201 @@ td.est-c, th.est-c{text-align:center;}
     }, 500);
   }
 
+  // src/v-ficha.js
+  function nfOfSale(s) {
+    const all = DB.notasFiscais || [];
+    return all.find((n) => n.id === s.nfId) || all.find((n) => n.vendaId === s.id) || null;
+  }
+  var isCard = (s) => /cart[aã]o|cr[eé]dito|d[eé]bito/i.test(s && s.payment || "");
+  function nfBadge(n, s) {
+    if (!n)
+      return isCard(s) ? '<span class="badge st-AguardandoConfirmacao">Cartão sem nota</span>' : '<span class="pill-muted">Sem nota</span>';
+    return n.status === "Feita" ? '<span class="badge st-Realizado">NF feita</span>' : '<span class="badge st-AguardandoConfirmacao">NF pendente</span>';
+  }
+  function saleNFBlock(s) {
+    const n = nfOfSale(s);
+    if (n) {
+      const diff = Math.round(((n.valorTotal || 0) - saleNet(s)) * 100) / 100;
+      return `<div class="alert ${n.status === "Feita" ? "alert-sage" : "alert-warn"}" style="margin-bottom:14px;">${ic("receipt")}<div style="flex:1;"><div class="t1">Nota fiscal ${n.status === "Feita" ? "feita" : "pendente"}${n.status === "Feita" && n.dataFeita ? " em " + fmtDate(n.dataFeita) : ""}</div>Valor na nota: <strong>${brl(n.valorTotal)}</strong>${diff ? ` · ${brl(Math.abs(diff))} ${diff < 0 ? "a menos" : "a mais"} que a venda` : ""}
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;"><button class="btn btn-secondary btn-sm" data-est-nf-edit="${n.id}">${ic("edit")} Editar nota</button><button class="btn btn-ghost btn-sm" data-est-nf-open="${n.id}">Abrir em Notas Fiscais</button></div></div></div>`;
+    }
+    if (s.status === "cancelada" || typeof formNotaFiscal !== "function")
+      return "";
+    const cand = s.tutorId ? (DB.notasFiscais || []).filter((x) => x.tutorId === s.tutorId && !x.vendaId) : [];
+    const btns = `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;"><button class="btn ${isCard(s) ? "btn-primary" : "btn-secondary"} btn-sm" data-est-nf-new="${s.id}">${ic("receipt")} Lançar nota fiscal</button>${cand.length ? `<button class="btn btn-ghost btn-sm" data-est-nf-link="${s.id}">Ligar a uma nota já lançada</button>` : ""}</div>`;
+    if (isCard(s))
+      return `<div class="alert alert-warn" style="margin-bottom:14px;">${ic("receipt")}<div style="flex:1;"><div class="t1">Pago no cartão, falta a nota fiscal</div>Os itens e valores já vêm preenchidos e você pode ajustar antes de salvar.${btns}</div></div>`;
+    return `<div style="margin-bottom:14px; padding:10px 12px; border:1px dashed var(--line); border-radius:12px; font-size:13px; color:var(--ink-soft);">Sem nota fiscal. Lance só se o tutor pedir.${btns}</div>`;
+  }
+  function editNF(nfId) {
+    const n = (DB.notasFiscais || []).find((x) => x.id === nfId);
+    if (!n)
+      return toast("Nota fiscal não encontrada");
+    closeDrawer();
+    formNotaFiscal(n);
+  }
+  function openNF(nfId) {
+    closeDrawer();
+    goTo("notasfiscais");
+    setTimeout(() => openNFDrawer(nfId), 60);
+  }
+  function linkExisting(saleId, after) {
+    const s = S.sales.find((x) => x.id === saleId);
+    const cand = (DB.notasFiscais || []).filter((x) => x.tutorId === s.tutorId && !x.vendaId).sort((a, b) => (b.data || "").localeCompare(a.data || ""));
+    closeDrawer();
+    const m = modal("Ligar a uma nota já lançada", `<p class="hint" style="margin:0 0 12px;">Notas de ${esc(s.client || "este cliente")} que ainda não estão ligadas a nenhuma venda.</p>
+    <div class="est-list">${cand.map((n) => `<label class="est-li click" style="margin:0; cursor:pointer;"><input type="radio" name="estNfPick" value="${n.id}" style="width:18px; height:18px; accent-color:var(--sage-dark);"><div class="grow"><b>${fmtDate(n.data)} · ${brl(n.valorTotal)}</b><small>${esc((n.itens || []).map((i) => i.descricao || i.categoria).join(", "))}</small></div>${nfBadge(n, s)}</label>`).join("")}</div><div id="estNfErr"></div>`, `<button class="btn btn-secondary" data-mclose>Cancelar</button><button class="btn btn-primary" id="estNfOk">Ligar</button>`);
+    m.querySelector("#estNfOk").onclick = async () => {
+      const r = m.querySelector("input[name=estNfPick]:checked");
+      if (!r)
+        return m.querySelector("#estNfErr").innerHTML = errBox("Escolha uma nota.");
+      const n = DB.notasFiscais.find((x) => x.id === r.value);
+      n.vendaId = s.id;
+      try {
+        logAction(`ligou a nota fiscal de ${fmtDate(n.data)} à venda nº ${s.number}`);
+      } catch (e) {}
+      saveDB();
+      try {
+        await linkSaleNF(S.store, ctx(), s.id, n.id);
+      } catch (e) {}
+      closeModal();
+      toast("Nota ligada à venda");
+      if (after)
+        after();
+    };
+  }
+  function tutorFinanceHTML(tutorId) {
+    const vendas = S.sales.filter((s) => s.tutorId === tutorId);
+    const ok = vendas.filter((s) => s.status !== "cancelada");
+    const total = ok.reduce((a, s) => a + saleNet(s), 0);
+    const ano = new Date().getFullYear();
+    const noAno = ok.filter((s) => new Date(s.createdAt).getFullYear() === ano).reduce((a, s) => a + saleNet(s), 0);
+    const last = ok[0];
+    const nfs = ok.map(nfOfSale);
+    const feitas = nfs.filter((n) => n && n.status === "Feita").length;
+    const pend = nfs.filter((n) => n && n.status !== "Feita").length;
+    const cartaoSem = ok.filter((x, i) => !nfs[i] && isCard(x)).length;
+    const porAnimal = {};
+    for (const x of ok) {
+      const k = x.animalId || (x.animalName ? "nome:" + x.animalName : "");
+      const o = porAnimal[k] || (porAnimal[k] = { id: x.animalId, nome: x.animalName, v: 0, n: 0, last: 0 });
+      o.v += saleNet(x);
+      o.n++;
+      o.last = Math.max(o.last, x.createdAt);
+    }
+    for (const a of animaisDoTutor(tutorId))
+      if (!porAnimal[a.id])
+        porAnimal[a.id] = { id: a.id, nome: a.nome, v: 0, n: 0, last: 0 };
+    const animaisList = Object.entries(porAnimal).sort((a, b) => b[1].v - a[1].v);
+    const top = {};
+    for (const s of ok)
+      for (const it of s.items) {
+        const q = it.qty - ((s.returnedByKey || {})[it.key] || 0);
+        if (q > 0)
+          top[it.name] = (top[it.name] || 0) + q;
+      }
+    const topList = Object.entries(top).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    return `<div class="section-title">${ic("vendas")} Financeiro</div>
+    ${ok.length ? `<div class="est-kv" style="margin-bottom:10px;">
+      <div class="mini-stat"><div class="n">${brl(total)}</div><div class="l">Total gasto</div></div>
+      <div class="mini-stat"><div class="n">${brl(noAno)}</div><div class="l">Em ${ano}</div></div>
+      <div class="mini-stat"><div class="n">${ok.length} · ${brl(total / ok.length)}</div><div class="l">Compras · ticket médio</div></div>
+      <div class="mini-stat"><div class="n">${fmtD(last.createdAt)}</div><div class="l">Última compra</div></div>
+    </div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:${topList.length ? 10 : 20}px;">${feitas ? `<span class="badge st-Realizado">${feitas} NF feita${feitas > 1 ? "s" : ""}</span>` : ""}${pend ? `<span class="badge st-AguardandoConfirmacao">${pend} NF pendente${pend > 1 ? "s" : ""}</span>` : ""}${cartaoSem ? `<span class="badge st-AguardandoConfirmacao">${cartaoSem} no cartão sem nota</span>` : ""}</div>
+    ${animaisList.length ? `<div style="font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em; margin:4px 0 4px;">Gasto por animal</div>
+    <div class="est-list" style="margin-bottom:10px;">${animaisList.map(([k, o]) => `<div class="est-li ${o.id ? "click" : ""}" ${o.id ? `data-open-animal="${o.id}"` : ""} style="min-height:46px;"><div class="est-thumb">${ic("pata")}</div><div class="grow"><b>${esc(k ? o.id && animalById(o.id) ? animalById(o.id).nome : o.nome : "Sem animal informado")}</b><small>${o.n ? `${o.n} compra${o.n > 1 ? "s" : ""} · última em ${fmtD(o.last)}` : "Nenhuma compra"}</small></div><b style="color:var(--ink); font-size:13.5px;" class="est-num">${brl(o.v)}</b></div>`).join("")}</div>` : ""}
+    ${topList.length ? `<div class="hint" style="margin:0 0 20px;">Mais comprados: ${topList.map(([n, q]) => `${esc(n)} (${numF(q)})`).join(" · ")}</div>` : ""}` : '<div class="hint" style="margin:0 0 20px;">Nenhuma compra registrada.</div>'}`;
+  }
+  function tutorTimelineItems(tutorId) {
+    return S.sales.filter((s) => s.tutorId === tutorId).map((s) => {
+      const n = nfOfSale(s);
+      const f = s.gross > 0 ? s.total / s.gross : 0;
+      const itens = s.items.map((it) => `${numF(it.qty)}× ${esc(it.name)} <span style="color:var(--ink-soft);">${brl(it.unitPrice * it.qty * f)}</span>`).join("<br>");
+      const nfTxt = n ? `<div style="margin-top:4px; font-size:12px; color:var(--ink-soft);">Nota: ${brl(n.valorTotal)}${Math.abs((n.valorTotal || 0) - saleNet(s)) >= 0.01 ? " (valor ajustado)" : ""}</div>` : "";
+      return {
+        date: todayISO(s.createdAt),
+        html: `<div class="tl-item rowlink" data-tl-tipo="compra" data-est-sale="${s.id}"><div class="tl-dot" style="border-color:var(--brown-dark);"></div><div class="tl-body">
+        <div class="tl-head"><span class="tl-data">${fmtD(s.createdAt)}</span><span class="tl-tag">Compra nº ${s.number}</span>${s.status === "cancelada" ? '<span class="badge st-Cancelado">Cancelada</span>' : nfBadge(n, s)}</div>
+        <div class="tl-txt">${itens}<div style="margin-top:4px;"><strong>${brl(s.total)}</strong>${s.discount ? ` <span style="color:var(--ink-soft);">com ${brl(s.discount)} de desconto</span>` : ""} · ${esc(s.payment || "")}${s.animalName ? " · " + esc(s.animalName) : ""}</div>${nfTxt}</div></div></div>`
+      };
+    });
+  }
+  function injectTutor(body, tutorId) {
+    const titles = [...body.querySelectorAll(".section-title")];
+    const animais = titles.find((t) => /Animais/.test(t.textContent));
+    if (animais)
+      animais.insertAdjacentHTML("beforebegin", tutorFinanceHTML(tutorId));
+    else
+      body.insertAdjacentHTML("beforeend", tutorFinanceHTML(tutorId));
+    body.querySelectorAll(".est-li[data-open-animal]").forEach((el) => el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openAnimalDrawer(el.dataset.openAnimal);
+    }));
+    const items = tutorTimelineItems(tutorId);
+    if (!items.length)
+      return;
+    let tl = body.querySelector("#tutorTimeline");
+    const tlTitle = [...body.querySelectorAll(".section-title")].find((t) => /Linha do tempo/.test(t.textContent));
+    if (!tl && tlTitle) {
+      const hint = tlTitle.parentElement.nextElementSibling;
+      if (hint && hint.classList.contains("hint"))
+        hint.outerHTML = '<div class="timeline" id="tutorTimeline"></div>';
+      tl = body.querySelector("#tutorTimeline");
+    }
+    if (!tl)
+      return;
+    const ligadas = new Set(S.sales.filter((s) => s.tutorId === tutorId).map(nfOfSale).filter(Boolean).map((n) => n.id));
+    tl.querySelectorAll("[data-open-nf]").forEach((el) => {
+      if (ligadas.has(el.dataset.openNf))
+        el.remove();
+    });
+    for (const it of items) {
+      const after = [...tl.children].find((el) => {
+        const d = el.querySelector(".tl-data");
+        if (!d)
+          return false;
+        const [dd, mm, yy] = d.textContent.trim().split("/");
+        return `${yy}-${mm}-${dd}` < it.date;
+      });
+      if (after)
+        after.insertAdjacentHTML("beforebegin", it.html);
+      else
+        tl.insertAdjacentHTML("beforeend", it.html);
+    }
+    if (tlTitle)
+      tlTitle.textContent = `Linha do tempo (${tl.children.length})`;
+    const chips = tlTitle && tlTitle.parentElement.querySelector("div:last-child");
+    if (chips && !chips.querySelector("[data-tl-filtro=compra]")) {
+      const notas = chips.querySelector("[data-tl-filtro=nota]");
+      const btn = `<button type="button" class="chip-btn" data-tl-filtro="compra">Compras</button>`;
+      if (notas)
+        notas.insertAdjacentHTML("beforebegin", btn);
+      else
+        chips.insertAdjacentHTML("beforeend", btn);
+      const all = chips.querySelectorAll("[data-tl-filtro]");
+      all.forEach((b) => b.addEventListener("click", () => {
+        const f = b.dataset.tlFiltro;
+        all.forEach((x) => x.classList.toggle("on", x === b));
+        tl.querySelectorAll(".tl-item").forEach((el) => {
+          el.style.display = f === "tudo" || el.dataset.tlTipo === f ? "" : "none";
+        });
+      }));
+    }
+  }
+  function injectAnimal(body, animalId) {
+    const vendas = S.sales.filter((x) => x.animalId === animalId);
+    const ok = vendas.filter((x) => x.status !== "cancelada");
+    const total = ok.reduce((a, x) => a + saleNet(x), 0);
+    const html = `<div class="section-title">${ic("vendas")} Compras para este animal${ok.length ? ` <span class="tag">${brl(total)}</span>` : ""}</div>
+    <div style="margin-bottom:18px;">${vendas.length ? `<div class="est-list">${vendas.slice(0, 6).map((x) => `<div class="est-li click" data-est-sale="${x.id}"><div class="grow"><b>${esc(x.items.map((i) => `${numF(i.qty)}× ${i.name}`).join(", "))}</b><small>${fmtD(x.createdAt)} · ${esc(x.client || "")}</small></div><div class="side"><b style="color:var(--ink);">${brl(x.total)}</b>${x.status === "cancelada" ? '<span class="badge st-Cancelado">Cancelada</span>' : nfBadge(nfOfSale(x), x)}</div></div>`).join("")}</div>${vendas.length > 6 ? `<div class="hint">Mais ${vendas.length - 6} compra(s) na ficha do tutor.</div>` : ""}` : '<div class="hint">Nenhuma compra registrada para este animal.</div>'}</div>`;
+    const ficha = [...body.querySelectorAll(".section-title")].find((t) => /Ficha completa/.test(t.textContent));
+    if (ficha)
+      ficha.insertAdjacentHTML("beforebegin", html);
+    else
+      body.insertAdjacentHTML("beforeend", html);
+  }
+
   // src/v-vendas.js
   var blankCart = () => ({ lines: [], tutorId: "", animalId: "", client: "", payment: "", discount: "", discMode: "valor", notes: "", agendamentoId: "" });
   var cart = Object.assign(blankCart(), { q: "", filter: "todos", tq: "" });
@@ -1960,7 +2156,7 @@ td.est-c, th.est-c{text-align:center;}
     <div class="est-receipt"><div class="rh"><b>Olhatta</b><div style="color:var(--ink-soft);">Comprovante de venda nº ${sale.number}</div><small style="color:var(--ink-soft);">${fmtDT(sale.createdAt)}</small></div>
     <table>${sale.items.map((it) => `<tr><td>${numF(it.qty)}× ${esc(it.name)}${it.type === "pacote" ? `<br><small style="color:var(--ink-soft);">${esc(it.composition.map((c) => `${numF(c.qty * it.qty)} ${c.name}`).concat(it.services).join(" · "))}</small>` : ""}</td><td>${brl(it.subtotal)}</td></tr>`).join("")}
     ${sale.discount ? `<tr><td>Desconto</td><td>−${brl(sale.discount)}</td></tr>` : ""}<tr class="tot"><td>Total</td><td>${brl(sale.total)}</td></tr></table>
-    <p style="margin:12px 0 0; font-size:12px; color:var(--ink-soft);">Pagamento: ${esc(sale.payment || "—")}${sale.client ? `<br>Cliente: ${esc(sale.client)}${sale.animalName ? " · " + esc(sale.animalName) : ""}` : ""}<br>Atendido por ${esc(sale.createdByName)}</p></div>`, `<button class="btn btn-secondary" id="estPrint">${ic("print")} Imprimir</button>${typeof formNotaFiscal === "function" ? `<button class="btn btn-secondary" id="estNF">${ic("receipt")} Lançar nota fiscal</button>` : ""}<button class="btn btn-primary" data-mclose>Concluir</button>`, { narrow: true });
+    <p style="margin:12px 0 0; font-size:12px; color:var(--ink-soft);">Pagamento: ${esc(sale.payment || "—")}${sale.client ? `<br>Cliente: ${esc(sale.client)}${sale.animalName ? " · " + esc(sale.animalName) : ""}` : ""}<br>Atendido por ${esc(sale.createdByName)}</p></div>`, `<button class="btn btn-secondary" id="estPrint">${ic("print")} Imprimir</button>${typeof formNotaFiscal === "function" ? `<button class="btn ${isCard(sale) ? "btn-primary" : "btn-secondary"}" id="estNF">${ic("receipt")} Lançar nota fiscal</button>` : ""}<button class="btn ${isCard(sale) ? "btn-secondary" : "btn-primary"}" data-mclose>Concluir</button>`, { narrow: true });
     m.querySelector("#estPrint").onclick = printModal;
     const nf = m.querySelector("#estNF");
     if (nf)
@@ -2037,29 +2233,31 @@ td.est-c, th.est-c{text-align:center;}
       hist.r = monthRange(0);
   }
   function filtered() {
-    return S.sales.filter((s) => inRange(s.createdAt, hist.r) && (!hist.user || s.createdBy === hist.user) && (!hist.status || (hist.status === "devolucao" ? s.refunded > 0 && s.status !== "cancelada" : hist.status === "semnf" ? !s.nfId && s.status !== "cancelada" : s.status === hist.status)) && match(hist.q, String(s.number), s.client, s.animalName, s.payment, ...s.items.map((i) => i.name), ...s.items.flatMap((i) => i.composition.map((c) => c.name))));
+    return S.sales.filter((s) => inRange(s.createdAt, hist.r) && (!hist.user || s.createdBy === hist.user) && (!hist.status || (hist.status === "devolucao" ? s.refunded > 0 && s.status !== "cancelada" : hist.status === "cartaosemnf" ? !nfOfSale(s) && isCard(s) && s.status !== "cancelada" : hist.status === "comnf" ? !!nfOfSale(s) : s.status === hist.status)) && match(hist.q, String(s.number), s.client, s.animalName, s.payment, ...s.items.map((i) => i.name), ...s.items.flatMap((i) => i.composition.map((c) => c.name))));
   }
   function renderVendas() {
     const list = filtered();
     const net = list.reduce((a, s) => a + saleNet(s), 0);
     const sellers = [...new Map(S.sales.map((s) => [s.createdBy, s.createdByName])).entries()];
-    const pk = list.filter((s) => s.status !== "cancelada" && s.items.some((i) => i.type === "pacote")).length;
     return `
   <div class="grid g3" style="margin-bottom:16px;">
     ${stat("Vendas no período", list.filter((s) => s.status !== "cancelada").length, periodLabel(hist.r))}
     ${stat("Valor líquido", `<span class="est-money">${brl(net)}</span>`, "descontadas devoluções")}
-    ${stat("Com pacote", pk, "vendas que incluem pacote")}
+    ${(() => {
+      const cs = S.sales.filter((s) => inRange(s.createdAt, hist.r) && s.status !== "cancelada" && isCard(s) && !nfOfSale(s)).length;
+      return `<div class="stat-card${cs ? " clicavel" : ""}" ${cs ? 'data-est-hf="cartaosemnf" role="button" tabindex="0"' : ""}><div class="label">Cartão sem nota</div><div class="value est-val">${cs}</div><div class="est-statsub">${cs ? "toque para ver e lançar" : "todas as vendas no cartão têm nota"}</div></div>`;
+    })()}
   </div>
   <div class="card pad">
     <div class="filters" style="justify-content:space-between;">${periodHTML(hist.r, "hist")}${canDo("vender") ? `<button class="btn btn-primary" data-est-go="vender">${ic("plus")} Nova venda</button>` : ""}</div>
     <div class="filters">
       ${searchBox("estHq", "Buscar venda", hist.q)}
       <select id="estHu"><option value="">Todos os responsáveis</option>${sellers.map(([id, n]) => `<option value="${id}" ${hist.user === id ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
-      <select id="estHs"><option value="">Todas as situações</option>${[["concluida", "Concluídas"], ["cancelada", "Canceladas"], ["devolucao", "Com devolução"], ["semnf", "Sem nota fiscal"]].map(([k, l]) => `<option value="${k}" ${hist.status === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+      <select id="estHs"><option value="">Todas as situações</option>${[["concluida", "Concluídas"], ["cancelada", "Canceladas"], ["devolucao", "Com devolução"], ["comnf", "Com nota fiscal"], ["cartaosemnf", "Cartão sem nota"]].map(([k, l]) => `<option value="${k}" ${hist.status === k ? "selected" : ""}>${l}</option>`).join("")}</select>
       <button class="btn btn-secondary btn-sm" id="estHcsv">${ic("download")} Exportar</button>
     </div>
     ${list.length ? `<div class="table-wrap" data-keep="hist"><table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Itens</th><th>Responsável</th><th class="est-r">Total</th><th>Situação</th></tr></thead><tbody>
-      ${list.slice(0, hist.limit).map((s) => `<tr class="rowlink" data-est-sale="${s.id}"><td class="est-num"><strong>${s.number}</strong></td><td class="est-num">${fmtDT(s.createdAt)}</td><td>${esc(s.client || "—")}${s.animalName ? `<br><small style="color:var(--ink-soft);">${esc(s.animalName)}</small>` : ""}</td><td style="max-width:260px;">${esc(s.items.map((i) => `${numF(i.qty)}× ${i.name}`).join(", "))}</td><td>${esc(s.createdByName)}</td><td class="est-r est-num"><strong>${brl(s.total)}</strong></td><td>${saleBadge(s)}${s.nfId ? ' <span class="pill-muted">NF</span>' : ""}</td></tr>`).join("")}
+      ${list.slice(0, hist.limit).map((s) => `<tr class="rowlink" data-est-sale="${s.id}"><td class="est-num"><strong>${s.number}</strong></td><td class="est-num">${fmtDT(s.createdAt)}</td><td>${esc(s.client || "—")}${s.animalName ? `<br><small style="color:var(--ink-soft);">${esc(s.animalName)}</small>` : ""}</td><td style="max-width:260px;">${esc(s.items.map((i) => `${numF(i.qty)}× ${i.name}`).join(", "))}</td><td>${esc(s.createdByName)}</td><td class="est-r est-num"><strong>${brl(s.total)}</strong></td><td>${saleBadge(s)}${nfOfSale(s) ? ' <span class="pill-muted">NF</span>' : ""}</td></tr>`).join("")}
     </tbody></table></div>${list.length > hist.limit ? '<div style="text-align:center; margin-top:12px;"><button class="btn btn-secondary" id="estHmore">Mostrar mais</button></div>' : ""}` : empty("Nenhuma venda no período", "Mude o período ou os filtros.")}
   </div>`;
   }
@@ -2098,16 +2296,19 @@ td.est-c, th.est-c{text-align:center;}
         hist.limit += 100;
         rr();
       };
+    el.querySelectorAll("[data-est-hf]").forEach((c) => c.onclick = () => {
+      hist.status = c.dataset.estHf;
+      rr();
+    });
     const csv = el.querySelector("#estHcsv");
     if (csv)
-      csv.onclick = () => downloadCSV(`vendas_${hist.r.from}_${hist.r.to}`, ["Nº", "Data", "Cliente", "Animal", "Itens", "Responsável", "Pagamento", "Bruto", "Desconto", "Total", "Devolvido", "Líquido", "Situação", "Nota fiscal"], filtered().map((s) => [s.number, fmtDT(s.createdAt), s.client, s.animalName || "", s.items.map((i) => `${i.qty}x ${i.name}`).join(", "), s.createdByName, s.payment, s.gross, s.discount, s.total, s.refunded || 0, saleNet(s), s.status, s.nfId ? "Sim" : "Não"]));
+      csv.onclick = () => downloadCSV(`vendas_${hist.r.from}_${hist.r.to}`, ["Nº", "Data", "Cliente", "Animal", "Itens", "Responsável", "Pagamento", "Bruto", "Desconto", "Total", "Devolvido", "Líquido", "Situação", "Nota fiscal"], filtered().map((s) => [s.number, fmtDT(s.createdAt), s.client, s.animalName || "", s.items.map((i) => `${i.qty}x ${i.name}`).join(", "), s.createdByName, s.payment, s.gross, s.discount, s.total, s.refunded || 0, saleNet(s), s.status, nfOfSale(s) ? "Sim" : "Não"]));
   }
   function openSale(id) {
     const s = S.sales.find((x) => x.id === id);
     if (!s)
       return toast("Venda não encontrada");
     const ret = s.returnedByKey || {};
-    const nfOk = s.nfId && (DB.notasFiscais || []).some((n) => n.id === s.nfId);
     const tutor = s.tutorId ? tutorById(s.tutorId) : null;
     const outs = {};
     for (const mv of S.movements)
@@ -2119,13 +2320,14 @@ td.est-c, th.est-c{text-align:center;}
         }
     const outRows = Object.values(outs).length ? Object.values(outs) : s.consumption.flatMap((c) => c.lots.map((l) => ({ name: c.name, unit: c.unit, code: l.code, expiry: l.expiry, qty: l.qty })));
     const d = drawer(`Venda nº ${s.number}`, `${fmtDT(s.createdAt)} · ${esc(s.createdByName)}`, `
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">${saleBadge(s)} <span class="pill-muted">${esc(s.payment || "Sem pagamento")}</span>${nfOk ? '<span class="pill">Nota fiscal lançada</span>' : ""}</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">${saleBadge(s)} <span class="pill-muted">${esc(s.payment || "Sem pagamento")}</span></div>
     <div class="est-kv">
       <div class="mini-stat"><div class="l">Cliente</div><div class="n">${tutor ? `<button class="est-link" data-open-tutor="${tutor.id}">${esc(tutor.nome)}</button>` : esc(s.client || "—")}</div></div>
       <div class="mini-stat"><div class="l">Animal</div><div class="n">${s.animalId && animalById(s.animalId) ? `<button class="est-link" data-open-animal="${s.animalId}">${esc(s.animalName || animalById(s.animalId).nome)}</button>` : esc(s.animalName || "—")}</div></div>
       <div class="mini-stat"><div class="l">Total</div><div class="n">${brl(s.total)}</div></div>
       <div class="mini-stat"><div class="l">Valor líquido</div><div class="n">${brl(saleNet(s))}</div></div>
     </div>
+    ${saleNFBlock(s)}
     <div class="section-title">Itens</div>
     <div class="table-wrap" style="margin-bottom:12px;"><table><thead><tr><th>Item</th><th class="est-r">Qtd.</th><th class="est-r">Subtotal</th></tr></thead><tbody>
     ${s.items.map((it) => `<tr><td><div class="est-two"><b>${esc(it.name)}</b><small>${it.type === "pacote" ? esc(it.composition.map((c) => `${numF(c.qty)} ${c.name}`).concat(it.services).join(" · ")) : "Avulso"}${ret[it.key] ? ` · devolvido ${numF(ret[it.key])}` : ""}</small></div></td><td class="est-r est-num">${numF(it.qty)}</td><td class="est-r est-num">${brl(it.subtotal)}</td></tr>`).join("")}
@@ -2142,7 +2344,6 @@ td.est-c, th.est-c{text-align:center;}
     <div class="section-title" style="margin-top:6px;">Ações</div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
       <button class="btn btn-secondary btn-sm" id="estSRec">${ic("print")} Comprovante</button>
-      ${nfOk ? `<button class="btn btn-secondary btn-sm" id="estSNfOpen">${ic("receipt")} Ver nota fiscal</button>` : s.status !== "cancelada" && typeof formNotaFiscal === "function" ? `<button class="btn btn-primary btn-sm" id="estSNf">${ic("receipt")} Lançar nota fiscal</button>` : ""}
       ${s.status === "concluida" && canDo("cancelar") ? `<button class="btn btn-secondary btn-sm" id="estSRet">${ic("undo")} Devolução</button><button class="btn btn-danger btn-sm" id="estSCan">${ic("ban")} Cancelar venda</button>` : ""}
     </div>`);
     const on = (id, fn) => {
@@ -2153,12 +2354,6 @@ td.est-c, th.est-c{text-align:center;}
     on("estSRec", () => {
       closeDrawer();
       openReceipt(s);
-    });
-    on("estSNf", () => openNFFromSale(s));
-    on("estSNfOpen", () => {
-      closeDrawer();
-      goTo("notasfiscais");
-      setTimeout(() => openNFDrawer(s.nfId), 60);
     });
     on("estSRet", () => {
       closeDrawer();
@@ -3571,9 +3766,24 @@ td.est-c, th.est-c{text-align:center;}
     const p = e.target.closest("[data-est-prod]");
     const s = e.target.closest("[data-est-sale]");
     const nv = e.target.closest("[data-est-nova-venda]");
-    if (!g && !p && !s && !nv)
+    const nfe = e.target.closest("[data-est-nf-edit],[data-est-nf-open],[data-est-nf-new],[data-est-nf-link]");
+    if (!g && !p && !s && !nv && !nfe)
       return;
     e.stopPropagation();
+    if (nfe) {
+      const d = nfe.dataset;
+      if (d.estNfEdit)
+        editNF(d.estNfEdit);
+      else if (d.estNfOpen)
+        openNF(d.estNfOpen);
+      else if (d.estNfNew) {
+        const sale = S.sales.find((x) => x.id === d.estNfNew);
+        if (sale)
+          openNFFromSale(sale);
+      } else if (d.estNfLink)
+        linkExisting(d.estNfLink, () => openSale(d.estNfLink));
+      return;
+    }
     if (g) {
       const [sub, nest] = g.dataset.estGo.split("-");
       closeModal();
@@ -3697,17 +3907,23 @@ td.est-c, th.est-c{text-align:center;}
     const btns = body.firstElementChild;
     if (btns && canDo("vender"))
       btns.insertAdjacentHTML("beforeend", `<button class="btn btn-secondary btn-sm" data-est-nova-venda="${tutorId}||">${ic("vender")} Nova venda</button>`);
-    const vendas = S.sales.filter((s) => s.tutorId === tutorId);
-    const total = vendas.reduce((a, s) => a + (s.status === "cancelada" ? 0 : Math.max(0, s.total - (s.refunded || 0))), 0);
-    const html = `<div class="section-title">${ic("vendas")} Compras (${vendas.length})${vendas.length ? ` <span class="tag">${brl(total)}</span>` : ""}</div>
-    <div style="margin-bottom:20px;">${vendas.length ? `<div class="est-list">${vendas.slice(0, 8).map((s) => `<div class="est-li click" data-est-sale="${s.id}"><div class="grow"><b>${esc(s.items.map((i) => i.name).join(", "))}</b><small>${fmtD(s.createdAt)}${s.animalName ? " · " + esc(s.animalName) : ""} · Nº ${s.number}</small></div><div class="side"><b style="color:var(--ink);">${brl(s.total)}</b>${s.status === "cancelada" ? '<span class="badge st-Cancelado">Cancelada</span>' : ""}</div></div>`).join("")}</div>${vendas.length > 8 ? `<div class="hint">Mais ${vendas.length - 8} compra(s) em Estoque, Vendas.</div>` : ""}` : '<div class="hint">Nenhuma compra registrada.</div>'}</div>`;
-    const titles = [...body.querySelectorAll(".section-title")];
-    const tl = titles.find((t) => /Linha do tempo/.test(t.textContent));
-    const anchor = tl ? tl.parentElement : null;
-    if (anchor && anchor.parentElement === body)
-      anchor.insertAdjacentHTML("beforebegin", html);
-    else
-      body.insertAdjacentHTML("beforeend", html);
+    injectTutor(body, tutorId);
+  };
+  var _animal = window.openAnimalDrawer;
+  window.openAnimalDrawer = function(animalId) {
+    _animal(animalId);
+    if (!ready())
+      return;
+    const body = document.querySelector("#drawerRoot .drawer-body");
+    if (!body)
+      return;
+    const a = (DB.animais || []).find((x) => x.id === animalId);
+    const btns = body.firstElementChild;
+    if (btns && canDo("vender") && a && !a.obito) {
+      const t = (DB.vinculos || []).find((v) => v.animalId === animalId);
+      btns.insertAdjacentHTML("beforeend", `<button class="btn btn-secondary btn-sm" data-est-nova-venda="${t ? t.tutorId : ""}|${animalId}|">${ic("vender")} Nova venda</button>`);
+    }
+    injectAnimal(body, animalId);
   };
   var _ag = window.openAgendamentoDrawer;
   window.openAgendamentoDrawer = function(agId) {
