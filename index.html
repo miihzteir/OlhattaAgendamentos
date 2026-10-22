@@ -1130,6 +1130,10 @@ function aplicarRota(hash){
   } finally { __aplicandoRota = false; }
   return true;
 }
+function atualizarTituloAba(){
+  const v = VIEWS.find(x=>x.id===state.view);
+  document.title = (v && v.id!=='dashboard') ? `${v.label} · Olhatta` : 'Olhatta';
+}
 function sincronizarRota(){
   if(!window.__histPronto || __aplicandoRota) return;
   const r = rotaAtual();
@@ -1543,6 +1547,7 @@ function render(){
   renderUserSelect();
   if(Math.abs(window.scrollY - yAntes) > 2) window.scrollTo(0, yAntes);
   sincronizarRota();
+  atualizarTituloAba();
 }
 
 /* =========================================================
