@@ -524,6 +524,139 @@ th.sortavel[data-dir=asc]::after{content:' \2191'; font-size:11px;} th.sortavel[
 .table-wrap{cursor:grab;} .table-wrap.arrastando{cursor:grabbing; user-select:none;}
 .semanas-tab tr.semana-atual td{background:#F6EFE0;} .semanas-tab .rowlink{cursor:pointer;}
 .rel-det-cli{font-size:12.5px; color:var(--ink-soft); margin-top:3px;}
+
+/* ---------- Visão Geral organizada ---------- */
+.dash-head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px;}
+.dash-head .dash-nav{margin-bottom:0;}
+.dash-actions{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+.dash-kpis .stat-card{padding:14px 18px;}
+.dash-kpis .stat-card .value{font-size:28px; margin-top:4px;}
+.dash-main{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:16px; align-items:start; margin-bottom:26px;}
+.dash-col{display:flex; flex-direction:column; gap:16px; min-width:0;}
+.dash-col > .card{margin:0 !important; border-color:var(--line) !important;}
+.dash-main .empty{padding:6px 0 2px; text-align:left;}
+.dash-main .empty svg, .dash-main .empty .d{display:none;}
+.dash-main .empty .t{font-family:'Manrope',sans-serif; font-size:13px; color:var(--ink-soft);}
+.dash-main .hint:has(+ .empty){display:none;}
+.dash-card-h{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+.dash-embed > .card{border:none !important; box-shadow:none !important; padding:0 !important; margin:0 !important; background:none !important;}
+.dash-embed > .card > .section-title:first-child{display:none;}
+.dash-sec-title{font-family:'Fraunces',serif; font-size:17px; font-weight:600; color:var(--ink); margin:0 0 12px;}
+.dash-acc-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:start;}
+.dash-acc-grid .dash-col{gap:10px;}
+.dash-acc{background:#fff; border:1px solid var(--line); border-radius:var(--radius); transition:box-shadow .2s;}
+.dash-acc:hover{box-shadow:var(--shadow);}
+.dash-acc:not(:has(.dash-embed > *)){display:none;}
+.dash-acc summary{list-style:none; cursor:pointer; padding:14px 18px; display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-size:15px; font-weight:600; color:var(--ink);}
+.dash-acc summary::-webkit-details-marker{display:none;}
+.dash-acc summary .tag{font-family:'Manrope',sans-serif; font-size:11px; font-weight:700; background:var(--brown-light); color:var(--brown-dark); padding:2px 8px; border-radius:20px;}
+.dash-acc summary::after{content:''; margin-left:auto; width:7px; height:7px; border-right:2px solid var(--ink-soft); border-bottom:2px solid var(--ink-soft); transform:rotate(45deg); transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.dash-acc[open] summary::after{transform:rotate(-135deg);}
+.dash-acc > .dash-embed{padding:0 18px 18px;}
+@media (max-width:1100px){ .dash-main{grid-template-columns:1fr;} }
+@media (max-width:880px){ .dash-acc-grid{grid-template-columns:1fr;} .dash-head .dash-nav{width:100%;} }
+
+/* ---------- Estrutura geral (todas as telas) ---------- */
+#quickLinksBar{margin-left:auto;}
+.view .stat-card{padding:14px 18px;}
+.view .stat-card .value{font-size:28px; margin-top:4px;}
+.view .stat-card .label{font-size:11px;}
+.dash-nav-extra{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-left:auto;}
+.dash-nav:has(.dash-nav-extra){justify-content:flex-start; column-gap:14px;}
+.seg{display:inline-flex; background:var(--sage-pale); border-radius:9px; padding:3px; gap:2px;}
+.seg button{border:none; background:none; padding:6px 12px; border-radius:7px; font:700 12.5px 'Manrope',sans-serif; color:var(--ink-soft); cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
+.seg button svg{width:14px; height:14px;}
+.seg button.on{background:#fff; color:var(--sage-dark); box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.fbar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
+.fbar input, .fbar select{width:auto;}
+.fbar input[type=text], .fbar input:not([type]){flex:0 1 280px; min-width:200px;}
+.fbar .grow{flex:1;}
+.fbar label.chk{display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:12.5px; cursor:pointer;}
+.fbar label.chk input{width:auto;}
+.chk-inline{display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:12.5px; cursor:pointer; color:var(--ink-soft);} .chk-inline input{width:auto;}
+.view .card .empty{padding:4px 0 2px; text-align:left;}
+.view .card .empty svg, .view .card .empty .d{display:none;}
+.view .card .empty .t{font-family:'Manrope',sans-serif; font-size:13px; color:var(--ink-soft);}
+.view .card > .pad:has(> .empty:only-child){padding:16px 20px;}
+.acc-card > .section-title{cursor:pointer; user-select:none;}
+.acc-card > .section-title::after{content:''; margin-left:auto; flex-shrink:0; width:7px; height:7px; border-right:2px solid var(--ink-soft); border-bottom:2px solid var(--ink-soft); transform:rotate(45deg); transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.acc-card > .section-title > span:first-child{flex:1;}
+.acc-card > .section-title::after{margin-top:-4px;}
+.acc-card.open > .section-title::after{transform:rotate(-135deg); margin-top:4px;}
+.acc-card:not(.open){padding:14px 18px;}
+.acc-card:not(.open) > .section-title{margin:0;}
+.acc-card:not(.open) > :not(.section-title), .acc-card:not(.open) > .section-title button{display:none !important;}
+.acc-card > .section-title:focus-visible{outline:2px solid var(--brown); outline-offset:4px; border-radius:6px;}
+.acc-card > .section-title .tag{font-family:'Manrope',sans-serif;}
+.acc-card > .section-title .acc-sub{font-family:'Manrope',sans-serif; font-size:12px; font-weight:600; color:var(--ink-soft);}
+.set-list{display:flex; flex-direction:column; gap:12px;}
+.set-list > .card{margin:0 !important;}
+.va-top{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:16px; align-items:start; margin-bottom:16px;}
+.va-top > .card{margin:0 !important; height:100%;}
+.kv-row{display:flex; justify-content:space-between; gap:14px; font-size:13.5px; padding:7px 0; border-bottom:1px solid var(--line);}
+.kv-row:last-child{border-bottom:none;}
+.kv-row .muted{color:var(--ink-faint);}
+.hoje-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:4px 28px;}
+
+/* ---------- Tabelas com rolagem própria ---------- */
+.view .table-wrap{max-height:min(470px, 62vh); overscroll-behavior:auto;}
+.view .table-wrap::-webkit-scrollbar{width:8px; height:8px;}
+.view .table-wrap::-webkit-scrollbar-thumb{background:rgba(92,115,85,.3); border-radius:8px;}
+.view .table-wrap::-webkit-scrollbar-track{background:transparent;}
+@media (max-width:880px){ .view .table-wrap{max-height:60vh;} }
+@media print{ .view .table-wrap{max-height:none !important; overflow:visible !important;} .sc-ic{display:none;} .dash-hero{background:none !important; color:inherit !important;} }
+
+/* ---------- Banner da Visão Geral ---------- */
+.dash-hero{position:relative; overflow:hidden; border-radius:20px; padding:22px 24px 20px; margin-bottom:18px; color:#fff;
+  background:
+    radial-gradient(circle at 92% 120%, rgba(255,255,255,.10) 0 120px, transparent 121px),
+    radial-gradient(circle at 78% -30%, rgba(255,255,255,.08) 0 150px, transparent 151px),
+    linear-gradient(120deg, #61795A 0%, #4D6346 55%, #3E5138 100%);
+  box-shadow:0 18px 40px -22px rgba(52,70,46,.65);}
+.dash-hero .dash-head{margin-bottom:16px;}
+.dash-hero .dash-greeting-title{color:#fff; font-size:27px;}
+.dash-hero .dash-greeting-sub{color:rgba(255,255,255,.78);}
+.dash-hero .dash-nav{background:rgba(255,255,255,.96); border-color:transparent; box-shadow:0 6px 18px -10px rgba(0,0,0,.35);}
+.dash-hero .dash-actions{margin-bottom:0;}
+.dash-hero .btn-secondary{background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.22);}
+.dash-hero .btn-secondary:hover{background:rgba(255,255,255,.22); color:#fff;}
+.dash-hero .btn-secondary svg{color:#fff;}
+.dash-hero .btn-primary{background:#fff; color:#3F5238; border-color:#fff; box-shadow:0 6px 16px -8px rgba(0,0,0,.4);}
+.dash-hero .btn-primary:hover{background:#F4F1E8; color:#3F5238;}
+
+/* ---------- Ícone da tela no topo ---------- */
+.page-ic{width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:linear-gradient(135deg,#66805E,#4A6143); color:#fff; box-shadow:0 8px 18px -10px rgba(52,70,46,.75);}
+.page-ic:empty{display:none;}
+.page-ic svg{width:22px; height:22px; opacity:1;}
+@media (max-width:880px){ .page-ic{width:38px; height:38px; border-radius:12px;} .page-ic svg{width:19px; height:19px;} }
+
+/* ---------- Quadros de números com ícone ---------- */
+.stat-card:has(> .sc-ic){display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:14px; align-items:center;}
+.stat-card > .sc-ic{grid-column:1; grid-row:1 / span 3; align-self:center; width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:#DFE9D8; color:#4A6443;}
+.stat-card > .sc-ic svg{width:22px; height:22px;}
+.stat-card > .sc-ic.brown{background:#F1E1CF; color:#8A5F38;}
+.stat-card > .sc-ic.warn{background:#F7E7C6; color:#93661F;}
+.stat-card > .sc-ic.bad{background:#F6DCD7; color:#A6413A;}
+.stat-card:has(> .sc-ic) > :not(.sc-ic){grid-column:2;}
+.stat-card:has(> .sc-ic) > .stripe{display:none;}
+.stat-card:has(> .sc-ic) .value{grid-row:1; margin-top:0 !important; line-height:1.1;}
+.stat-card:has(> .sc-ic) .label{grid-row:2; margin-top:3px;}
+.stat-card:has(> .sc-ic) > :nth-child(n+5), .stat-card:has(> .sc-ic) .est-statsub{grid-row:3;}
+.est-k6 .stat-card:has(> .sc-ic){display:block;}
+.est-k6 .stat-card > .sc-ic{position:absolute; top:14px; right:14px; width:38px; height:38px; border-radius:12px;}
+.est-k6 .stat-card > .sc-ic svg{width:19px; height:19px;}
+.est-k6 .stat-card:has(> .sc-ic) .label{padding-right:44px; min-height:28px;}
+@media (max-width:640px){
+  .dash-hero{padding:18px 16px; border-radius:18px;}
+  .dash-hero .dash-greeting-title{font-size:22px;}
+  .stat-card:has(> .sc-ic){display:block;}
+  .stat-card > .sc-ic{position:absolute; top:12px; right:12px; width:32px; height:32px; border-radius:10px;}
+  .stat-card > .sc-ic svg{width:16px; height:16px;}
+  .stat-card:has(> .sc-ic) .label{padding-right:38px; margin-top:0;}
+  .stat-card:has(> .sc-ic) .value{margin-top:4px !important;}
+}
+.hoje-list .pend-row{margin:0;}
+@media (max-width:880px){ .va-top{grid-template-columns:1fr;} .dash-nav-extra{margin-left:0; width:100%;} .dash-nav-extra .btn-primary{margin-left:auto;} .fbar input[type=text], .fbar input:not([type]){min-width:0; flex:1 1 100%;} }
 </style>
 </head>
 <body>
@@ -591,6 +724,7 @@ th.sortavel[data-dir=asc]::after{content:' \2191'; font-size:11px;} th.sortavel[
         <button class="btn icon-btn mobile-toggle" id="menuBtn" style="border:1px solid var(--line);border-radius:9px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
+        <span class="page-ic" id="pageIcon" aria-hidden="true"></span>
         <div>
           <h1 id="pageTitle">Visão Geral</h1>
           <div class="sub" id="pageSub">Visão geral da rotina de hoje</div>
@@ -1005,7 +1139,7 @@ function greetingText(){
   const primeiroNome = u? u.nome.split(' ')[0] : '';
   return `${periodo}${primeiroNome?', '+primeiroNome:''}`;
 }
-function renderDashNav(soDia){
+function renderDashNav(soDia, extra){
   const g = state.dash.granularity;
   return `
   <div class="dash-nav">
@@ -1019,6 +1153,7 @@ function renderDashNav(soDia){
       <button class="icon-btn" id="dashNext" title="Próximo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button>
       ${state.dash.refDate!==todayISO()?`<button class="btn btn-secondary btn-sm" id="dashToday">Hoje</button>`:''}
     </div>
+    ${extra?`<div class="dash-nav-extra">${extra}</div>`:''}
   </div>`;
 }
 
@@ -1053,6 +1188,8 @@ function renderNav(){
     <button class="navlink ${state.view===v.id?'active':''}" data-nav="${v.id}">
       ${ICONS[v.icon]}<span>${v.label}</span>${navBadge(v.id)}
     </button>`).join('');
+  const pi=document.getElementById('pageIcon'), sv=nav.querySelector(`.navlink[data-nav="${state.view}"] svg`);
+  if(pi) pi.innerHTML = sv ? sv.outerHTML : '';
 }
 let pendenciasDirty = false;
 let pendenciasBusca = '';
@@ -1604,6 +1741,20 @@ function semanaGraficoHtml(){
     </div>
   </div>`;
 }
+let dashAgTab = 'hoje';
+function setDashAgTab(t){ dashAgTab = t; render(); }
+function dashAccLer(){ try{ return JSON.parse(localStorage.getItem('olh_dashAcc')||'[]'); }catch(e){ return []; } }
+function dashAccOpen(k){ return dashAccLer().includes(k); }
+function dashAccToggle(el){ const k=el.dataset.acc; let v=dashAccLer().filter(x=>x!==k); if(el.open) v.push(k); try{ localStorage.setItem('olh_dashAcc', JSON.stringify(v)); }catch(e){} }
+function accLer(){ try{ return JSON.parse(localStorage.getItem('olh_acc')||'{}')||{}; }catch(e){ return {}; } }
+function accOpen(k, def){ const o=accLer(); return (k in o) ? !!o[k] : !!def; }
+function accCard(k, def){ return `acc-card ${accOpen(k,def)?'open':''}" data-acc-card="${k}`; }
+function accTitleAttrs(){ return 'role="button" tabindex="0"'; }
+(function(){
+  const tog = t=>{ const c=t.parentElement; c.classList.toggle('open'); const o=accLer(); o[c.dataset.accCard]=c.classList.contains('open'); try{ localStorage.setItem('olh_acc', JSON.stringify(o)); }catch(e){} t.setAttribute('aria-expanded', c.classList.contains('open')); };
+  document.addEventListener('click', e=>{ const t=e.target.closest('.acc-card > .section-title'); if(!t || e.target.closest('button, a, input, select, label')) return; tog(t); });
+  document.addEventListener('keydown', e=>{ if(e.key!=='Enter' && e.key!==' ') return; const t=e.target; if(!t.matches || !t.matches('.acc-card > .section-title')) return; e.preventDefault(); tog(t); });
+})();
 function renderDashboard(){
   const today = todayISO();
   const refDay = state.dash.granularity==='dia' ? state.dash.refDate : today;
@@ -1741,11 +1892,9 @@ function renderDashboard(){
   DB.lembretes.filter(l=>!l.concluido && (state.dash.granularity==='dia'? l.data===refDay : inRefPeriod(l.data))).forEach(l=>{
     pendencias.push({tipo:'Lembrete', texto:l.titulo, ref:{type:'lembrete', id:l.id}});
   });
-  DB.contatos.filter(c=>c.status==='Aguardando').forEach(c=>{
+  DB.contatos.filter(c=>c.status==='Aguardando' && c.recontatarEm && c.recontatarEm<=today).forEach(c=>{
     const nome = c.tutorId? (tutorById(c.tutorId)?.nome||'') : (c.nomeAvulso||'contato');
-    const dias = daysBetween(c.dataContato,today);
-    const rec = c.recontatarEm && c.recontatarEm<=today ? (c.recontatarEm<today?' · recontatar atrasado':' · recontatar hoje') : '';
-    pendencias.push({tipo:'Contato', texto:`${nome}${dias>0?' — contato há '+dias+' dia'+(dias===1?'':'s'):' — contato de hoje'}${rec}`, ref:{type:'contato', id:c.id}});
+    pendencias.push({tipo:'Recontatar', texto:`${nome}${c.recontatarEm<today?' · atrasado':' · hoje'}`, ref:{type:'contato', id:c.id}});
   });
   ags.filter(a=>a.status==='AguardandoConfirmacao' && a.data<=addDays(today,2)).forEach(a=>{
     pendencias.push({tipo:'Confirmação', texto:`Confirmar ${animalById(a.animalId)?.nome||'—'} — ${fmtDate(a.data)} ${a.horario}`, ref:{type:'ag', id:a.id}});
@@ -1788,26 +1937,95 @@ function renderDashboard(){
   pendencias.forEach(p=>{ (pendGroups[p.tipo]=pendGroups[p.tipo]||[]).push(p); });
 
   return `
-  <div class="dash-greeting">
-    <div class="dash-greeting-title">${greetingText()}</div>
-    <div class="dash-greeting-sub">Aqui está o resumo da rotina da Olhatta.</div>
-  </div>
   ${(()=>{ const b=ultimoBackupInfo(); if(b.dias!==null && b.dias<7) return ''; if(b.adiadoAte && b.adiadoAte>todayISO()) return '';
     return `<div class="alert alert-warn" style="margin-bottom:16px; align-items:center;">${ICONS.download}<div style="flex:1;"><strong>${b.dias===null?'Você ainda não baixou nenhum backup neste navegador.':`Faz ${b.dias} dias que você não baixa um backup.`}</strong> Baixar uma cópia de vez em quando protege seus dados.</div><button class="btn btn-primary btn-sm" id="btnBackupAviso">Baixar agora</button><button class="icon-btn" id="btnBackupFechar" title="Fechar aviso (volta a aparecer em 7 dias)">${ICONS.x}</button></div>`; })()}
-  ${renderDashNav()}
-
-  <div class="grid g4" style="margin-bottom:20px;">
-    ${statCard('Contatos recebidos · '+periodoTag, contatosMes.length, 'var(--brown)', '', 'contatos:')}
-    ${statCard('Contatos que agendaram', agendadosViaContatoMes.length, 'var(--st-confirmado)', 'Dos contatos deste período que ainda têm agendamento válido', 'contatos:Agendado')}
-    ${statCard('Agendamentos · '+periodoTag, agsDoDia.length, 'var(--sage)', tipoBreakdown(agsDoDia)+'<br>Atendimentos com data marcada neste período (de qualquer origem)', 'agenda:')}
-    ${statCard('Realizados · '+periodoTag, realizadosMes.length, 'var(--st-realizado)', tipoBreakdown(realizadosMes), 'agenda:Realizado')}
-    ${statCard('Desmarcados e cancelados', desmarcadosCanceladosUnicosPorTutor.length, 'var(--st-desmarcado)', tipoBreakdown(desmarcadosCanceladosUnicosPorTutor), 'desmarcacoes:')}
-    ${statCard('Faltas · '+periodoTag, faltasMes.length, 'var(--st-reagendado)', tipoBreakdown(faltasMes), 'agenda:Falta')}
-    ${statCard('Reagendados', reagendadosMes.length, 'var(--st-reagendado)', tipoBreakdown(reagendadosMes), 'agenda:Reagendado')}
+  <div class="dash-hero">
+  <div class="dash-head">
+    <div class="dash-greeting" style="margin:0;">
+      <div class="dash-greeting-title">${greetingText()}</div>
+      <div class="dash-greeting-sub">Aqui está o resumo da rotina da Olhatta.</div>
+    </div>
+    ${renderDashNav()}
+  </div>
+  <div class="dash-actions">
+    <button class="btn btn-primary btn-sm" id="qaNovoContato">${ICONS.plus} Novo contato</button>
+    ${window.Estq?`<button class="btn btn-secondary btn-sm" data-est-go="vender">${ICONS.plus} Nova venda</button>`:''}
+    <button class="btn btn-secondary btn-sm" id="qaNovoAgendamento">${ICONS.plus} Agendamento</button>
+    <button class="btn btn-secondary btn-sm" id="qaCadastro">${ICONS.plus} Tutor e animal</button>
+    <button class="btn btn-secondary btn-sm" id="qaNovaNF">${ICONS.receipt} Nota fiscal</button>
+    <button class="btn btn-secondary btn-sm" id="qaNovoLembrete">${ICONS.bell} Lembrete</button>
+    <button class="btn btn-secondary btn-sm" id="qaAlterarAg">${ICONS.desmarcacoes} Confirmar ou desmarcar</button>
+  </div>
   </div>
 
-  ${semanaGraficoHtml()}
+  <div class="grid g4 dash-kpis" style="margin-bottom:18px;">
+    ${statCard('Contatos · '+periodoTag, contatosMes.length, 'var(--brown)', `${agendadosViaContatoMes.length} agendaram`, 'contatos:')}
+    ${statCard('Agendamentos · '+periodoTag, agsDoDia.length, 'var(--sage)', tipoBreakdown(agsDoDia), 'agenda:')}
+    ${statCard('Realizados · '+periodoTag, realizadosMes.length, 'var(--st-realizado)', `${faltasMes.length} falta${faltasMes.length===1?'':'s'} · ${reagendadosMes.length} reagendado${reagendadosMes.length===1?'':'s'}`, 'agenda:Realizado')}
+    ${statCard('Desmarcados e cancelados', desmarcadosCanceladosUnicosPorTutor.length, 'var(--st-desmarcado)', tipoBreakdown(desmarcadosCanceladosUnicosPorTutor), 'desmarcacoes:')}
+  </div>
 
+  <div class="dash-main">
+    <div class="dash-col">
+      <div class="card pad">
+        <div class="dash-card-h">
+          <div class="section-title" style="margin:0;">Agenda</div>
+          <div class="dash-nav-gran">
+            <button class="dgran ${dashAgTab==='hoje'?'active':''}" onclick="setDashAgTab('hoje')">Hoje · ${atendimentosHoje.length}</button>
+            <button class="dgran ${dashAgTab!=='hoje'?'active':''}" onclick="setDashAgTab('prox')">${ehRealmenteAmanha?'Amanhã':'Próximo dia'} · ${proximos.length}</button>
+          </div>
+        </div>
+        <div class="dash-embed" ${dashAgTab==='hoje'?'':'hidden'}>
+      <div class="card pad">
+        <div class="section-title">Atendimentos de hoje <span class="tag">${fmtDateLong(today)}</span></div>
+        ${atendimentosHoje.length? `<div class="table-wrap"><table><thead><tr><th>Horário</th><th>Tutor</th><th>Animal</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+          ${atendimentosHoje.sort((a,b)=>a.horario.localeCompare(b.horario)).map(a=>`
+            <tr class="rowlink" data-open-ag="${a.id}">
+              <td><strong>${a.horario}</strong></td><td>${agTutorNome(a)}</td><td>${agAnimalNome(a)}</td>
+              <td>${tipoPill(a.tipo)}</td><td>${badge(a.status)}</td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex; gap:4px;">
+                  ${!['Realizado','Cancelado','Desmarcado'].includes(a.status)?`
+                    ${a.status!=='Confirmado'?`<button class="icon-btn" title="Confirmar" data-set-status="${a.id}" data-status="Confirmado">${ICONS.check}</button>`:''}
+                    <button class="icon-btn" title="Marcar realizado" data-set-status="${a.id}" data-status="Realizado">${ICONS.check}</button>
+                    <button class="icon-btn" title="Faltou" data-set-status="${a.id}" data-status="Falta">${ICONS.faltou}</button>
+                    <button class="icon-btn" title="Reagendar" data-reagendar="${a.id}">${ICONS.reagendar}</button>
+                    <button class="icon-btn" title="Desmarcar" data-set-status="${a.id}" data-status="Desmarcado">${ICONS.x}</button>
+                  `:''}
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody></table></div>` : emptyState('Nenhum atendimento hoje', 'Os atendimentos de hoje aparecem aqui automaticamente.')}
+      </div>
+        </div>
+        <div class="dash-embed" ${dashAgTab==='hoje'?'hidden':''}>
+      <div class="card pad">
+        <div class="section-title">Atendimentos ${proximoDiaLabel} <span class="tag">${fmtDateLong(proximoDiaData)}</span></div>
+        ${(()=>{
+          const naoConfirmados = proximos.filter(a=>!['Confirmado','Realizado'].includes(a.status));
+          if(!naoConfirmados.length) return '';
+          return `<div class="alert alert-warn" style="margin-bottom:14px;">${ICONS.bell}<div><strong>${naoConfirmados.length} atendimento${naoConfirmados.length>1?'s':''} ${proximoDiaLabel} ainda sem confirmação:</strong> ${naoConfirmados.map(a=>agAnimalNome(a)).join(', ')}.</div></div>`;
+        })()}
+        ${proximos.length? `<div class="table-wrap"><table><thead><tr><th>Horário</th><th>Tutor</th><th>Animal</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+          ${proximos.map(a=>`
+            <tr class="rowlink" data-open-ag="${a.id}">
+              <td><strong>${a.horario}</strong></td><td>${agTutorNome(a)}</td><td>${agAnimalNome(a)}</td><td>${tipoPill(a.tipo)}</td><td>${badge(a.status)}</td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex; gap:4px;">
+                  ${!['Realizado','Cancelado','Desmarcado'].includes(a.status)?`
+                    ${(a.status!=='Confirmado' && (tutorById(a.tutorId)?.telefone||a.telefoneAvulso))?`<a href="${linkWhatsappConfirmacao(a)}" target="_blank" rel="noopener" class="btn btn-sm" style="text-decoration:none; background:#25D366; color:#fff; border-color:#25D366;" title="Enviar confirmação por WhatsApp">WhatsApp</a>`:''}
+                    ${a.status!=='Confirmado'?`<button class="icon-btn" title="Confirmar" data-set-status="${a.id}" data-status="Confirmado">${ICONS.check}</button>`:''}
+                    <button class="icon-btn" title="Faltou" data-set-status="${a.id}" data-status="Falta">${ICONS.faltou}</button>
+                    <button class="icon-btn" title="Reagendar" data-reagendar="${a.id}">${ICONS.reagendar}</button>
+                    <button class="icon-btn" title="Desmarcar" data-set-status="${a.id}" data-status="Desmarcado">${ICONS.x}</button>
+                  `:''}
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody></table></div>` : emptyState(`Nenhum atendimento ${proximoDiaLabel}`, `Os atendimentos de ${fmtDate(proximoDiaData)} aparecem aqui automaticamente.`)}
+      </div>
+        </div>
+      </div>
   <div class="card pad" style="margin-bottom:20px; border-color:var(--st-aguardando);">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:4px;">
       <div class="section-title" style="margin-bottom:0;">${ICONS.contatos} Contatos aguardando resposta <span class="tag">${contatosAguardando.filter(c=>!c.mesmoTelefonema).length}</span></div>
@@ -1835,19 +2053,10 @@ function renderDashboard(){
       }).join('')}
     </div>` : emptyState('Nenhum contato aguardando resposta', 'Assim que você registrar um contato, ele aparece aqui até ser marcado como agendado ou não.')}
   </div>
-
-  <div class="card pad" style="margin-bottom:20px;">
-    <div class="section-title" style="margin-bottom:10px;">Ações rápidas</div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm" id="qaCadastro">${ICONS.plus} Cadastrar tutor e animal</button>
-      <button class="btn btn-secondary btn-sm" id="qaNovoAgendamento">${ICONS.plus} Agendamento</button>
-      <button class="btn btn-secondary btn-sm" id="qaNovoContato">${ICONS.plus} Contato</button>
-      <button class="btn btn-secondary btn-sm" id="qaNovoLembrete">${ICONS.plus} Lembrete</button>
-      <button class="btn btn-secondary btn-sm" id="qaAlterarAg">${ICONS.desmarcacoes} Confirmar / Desmarcar / Cancelar</button>
-      <button class="btn btn-secondary btn-sm" id="qaNovaNF">${ICONS.receipt} Nova NF</button>
+      ${semanaGraficoHtml()}
     </div>
-  </div>
 
+    <div class="dash-col">
   <div class="card pad" style="margin-bottom:20px; border-color:var(--brown);">
     <div class="section-title" style="margin-bottom:10px;">${ICONS.sparkle} O que preciso fazer${periodoTag==='hoje'?' hoje':''}? <span class="tag">${pendencias.length}</span></div>
     ${pendencias.length? `
@@ -1861,76 +2070,52 @@ function renderDashboard(){
           </div>`).join('')}
       </div>` : emptyState('Nenhuma pendência por aqui','Lembretes, contatos parados e confirmações aparecem aqui automaticamente.')}
   </div>
-
-  <div class="card pad" style="margin-bottom:16px;">
-    <div class="section-title">Cadastros recentes <span class="tag">últimos 7 dias</span></div>
-    ${(()=>{
-      const seteDiasAtras = new Date(); seteDiasAtras.setDate(seteDiasAtras.getDate()-7);
-      const recentes = [
-        ...DB.tutores.filter(t=>t.criadoEm && new Date(t.criadoEm)>=seteDiasAtras).map(t=>({tipo:'Tutor', item:t, data:t.criadoEm})),
-        ...DB.animais.filter(a=>a.criadoEm && new Date(a.criadoEm)>=seteDiasAtras).map(a=>({tipo:'Animal', item:a, data:a.criadoEm})),
-      ].sort((a,b)=>b.data.localeCompare(a.data));
-      if(!recentes.length) return emptyState('Nenhum cadastro novo nos últimos 7 dias', 'Tutores e animais recém-cadastrados aparecem aqui.');
-      return `<div style="display:flex; flex-wrap:wrap; gap:8px;">
-        ${recentes.map(r=>`
-          <span class="pill-muted rowlink" style="cursor:pointer;" ${r.tipo==='Tutor'?`data-edit-tutor-recente="${r.item.id}"`:`data-edit-animal-recente="${r.item.id}"`}>
-            ${r.tipo==='Tutor'?ICONS.paw:ICONS.paw} ${r.item.nome}${r.tipo==='Tutor'&&r.item.codigo?' #'+r.item.codigo:''} <span style="opacity:.6;">· ${r.tipo}</span>
-          </span>`).join('')}
-      </div>`;
-    })()}
+      <!--EST_DASH-->
+      <div class="card pad">
+        <div class="section-title">${ICONS.bell} Lembretes próximos</div>
+        ${lembretesProx.length? lembretesProx.map(l=>{
+          const classe = l.data<today?'alert-danger':(l.data===today?'alert-hoje':'alert-brown');
+          const rotulo = l.data<today?'Atrasado':(l.data===today?'HOJE':fmtDate(l.data));
+          return `
+          <div class="alert ${classe}" style="margin-bottom:8px;">
+            ${ICONS.bell}
+            <div style="flex:1;"><div class="t1">${l.titulo} <span class="pill-muted" style="margin-left:4px;">${rotulo}</span></div><div>${fmtDate(l.data)}${l.horario?' às '+l.horario:''} ${l.observacao?'— '+l.observacao:''}</div></div>
+          </div>`;
+        }).join('') : emptyState('Nenhum lembrete próximo','Cadastre lembretes na aba Lembretes.')}
+      </div>
+      ${(()=>{
+        const pendentesTodas = (DB.notasFiscais||[]).filter(nf=>nf.status==='Pendente');
+        if(!pendentesTodas.length) return '';
+        const nfAlertasDash = nfAlertas();
+        const porMes = {};
+        pendentesTodas.forEach(nf=>{ (porMes[monthKey(nf.data)]=porMes[monthKey(nf.data)]||[]).push(nf); });
+        const mesesOrdenados = Object.keys(porMes).sort().reverse();
+        return `<div class="card pad" ${nfAlertasDash.length?'style="border-color:var(--st-cancelado);"':''}>
+          <div class="section-title">${ICONS.receipt} Notas Fiscais pendentes <span class="tag">${pendentesTodas.length}</span></div>
+          ${nfAlertasDash.map(a=>`<div class="alert alert-danger" style="margin-bottom:8px;"><div>${a}</div></div>`).join('')}
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+            ${mesesOrdenados.map(mk=>{
+              const dt = new Date(mk+'-01T00:00:00');
+              const label = dt.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+              const total = porMes[mk].reduce((s,nf)=>s+(nf.valorTotal||0),0);
+              return `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--sage-pale); border-radius:8px; padding:8px 12px; font-size:13px;">
+                <span style="text-transform:capitalize;">${label}</span>
+                <span><strong>${porMes[mk].length}</strong> nota${porMes[mk].length===1?'':'s'} · R$ ${total.toFixed(2).replace('.',',')}</span>
+              </div>`;
+            }).join('')}
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btnVerNF" style="margin-top:10px;">Ver Notas Fiscais</button>
+        </div>`;
+      })()}
+    </div>
   </div>
 
-  <div class="grid" style="grid-template-columns:2fr 1fr; gap:16px; align-items:start;">
-    <div style="display:flex; flex-direction:column; gap:16px;">
-
-      <div class="card pad">
-        <div class="section-title">Atendimentos de hoje <span class="tag">${fmtDateLong(today)}</span></div>
-        ${atendimentosHoje.length? `<div class="table-wrap"><table><thead><tr><th>Horário</th><th>Tutor</th><th>Animal</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody>
-          ${atendimentosHoje.sort((a,b)=>a.horario.localeCompare(b.horario)).map(a=>`
-            <tr class="rowlink" data-open-ag="${a.id}">
-              <td><strong>${a.horario}</strong></td><td>${agTutorNome(a)}</td><td>${agAnimalNome(a)}</td>
-              <td>${tipoPill(a.tipo)}</td><td>${badge(a.status)}</td>
-              <td onclick="event.stopPropagation()">
-                <div style="display:flex; gap:4px;">
-                  ${!['Realizado','Cancelado','Desmarcado'].includes(a.status)?`
-                    ${a.status!=='Confirmado'?`<button class="icon-btn" title="Confirmar" data-set-status="${a.id}" data-status="Confirmado">${ICONS.check}</button>`:''}
-                    <button class="icon-btn" title="Marcar realizado" data-set-status="${a.id}" data-status="Realizado">${ICONS.check}</button>
-                    <button class="icon-btn" title="Faltou" data-set-status="${a.id}" data-status="Falta">${ICONS.faltou}</button>
-                    <button class="icon-btn" title="Reagendar" data-reagendar="${a.id}">${ICONS.reagendar}</button>
-                    <button class="icon-btn" title="Desmarcar" data-set-status="${a.id}" data-status="Desmarcado">${ICONS.x}</button>
-                  `:''}
-                </div>
-              </td>
-            </tr>`).join('')}
-        </tbody></table></div>` : emptyState('Nenhum atendimento hoje', 'Os atendimentos de hoje aparecem aqui automaticamente.')}
-      </div>
-
-      <div class="card pad">
-        <div class="section-title">Atendimentos ${proximoDiaLabel} <span class="tag">${fmtDateLong(proximoDiaData)}</span></div>
-        ${(()=>{
-          const naoConfirmados = proximos.filter(a=>!['Confirmado','Realizado'].includes(a.status));
-          if(!naoConfirmados.length) return '';
-          return `<div class="alert alert-warn" style="margin-bottom:14px;">${ICONS.bell}<div><strong>${naoConfirmados.length} atendimento${naoConfirmados.length>1?'s':''} ${proximoDiaLabel} ainda sem confirmação:</strong> ${naoConfirmados.map(a=>agAnimalNome(a)).join(', ')}.</div></div>`;
-        })()}
-        ${proximos.length? `<div class="table-wrap"><table><thead><tr><th>Horário</th><th>Tutor</th><th>Animal</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody>
-          ${proximos.map(a=>`
-            <tr class="rowlink" data-open-ag="${a.id}">
-              <td><strong>${a.horario}</strong></td><td>${agTutorNome(a)}</td><td>${agAnimalNome(a)}</td><td>${tipoPill(a.tipo)}</td><td>${badge(a.status)}</td>
-              <td onclick="event.stopPropagation()">
-                <div style="display:flex; gap:4px;">
-                  ${!['Realizado','Cancelado','Desmarcado'].includes(a.status)?`
-                    ${(a.status!=='Confirmado' && (tutorById(a.tutorId)?.telefone||a.telefoneAvulso))?`<a href="${linkWhatsappConfirmacao(a)}" target="_blank" rel="noopener" class="btn btn-sm" style="text-decoration:none; background:#25D366; color:#fff; border-color:#25D366;" title="Enviar confirmação por WhatsApp">WhatsApp</a>`:''}
-                    ${a.status!=='Confirmado'?`<button class="icon-btn" title="Confirmar" data-set-status="${a.id}" data-status="Confirmado">${ICONS.check}</button>`:''}
-                    <button class="icon-btn" title="Faltou" data-set-status="${a.id}" data-status="Falta">${ICONS.faltou}</button>
-                    <button class="icon-btn" title="Reagendar" data-reagendar="${a.id}">${ICONS.reagendar}</button>
-                    <button class="icon-btn" title="Desmarcar" data-set-status="${a.id}" data-status="Desmarcado">${ICONS.x}</button>
-                  `:''}
-                </div>
-              </td>
-            </tr>`).join('')}
-        </tbody></table></div>` : emptyState(`Nenhum atendimento ${proximoDiaLabel}`, `Os atendimentos de ${fmtDate(proximoDiaData)} aparecem aqui automaticamente.`)}
-      </div>
-
+  <div class="dash-sec-title">Análises e indicadores</div>
+  <div class="dash-acc-grid">
+    <div class="dash-col">
+      <details class="dash-acc" data-acc="tipo" ${dashAccOpen('tipo')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Atendimentos por tipo <span class="tag">${periodoTag}</span></summary>
+        <div class="dash-embed">
       <div class="card pad">
         <div class="section-title">Atendimentos por tipo <span class="tag">${periodoTag}</span></div>
         ${(()=>{
@@ -1956,7 +2141,63 @@ function renderDashboard(){
           <div class="hint" style="margin-top:14px;">Barra clara = agendados no período · barra sólida = já realizados</div>`;
         })()}
       </div>
-
+        </div>
+      </details>
+      <details class="dash-acc" data-acc="conv" ${dashAccOpen('conv')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Conversão de contatos <span class="tag">${periodoTag}</span></summary>
+        <div class="dash-embed">
+      <div class="card pad">
+        <div class="section-title">Conversão de contatos em agendamentos <span class="tag">${periodoTag}</span></div>
+        ${totalContatosMes? `
+          <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
+            ${donutChartHtml([
+              {label:'Agendados', value:agendadosConv, color:'var(--st-realizado)'},
+              {label:'Desmarcaram depois', value:desmarcaramConv, color:'var(--st-desmarcado)'},
+              {label:'Faltaram', value:faltaramConv, color:'var(--st-reagendado)'},
+              {label:'Não agendaram', value:naoAgendadosConv, color:'var(--st-cancelado)'},
+              {label:'Pendentes', value:pendentesConv, color:'var(--st-aguardando)'}
+            ], totalContatosMes, 'contatos')}
+            <div style="flex:1; min-width:160px; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-realizado);margin-right:6px;"></span>Agendados</span><strong>${agendadosConv}</strong></div>
+              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-desmarcado);margin-right:6px;"></span>Desmarcaram depois</span><strong>${desmarcaramConv}</strong></div>
+              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-reagendado);margin-right:6px;"></span>Faltaram</span><strong>${faltaramConv}</strong></div>
+              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-cancelado);margin-right:6px;"></span>Não agendaram</span><strong>${naoAgendadosConv}</strong></div>
+              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-aguardando);margin-right:6px;"></span>Pendentes</span><strong>${pendentesConv}</strong></div>
+              <div style="display:flex; justify-content:space-between; font-size:13px; border-top:1px solid var(--line); padding-top:6px;"><span>Total de contatos</span><strong>${totalContatosMes}</strong></div>
+            </div>
+          </div>
+          ${taxaConversao!==null?`<div class="alert alert-sage"><div><strong>Taxa de conversão: ${taxaConversao}%</strong> dos contatos deste período chegaram a virar agendamento (inclui os ${desmarcaramConv+faltaramConv} que desmarcaram ou faltaram depois).</div></div>`:''}
+          ${convPorTipo.length?`<div class="bars" style="margin-top:14px;">${convPorTipo.map(c=>`
+            <div class="bar-row">
+              <span>${c.tipo}</span>
+              <div class="bar-track"><div class="bar-fill" style="width:${Math.max(6,(c.agendados/c.total)*100)}%"></div></div>
+              <span style="text-align:right; font-weight:700;">${c.agendados}/${c.total}</span>
+            </div>`).join('')}</div>`:''}
+        ` : emptyState('Sem contatos suficientes este mês','A taxa de conversão aparece quando houver contatos registrados no mês.')}
+      </div>
+        </div>
+      </details>
+      <details class="dash-acc" data-acc="motivos" ${dashAccOpen('motivos')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Motivos de não agendamento</summary>
+        <div class="dash-embed">
+      ${motivosArr.length ? `
+      <div class="card pad">
+        <div class="section-title">Principais motivos de não agendamento</div>
+        <div class="bars">
+          ${motivosArr.map(([m,n,tutores])=>`
+            <div class="bar-row">
+              <span>${m}</span>
+              <div class="bar-track"><div class="bar-fill" style="width:${Math.max(6,(n/maxMotivo)*100)}%"></div></div>
+              <span style="text-align:right; font-weight:700;">${n}</span>
+            </div>
+            ${tutores.length?`<div class="hint" style="margin:-6px 0 6px; padding-left:2px;">${tutores.slice(0,4).join(', ')}${tutores.length>4?' +'+(tutores.length-4):''}</div>`:''}`).join('')}
+        </div>
+      </div>` : ''}
+        </div>
+      </details>
+      <details class="dash-acc" data-acc="perfil" ${dashAccOpen('perfil')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Perfil dos animais atendidos <span class="tag">${periodoTag}</span></summary>
+        <div class="dash-embed">
       ${(()=>{
         const especieCont = {Canina:0, Felina:0, Equina:0};
         const sexoCont = {Macho:0, 'Fêmea':0};
@@ -1989,76 +2230,11 @@ function renderDashboard(){
           </div>
         </div>`;
       })()}
-
-      ${motivosArr.length ? `
-      <div class="card pad">
-        <div class="section-title">Principais motivos de não agendamento</div>
-        <div class="bars">
-          ${motivosArr.map(([m,n,tutores])=>`
-            <div class="bar-row">
-              <span>${m}</span>
-              <div class="bar-track"><div class="bar-fill" style="width:${Math.max(6,(n/maxMotivo)*100)}%"></div></div>
-              <span style="text-align:right; font-weight:700;">${n}</span>
-            </div>
-            ${tutores.length?`<div class="hint" style="margin:-6px 0 6px; padding-left:2px;">${tutores.slice(0,4).join(', ')}${tutores.length>4?' +'+(tutores.length-4):''}</div>`:''}`).join('')}
         </div>
-      </div>` : ''}
-
-      <div class="card pad">
-        <div class="section-title">Conversão de contatos em agendamentos <span class="tag">${periodoTag}</span></div>
-        ${totalContatosMes? `
-          <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
-            ${donutChartHtml([
-              {label:'Agendados', value:agendadosConv, color:'var(--st-realizado)'},
-              {label:'Desmarcaram depois', value:desmarcaramConv, color:'var(--st-desmarcado)'},
-              {label:'Faltaram', value:faltaramConv, color:'var(--st-reagendado)'},
-              {label:'Não agendaram', value:naoAgendadosConv, color:'var(--st-cancelado)'},
-              {label:'Pendentes', value:pendentesConv, color:'var(--st-aguardando)'}
-            ], totalContatosMes, 'contatos')}
-            <div style="flex:1; min-width:160px; display:flex; flex-direction:column; gap:8px;">
-              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-realizado);margin-right:6px;"></span>Agendados</span><strong>${agendadosConv}</strong></div>
-              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-desmarcado);margin-right:6px;"></span>Desmarcaram depois</span><strong>${desmarcaramConv}</strong></div>
-              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-reagendado);margin-right:6px;"></span>Faltaram</span><strong>${faltaramConv}</strong></div>
-              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-cancelado);margin-right:6px;"></span>Não agendaram</span><strong>${naoAgendadosConv}</strong></div>
-              <div style="display:flex; justify-content:space-between; font-size:13px;"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--st-aguardando);margin-right:6px;"></span>Pendentes</span><strong>${pendentesConv}</strong></div>
-              <div style="display:flex; justify-content:space-between; font-size:13px; border-top:1px solid var(--line); padding-top:6px;"><span>Total de contatos</span><strong>${totalContatosMes}</strong></div>
-            </div>
-          </div>
-          ${taxaConversao!==null?`<div class="alert alert-sage"><div><strong>Taxa de conversão: ${taxaConversao}%</strong> dos contatos deste período chegaram a virar agendamento (inclui os ${desmarcaramConv+faltaramConv} que desmarcaram ou faltaram depois).</div></div>`:''}
-          ${convPorTipo.length?`<div class="bars" style="margin-top:14px;">${convPorTipo.map(c=>`
-            <div class="bar-row">
-              <span>${c.tipo}</span>
-              <div class="bar-track"><div class="bar-fill" style="width:${Math.max(6,(c.agendados/c.total)*100)}%"></div></div>
-              <span style="text-align:right; font-weight:700;">${c.agendados}/${c.total}</span>
-            </div>`).join('')}</div>`:''}
-        ` : emptyState('Sem contatos suficientes este mês','A taxa de conversão aparece quando houver contatos registrados no mês.')}
-      </div>
-
-      ${indicacoesList.length? `
-      <div class="card pad">
-        <div class="section-title">${ICONS.sparkle} Indicações — quem traz clientes</div>
-        <div class="grid g2" style="gap:20px;">
-          <div>
-            <div class="hint" style="margin-bottom:8px; font-weight:700; text-transform:uppercase; font-size:11px;">Fontes mais frequentes</div>
-            <div class="bars">
-              ${fontesArr.map(([f,n])=>`
-                <div class="bar-row">
-                  <span>${f}</span>
-                  <div class="bar-track"><div class="bar-fill" style="width:${Math.max(6,(n/fontesArr[0][1])*100)}%; background:var(--brown);"></div></div>
-                  <span style="text-align:right; font-weight:700;">${n}</span>
-                </div>`).join('')}
-            </div>
-          </div>
-          <div>
-            ${vetsArr.length?`<div class="hint" style="margin-bottom:8px; font-weight:700; text-transform:uppercase; font-size:11px;">Top veterinários que indicam</div>
-            <div style="margin-bottom:14px;">${vetsArr.map(([v,n])=>`<div class="insight"><div class="dot" style="background:var(--sage);"></div><div style="flex:1;">${/^dra?\.?\s/i.test(v)?v:'Dr(a). '+v}</div><span class="pill-muted">${n}x</span></div>`).join('')}</div>`:''}
-            ${clinicasArr.length?`<div class="hint" style="margin-bottom:8px; font-weight:700; text-transform:uppercase; font-size:11px;">Top clínicas que indicam</div>
-            <div>${clinicasArr.map(([c,n])=>`<div class="insight"><div class="dot" style="background:var(--st-confirmado);"></div><div style="flex:1;">${c}</div><span class="pill-muted">${n}x</span></div>`).join('')}</div>`:''}
-            ${(!vetsArr.length && !clinicasArr.length)?`<div class="hint">Nenhum veterinário ou clínica indicada ainda.</div>`:''}
-          </div>
-        </div>
-      </div>` : ''}
-
+      </details>
+      <details class="dash-acc" data-acc="origem" ${dashAccOpen('origem')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>De onde vieram os agendamentos</summary>
+        <div class="dash-embed">
       ${realizadosMes.length? `
       <div class="card pad">
         <div class="section-title">De onde vieram os agendamentos <span class="tag">${periodoTag}</span></div>
@@ -2070,61 +2246,23 @@ function renderDashboard(){
         </div>
         ${origemAg.anterior>0?`<div class="hint" style="margin-top:10px;">${origemAg.anterior} pessoa${origemAg.anterior===1?'':'s'} entrou em contato antes e só agendou agora, isso mostra o tempo de maturação do contato até o agendamento.</div>`:''}
       </div>` : ''}
-
+        </div>
+      </details>
     </div>
-
-    <div style="display:flex; flex-direction:column; gap:16px;">
-
-      ${alertas.length? `
-      <div class="card pad" style="border-color:var(--st-desmarcado-bg);">
-        <div class="section-title">${ICONS.bell} Alertas <span class="tag">${alertas.length}</span></div>
-        ${alertas.map(t=>`<div class="alert alert-warn" style="margin-bottom:8px;"><div>${t}</div></div>`).join('')}
-      </div>` : ''}
-
-      ${(()=>{
-        const pendentesTodas = (DB.notasFiscais||[]).filter(nf=>nf.status==='Pendente');
-        if(!pendentesTodas.length) return '';
-        const nfAlertasDash = nfAlertas();
-        const porMes = {};
-        pendentesTodas.forEach(nf=>{ (porMes[monthKey(nf.data)]=porMes[monthKey(nf.data)]||[]).push(nf); });
-        const mesesOrdenados = Object.keys(porMes).sort().reverse();
-        return `<div class="card pad" ${nfAlertasDash.length?'style="border-color:var(--st-cancelado);"':''}>
-          <div class="section-title">${ICONS.receipt} Notas Fiscais pendentes <span class="tag">${pendentesTodas.length}</span></div>
-          ${nfAlertasDash.map(a=>`<div class="alert alert-danger" style="margin-bottom:8px;"><div>${a}</div></div>`).join('')}
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
-            ${mesesOrdenados.map(mk=>{
-              const dt = new Date(mk+'-01T00:00:00');
-              const label = dt.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-              const total = porMes[mk].reduce((s,nf)=>s+(nf.valorTotal||0),0);
-              return `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--sage-pale); border-radius:8px; padding:8px 12px; font-size:13px;">
-                <span style="text-transform:capitalize;">${label}</span>
-                <span><strong>${porMes[mk].length}</strong> nota${porMes[mk].length===1?'':'s'} · R$ ${total.toFixed(2).replace('.',',')}</span>
-              </div>`;
-            }).join('')}
-          </div>
-          <button class="btn btn-secondary btn-sm" id="btnVerNF" style="margin-top:10px;">Ver Notas Fiscais</button>
-        </div>`;
-      })()}
-
+    <div class="dash-col">
+      <details class="dash-acc" data-acc="intel" ${dashAccOpen('intel')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Inteligência da rotina <span class="tag">${insights.length}</span></summary>
+        <div class="dash-embed">
       <div class="card pad">
         <div class="section-title">${ICONS.sparkle} Inteligência da rotina</div>
         ${insights.length? `<div>${insights.map(t=>`<div class="insight"><div class="dot"></div><div>${t}</div></div>`).join('')}</div>`
           : `<div class="hint">As análises aparecem automaticamente conforme mais dados forem cadastrados.</div>`}
       </div>
-
-      <div class="card pad">
-        <div class="section-title">${ICONS.bell} Lembretes próximos</div>
-        ${lembretesProx.length? lembretesProx.map(l=>{
-          const classe = l.data<today?'alert-danger':(l.data===today?'alert-hoje':'alert-brown');
-          const rotulo = l.data<today?'Atrasado':(l.data===today?'HOJE':fmtDate(l.data));
-          return `
-          <div class="alert ${classe}" style="margin-bottom:8px;">
-            ${ICONS.bell}
-            <div style="flex:1;"><div class="t1">${l.titulo} <span class="pill-muted" style="margin-left:4px;">${rotulo}</span></div><div>${fmtDate(l.data)}${l.horario?' às '+l.horario:''} ${l.observacao?'— '+l.observacao:''}</div></div>
-          </div>`;
-        }).join('') : emptyState('Nenhum lembrete próximo','Cadastre lembretes na aba Lembretes.')}
-      </div>
-
+        </div>
+      </details>
+      <details class="dash-acc" data-acc="indicadores" ${dashAccOpen('indicadores')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Indicadores de contato</summary>
+        <div class="dash-embed">
       <div class="card pad">
         <div class="section-title">Indicadores de contato</div>
         <div class="table-wrap">
@@ -2149,7 +2287,40 @@ function renderDashboard(){
         </div>
         <div style="display:flex; justify-content:space-between; font-size:13.5px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line);"><span>Reagendamentos (${periodoTag})</span><strong>${reagendadosMes.length}</strong></div>
       </div>
-
+        </div>
+      </details>
+      <details class="dash-acc" data-acc="indic" ${dashAccOpen('indic')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Indicações</summary>
+        <div class="dash-embed">
+      ${indicacoesList.length? `
+      <div class="card pad">
+        <div class="section-title">${ICONS.sparkle} Indicações — quem traz clientes</div>
+        <div class="grid g2" style="gap:20px;">
+          <div>
+            <div class="hint" style="margin-bottom:8px; font-weight:700; text-transform:uppercase; font-size:11px;">Fontes mais frequentes</div>
+            <div class="bars">
+              ${fontesArr.map(([f,n])=>`
+                <div class="bar-row">
+                  <span>${f}</span>
+                  <div class="bar-track"><div class="bar-fill" style="width:${Math.max(6,(n/fontesArr[0][1])*100)}%; background:var(--brown);"></div></div>
+                  <span style="text-align:right; font-weight:700;">${n}</span>
+                </div>`).join('')}
+            </div>
+          </div>
+          <div>
+            ${vetsArr.length?`<div class="hint" style="margin-bottom:8px; font-weight:700; text-transform:uppercase; font-size:11px;">Top veterinários que indicam</div>
+            <div style="margin-bottom:14px;">${vetsArr.map(([v,n])=>`<div class="insight"><div class="dot" style="background:var(--sage);"></div><div style="flex:1;">${/^dra?\.?\s/i.test(v)?v:'Dr(a). '+v}</div><span class="pill-muted">${n}x</span></div>`).join('')}</div>`:''}
+            ${clinicasArr.length?`<div class="hint" style="margin-bottom:8px; font-weight:700; text-transform:uppercase; font-size:11px;">Top clínicas que indicam</div>
+            <div>${clinicasArr.map(([c,n])=>`<div class="insight"><div class="dot" style="background:var(--st-confirmado);"></div><div style="flex:1;">${c}</div><span class="pill-muted">${n}x</span></div>`).join('')}</div>`:''}
+            ${(!vetsArr.length && !clinicasArr.length)?`<div class="hint">Nenhum veterinário ou clínica indicada ainda.</div>`:''}
+          </div>
+        </div>
+      </div>` : ''}
+        </div>
+      </details>
+      <details class="dash-acc" data-acc="desm" ${dashAccOpen('desm')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Clientes que mais desmarcam</summary>
+        <div class="dash-embed">
       ${clientesDesmarcam.length? `
       <div class="card pad">
         <div class="section-title">Clientes que mais desmarcam</div>
@@ -2163,13 +2334,61 @@ function renderDashboard(){
             <span class="pill-muted">${c.n}x</span>
           </div>`).join('')}
       </div>` : ''}
-
+        </div>
+      </details>
+      <details class="dash-acc" data-acc="recentes" ${dashAccOpen('recentes')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Cadastros recentes</summary>
+        <div class="dash-embed">
+  <div class="card pad" style="margin-bottom:16px;">
+    <div class="section-title">Cadastros recentes <span class="tag">últimos 7 dias</span></div>
+    ${(()=>{
+      const seteDiasAtras = new Date(); seteDiasAtras.setDate(seteDiasAtras.getDate()-7);
+      const recentes = [
+        ...DB.tutores.filter(t=>t.criadoEm && new Date(t.criadoEm)>=seteDiasAtras).map(t=>({tipo:'Tutor', item:t, data:t.criadoEm})),
+        ...DB.animais.filter(a=>a.criadoEm && new Date(a.criadoEm)>=seteDiasAtras).map(a=>({tipo:'Animal', item:a, data:a.criadoEm})),
+      ].sort((a,b)=>b.data.localeCompare(a.data));
+      if(!recentes.length) return emptyState('Nenhum cadastro novo nos últimos 7 dias', 'Tutores e animais recém-cadastrados aparecem aqui.');
+      return `<div style="display:flex; flex-wrap:wrap; gap:8px;">
+        ${recentes.map(r=>`
+          <span class="pill-muted rowlink" style="cursor:pointer;" ${r.tipo==='Tutor'?`data-edit-tutor-recente="${r.item.id}"`:`data-edit-animal-recente="${r.item.id}"`}>
+            ${r.tipo==='Tutor'?ICONS.paw:ICONS.paw} ${r.item.nome}${r.tipo==='Tutor'&&r.item.codigo?' #'+r.item.codigo:''} <span style="opacity:.6;">· ${r.tipo}</span>
+          </span>`).join('')}
+      </div>`;
+    })()}
+  </div>
+        </div>
+      </details>
+      <details class="dash-acc" data-acc="alertas" ${dashAccOpen('alertas')?'open':''} ontoggle="dashAccToggle(this)">
+        <summary>Avisos de cadastro <span class="tag">${alertas.length}</span></summary>
+        <div class="dash-embed">
+      ${alertas.length? `
+      <div class="card pad" style="border-color:var(--st-desmarcado-bg);">
+        <div class="section-title">${ICONS.bell} Alertas <span class="tag">${alertas.length}</span></div>
+        ${alertas.map(t=>`<div class="alert alert-warn" style="margin-bottom:8px;"><div>${t}</div></div>`).join('')}
+      </div>` : ''}
+        </div>
+      </details>
     </div>
   </div>`;
 }
+function statCardIcon(label){
+  const t = String(label).toLowerCase();
+  if(t.startsWith('contatos')) return ['contatos','brown'];
+  if(t.startsWith('agendamentos')) return ['agenda',''];
+  if(t.startsWith('realizados') || t.startsWith('feitas') || t.startsWith('avaliaram')) return ['check',''];
+  if(t.startsWith('desmarcados')) return ['desmarcacoes','bad'];
+  if(t.startsWith('cancelados')) return ['x','bad'];
+  if(t.startsWith('reagendados')) return ['reagendar','warn'];
+  if(t.startsWith('pendentes')) return ['receipt','warn'];
+  if(t.startsWith('valor')) return ['barchart','brown'];
+  if(t.startsWith('aguardando')) return ['bell','warn'];
+  if(t.startsWith('total de pedidos')) return ['star','brown'];
+  return null;
+}
 function statCard(label,value,color,sub,go){
+  const _ic = statCardIcon(label);
   const isLongText = typeof value==='string' && value.length>6 && !/^R\$/.test(value);
-  return `<div class="stat-card${go?' clicavel':''}" style="--c:${color}" ${go?`data-go="${go}" role="button" tabindex="0"`:''}><div class="stripe"></div><div class="label">${label}</div><div class="value" style="${isLongText?'font-size:19px; line-height:1.25; word-break:break-word;':''}">${value}</div>${sub?`<div style="font-size:11px; color:var(--ink-soft); margin-top:5px; line-height:1.5;">${sub}</div>`:''}</div>`;
+  return `<div class="stat-card${go?' clicavel':''}" style="--c:${color}" ${go?`data-go="${go}" role="button" tabindex="0"`:''}><div class="stripe"></div>${_ic&&ICONS[_ic[0]]?`<span class="sc-ic ${_ic[1]}">${ICONS[_ic[0]]}</span>`:''}<div class="label">${label}</div><div class="value" style="${isLongText?'font-size:19px; line-height:1.25; word-break:break-word;':''}">${value}</div>${sub?`<div style="font-size:11px; color:var(--ink-soft); margin-top:5px; line-height:1.5;">${sub}</div>`:''}</div>`;
 }
 function tipoBreakdown(list){
   const porTipo = {Consulta:0, Acompanhamento:0, Cirurgia:0};
@@ -2336,65 +2555,56 @@ function renderAgenda(){
   const contatosNoPeriodo = agendaFilters.todos ? DB.contatos.filter(c=>!c.mesmoTelefonema).length : DB.contatos.filter(c=>!c.mesmoTelefonema && inRefPeriod(c.dataContato)).length;
   const agendadosNoPeriodo = agendaFilters.todos ? DB.agendamentos.filter(a=>!['Cancelado','Desmarcado','Reagendado'].includes(a.status)).length : DB.agendamentos.filter(a=>inRefPeriod(a.data) && !['Cancelado','Desmarcado','Reagendado'].includes(a.status)).length;
 
-  return `
-  <div class="card pad" style="margin-bottom:18px;">
-    <div class="section-title" style="justify-content:space-between; flex-wrap:wrap; gap:6px 14px;">
-      <span>${ICONS.agenda} Hoje — ${fmtDateLong(today)}</span>
-      <span style="font-size:11.5px; font-weight:700; color:var(--ink-soft);">Agendei hoje: <strong>${agendadosHojeCriados}</strong> · Marcados p/ hoje: <strong>${agendadosParaHoje}</strong></span>
+  const comHoje = hojePorTipo.filter(g=>g.lista.length);
+  const agToggle = `<div class="seg" role="group" aria-label="Modo de exibição">
+      <button type="button" class="${agendaViewMode==='calendario'?'on':''}" data-agenda-view="calendario">${ICONS.agenda} Calendário</button>
+      <button type="button" class="${agendaViewMode==='lista'?'on':''}" data-agenda-view="lista">${ICONS.notepad} Lista</button>
     </div>
-    <div class="grid g3">
-      ${hojePorTipo.map(grupo=>`
+    <button class="btn btn-primary btn-sm" id="novoAgendamento">${ICONS.plus} Novo agendamento</button>`;
+  return `
+  ${renderDashNav(agendaViewMode==='calendario', agToggle)}
+  <div class="card pad ${accCard('ag-hoje', true)}" style="margin-bottom:16px;">
+    <div class="section-title" ${accTitleAttrs()}>
+      <span>Hoje <span class="acc-sub hide-md">${fmtDateLong(today)}</span></span>
+      <span class="acc-sub">${agendadosParaHoje} marcado${agendadosParaHoje===1?'':'s'} · ${agendadosHojeCriados} agendado${agendadosHojeCriados===1?'':'s'} hoje</span>
+    </div>
+    ${comHoje.length? `<div class="hoje-grid">${comHoje.map(grupo=>`
       <div>
         <div class="pend-group-head">${grupo.tipo}${grupo.tipo.endsWith('s')?'':'s'} <span class="pill-muted">${grupo.lista.length}</span></div>
-        ${grupo.lista.length? grupo.lista.map(a=>`<div class="pend-row rowlink" data-open-ag="${a.id}"><span class="pend-dot" style="background:${grupo.cor};"></span><span><strong>${a.horario}</strong> ${agAnimalNome(a)} · ${agTutorNome(a)}</span></div>`).join('') : `<div class="hint">Nenhum hoje.</div>`}
-      </div>`).join('')}
-    </div>
-  </div>
-
-  ${renderDashNav(agendaViewMode==='calendario')}
-  <div style="margin:0 0 16px; display:flex; gap:8px;">
-    <button type="button" class="btn btn-sm ${agendaViewMode==='lista'?'btn-primary':'btn-secondary'}" data-agenda-view="lista">${ICONS.notepad} Lista</button>
-    <button type="button" class="btn btn-sm ${agendaViewMode==='calendario'?'btn-primary':'btn-secondary'}" data-agenda-view="calendario">${ICONS.agenda} Calendário</button>
+        ${grupo.lista.map(a=>`<div class="pend-row rowlink" data-open-ag="${a.id}"><span class="pend-dot" style="background:${grupo.cor};"></span><span><strong>${a.horario}</strong> ${agAnimalNome(a)} · ${agTutorNome(a)}</span></div>`).join('')}
+      </div>`).join('')}</div>` : `<div class="hint">Nenhum atendimento marcado para hoje.</div>`}
   </div>
   ${agendaViewMode==='calendario' ? `
     ${renderCalendarioMes(state.dash.refDate)}
-    <div style="margin-top:16px;"><button class="btn btn-primary" id="novoAgendamento">${ICONS.plus} Novo agendamento</button></div>
   ` : `
-  <div class="grid g2" style="margin:0 0 12px;">
-    <div class="stat-card" style="--c:var(--brown)"><div class="stripe"></div><div class="label">Contatos no período (${modoData==='contato'?'por data de contato':'referência'})</div><div class="value" style="font-size:24px;">${contatosNoPeriodo}</div></div>
-    <div class="stat-card" style="--c:var(--st-realizado)"><div class="stripe"></div><div class="label">Agendamentos no período</div><div class="value" style="font-size:24px;">${agendadosNoPeriodo}</div></div>
+  <div class="grid g2 dash-kpis" style="margin:0 0 14px;">
+    <div class="stat-card" style="--c:var(--brown)"><div class="stripe"></div><span class="sc-ic brown">${ICONS.contatos}</span><div class="label">Contatos no período</div><div class="value" style="font-size:24px;">${contatosNoPeriodo}</div></div>
+    <div class="stat-card" style="--c:var(--st-realizado)"><div class="stripe"></div><span class="sc-ic">${ICONS.agenda}</span><div class="label">Agendamentos no período</div><div class="value" style="font-size:24px;">${agendadosNoPeriodo}</div></div>
   </div>
-  <div style="margin:-4px 0 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-    <label style="display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;"><input type="checkbox" id="agendaTodosPeriodos" style="width:auto;" ${agendaFilters.todos?'checked':''}> Ignorar período e mostrar todos os agendamentos</label>
+  <div class="fbar">
+    <input type="text" placeholder="Nome do tutor" value="${agendaFilters.tutor}" data-fx="tutor" style="min-width:150px;">
+    <input type="text" placeholder="Nome do animal" value="${agendaFilters.animal}" data-fx="animal" style="min-width:150px;">
+    <input type="date" value="${agendaFilters.data}" data-fx="data" title="Buscar uma data específica (ignora o período acima)">
+    <select data-fx="tipo" style="width:auto;">
+      <option value="">Todos tipos</option>
+      ${tiposNomes().map(t=>`<option ${agendaFilters.tipo===t?'selected':''}>${t}</option>`).join('')}
+    </select>
+    <select data-fx="cidade" style="width:auto;">
+      <option value="">Todas cidades</option>
+      ${Object.keys(DB.cidadesClinicas).map(c=>`<option ${agendaFilters.cidade===c?'selected':''}>${c}</option>`).join('')}
+    </select>
+    <select data-fx="modoData" style="width:auto;" title="Qual data usar no período">
+      <option value="agendamento" ${modoData==='agendamento'?'selected':''}>Pela data do agendamento</option>
+      <option value="contato" ${modoData==='contato'?'selected':''}>Pela data do contato</option>
+    </select>
+  </div>
+  <div class="fbar">
+    <button class="chip-btn ${!agendaFilters.status?'on':''}" data-agstatus="">Todos</button>
+    ${['Agendado','AguardandoConfirmacao','Confirmado','Realizado','Falta','Cancelado','Desmarcado','Reagendado'].filter(st=>contagemAg[st]||agendaFilters.status===st).map(st=>`<button class="chip-btn ${agendaFilters.status===st?'on':''}" data-agstatus="${st}">${statusLabel(st)} <span style="opacity:.7;">${contagemAg[st]||0}</span></button>`).join('')}
+    <span class="grow"></span>
     <button type="button" class="chip-btn ${agendaFilters.ult7?'on':''}" id="agendaUlt7">Últimos 7 dias</button>
-    <label style="display:inline-flex; align-items:center; gap:6px; font-weight:600;">Filtrar por:
-      <select data-fx="modoData" style="width:auto; min-width:150px;">
-        <option value="agendamento" ${modoData==='agendamento'?'selected':''}>Data do agendamento</option>
-        <option value="contato" ${modoData==='contato'?'selected':''}>Data do contato</option>
-      </select>
-    </label>
-  </div>
-
-  <div class="view-head">
-    <div class="filters" style="margin-bottom:0;">
-      <input type="text" placeholder="Nome do tutor" value="${agendaFilters.tutor}" data-fx="tutor" style="min-width:150px;">
-      <input type="text" placeholder="Nome do animal" value="${agendaFilters.animal}" data-fx="animal" style="min-width:150px;">
-      <input type="date" value="${agendaFilters.data}" data-fx="data" title="Buscar uma data específica (ignora o período acima)">
-      <div style="display:flex; gap:6px; flex-wrap:wrap; width:100%;">
-        <button class="chip-btn ${!agendaFilters.status?'on':''}" data-agstatus="">Todos</button>
-        ${['Agendado','AguardandoConfirmacao','Confirmado','Realizado','Falta','Cancelado','Desmarcado','Reagendado'].filter(st=>contagemAg[st]||agendaFilters.status===st).map(st=>`<button class="chip-btn ${agendaFilters.status===st?'on':''}" data-agstatus="${st}">${statusLabel(st)} <span style="opacity:.7;">${contagemAg[st]||0}</span></button>`).join('')}
-      </div>
-      <select data-fx="tipo">
-        <option value="">Todos tipos</option>
-        ${tiposNomes().map(t=>`<option ${agendaFilters.tipo===t?'selected':''}>${t}</option>`).join('')}
-      </select>
-      <select data-fx="cidade">
-        <option value="">Todas cidades</option>
-        ${Object.keys(DB.cidadesClinicas).map(c=>`<option ${agendaFilters.cidade===c?'selected':''}>${c}</option>`).join('')}
-      </select>
-      ${(agendaFilters.tutor||agendaFilters.animal||agendaFilters.data||agendaFilters.status||agendaFilters.tipo||agendaFilters.cidade)?`<button class="btn btn-ghost btn-sm" id="clearAgendaFx">Limpar filtros</button>`:''}
-    </div>
-    <button class="btn btn-primary" id="novoAgendamento">${ICONS.plus} Novo agendamento</button>
+    <label class="chk"><input type="checkbox" id="agendaTodosPeriodos" ${agendaFilters.todos?'checked':''}> Todo o período</label>
+    ${(agendaFilters.tutor||agendaFilters.animal||agendaFilters.data||agendaFilters.status||agendaFilters.tipo||agendaFilters.cidade)?`<button class="btn btn-ghost btn-sm" id="clearAgendaFx">Limpar filtros</button>`:''}
   </div>
 
   <div class="card">
@@ -2502,12 +2712,9 @@ function contatosPorSemanaHtml(){
     const atual = hoje>=w.de && hoje<=w.ate;
     return {w, atual, total:cs.length, cliente:cs.filter(c=>c.origem!=='Realizado').length, nos:cs.filter(c=>c.origem==='Realizado').length, ag:cs.filter(c=>c.status==='Agendado').length, nao:cs.filter(c=>c.status==='Não agendado').length};
   });
-  return `<div class="card pad" style="margin-bottom:16px;">
-    <div class="section-title" style="justify-content:space-between; margin-bottom:${semanasRecolhido?0:10}px;">
-      <span>Contatos por semana</span>
-      <button class="chip-btn" id="semanasRecBtn">${semanasRecolhido?'Expandir':'Recolher'}</button>
-    </div>
-    ${semanasRecolhido?'':`<div class="table-wrap"><table class="semanas-tab"><thead><tr><th>Semana</th><th>Total</th><th>Do cliente</th><th>Nossos</th><th>Agendou</th><th>Não agendou</th></tr></thead><tbody>
+  return `<div class="card pad ${accCard('ct-semana', false)}" style="margin-top:16px;">
+    <div class="section-title" ${accTitleAttrs()}><span>Contatos por semana</span></div>
+    ${`<div class="table-wrap"><table class="semanas-tab"><thead><tr><th>Semana</th><th>Total</th><th>Do cliente</th><th>Nossos</th><th>Agendou</th><th>Não agendou</th></tr></thead><tbody>
       ${rows.map(r=>`<tr class="rowlink ${r.atual?'semana-atual':''}" data-semana-de="${r.w.de}" data-semana-ate="${r.w.ate}"><td>${fmtDate(r.w.de).slice(0,5)} a ${fmtDate(r.w.ate).slice(0,5)}${r.atual?' <span class="pill-muted">atual</span>':''}</td><td><strong>${r.total}</strong></td><td>${r.cliente}</td><td>${r.nos}</td><td>${r.ag}</td><td>${r.nao}</td></tr>`).join('')}
     </tbody></table></div>`}
   </div>`;
@@ -2536,26 +2743,25 @@ function renderContatos(){
   const motivosSet = [...new Set(DB.contatos.map(c=>c.motivoNaoAgendamento).filter(Boolean))];
 
   return `
-  ${renderDashNav()}
-  ${contatosPorSemanaHtml()}
-  <div class="view-head">
-    <div class="filters" style="margin-bottom:0;">
-      <input type="text" placeholder="Buscar nome, animal ou telefone" value="${contatosFilters.q||''}" id="contatosBusca" style="min-width:230px;">
-      <button type="button" class="chip-btn ${contatosFilters.ult7?'on':''}" id="contatosUlt7">Últimos 7 dias</button>
-      <button type="button" class="chip-btn ${contatosFilters.todos?'on':''}" id="contatosTodosPeriodos">Todo o período</button>
-      ${(contatosFilters.de||contatosFilters.ate)?`<button type="button" class="chip-btn on" id="contatosLimpaIntervalo">${contatosFilters.de?fmtDate(contatosFilters.de).slice(0,5):''} a ${contatosFilters.ate?fmtDate(contatosFilters.ate).slice(0,5):''} ✕</button>`:''}
-      ${['','Aguardando','Agendado','Não agendado'].map(st=>`<button class="chip-btn ${contatosFilters.status===st?'on':''}" data-cstatus="${st}">${st||'Todos'}${st?` <span style="opacity:.7;">${contagemStatus[st]||0}</span>`:''}</button>`).join('')}
-      <select data-cfx="tipo">
-        <option value="">Todos tipos</option>
-        ${tiposNomes().map(t=>`<option ${contatosFilters.tipo===t?'selected':''}>${t}</option>`).join('')}
-      </select>
-      <select data-cfx="motivo">
-        <option value="">Qualquer motivo</option>
-        ${motivosSet.map(m=>`<option ${contatosFilters.motivo===m?'selected':''}>${m}</option>`).join('')}
-      </select>
-      ${(contatosFilters.status||contatosFilters.motivo||contatosFilters.tipo||contatosFilters.q)?`<button class="btn btn-ghost btn-sm" id="clearContatosFx">Limpar filtros</button>`:''}
-    </div>
-    <button class="btn btn-primary" id="novoContato">${ICONS.plus} Registrar contato</button>
+  ${renderDashNav(false, `<button class="btn btn-primary btn-sm" id="novoContato">${ICONS.plus} Novo contato</button>`)}
+  <div class="fbar">
+    <input type="text" placeholder="Buscar nome, animal ou telefone" value="${contatosFilters.q||''}" id="contatosBusca" style="min-width:230px;">
+    <select data-cfx="tipo" style="width:auto;">
+      <option value="">Todos tipos</option>
+      ${tiposNomes().map(t=>`<option ${contatosFilters.tipo===t?'selected':''}>${t}</option>`).join('')}
+    </select>
+    <select data-cfx="motivo" style="width:auto;">
+      <option value="">Qualquer motivo</option>
+      ${motivosSet.map(m=>`<option ${contatosFilters.motivo===m?'selected':''}>${m}</option>`).join('')}
+    </select>
+  </div>
+  <div class="fbar">
+    ${['','Aguardando','Agendado','Não agendado'].map(st=>`<button class="chip-btn ${contatosFilters.status===st?'on':''}" data-cstatus="${st}">${st||'Todos'}${st?` <span style="opacity:.7;">${contagemStatus[st]||0}</span>`:''}</button>`).join('')}
+    <span class="grow"></span>
+    ${(contatosFilters.de||contatosFilters.ate)?`<button type="button" class="chip-btn on" id="contatosLimpaIntervalo">${contatosFilters.de?fmtDate(contatosFilters.de).slice(0,5):''} a ${contatosFilters.ate?fmtDate(contatosFilters.ate).slice(0,5):''} ✕</button>`:''}
+    <button type="button" class="chip-btn ${contatosFilters.ult7?'on':''}" id="contatosUlt7">Últimos 7 dias</button>
+    <button type="button" class="chip-btn ${contatosFilters.todos?'on':''}" id="contatosTodosPeriodos">Todo o período</button>
+    ${(contatosFilters.status||contatosFilters.motivo||contatosFilters.tipo||contatosFilters.q)?`<button class="btn btn-ghost btn-sm" id="clearContatosFx">Limpar filtros</button>`:''}
   </div>
 
   <div class="card">
@@ -2573,7 +2779,8 @@ function renderContatos(){
           <td>${contatoBadge(c.status)}${c.mesmoTelefonema?' <span class="pill-muted" title="Mesmo telefonema de outro animal">mesmo telefonema</span>':''}${recontatoPill(c)?'<div style="margin-top:4px;">'+recontatoPill(c)+'</div>':''}</td>
         </tr>`).join('')}
     </tbody></table></div>` : `<div class="pad">${emptyState('Nenhum contato registrado','Registre contatos recebidos que ainda não resultaram em agendamento.')}</div>`}
-  </div>`;
+  </div>
+  ${contatosPorSemanaHtml()}`;
 }
 function recontatoPill(c){
   if(!c.recontatarEm || c.status!=='Aguardando') return '';
@@ -2613,20 +2820,19 @@ function renderDesmarcacoes(){
   const txtEspaco = e=>[e.desm?`${e.desm} ${e.desm===1?'desmarque':'desmarques'}`:'', e.falta?`${e.falta} ${e.falta===1?'falta':'faltas'}`:'', e.reag?`${e.reag} ${e.reag===1?'reagendou':'reagendaram'}`:''].filter(Boolean).join(' · ');
 
   return `
-  ${renderDashNav()}
-  <div style="margin:-10px 0 16px;"><label style="display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;"><input type="checkbox" id="desmarcacoesTodosPeriodos" style="width:auto;" ${desmarcacoesFilters.todos?'checked':''}> Ignorar período e mostrar todos os registros</label></div>
+  ${renderDashNav(false, `<label class="chk-inline"><input type="checkbox" id="desmarcacoesTodosPeriodos" ${desmarcacoesFilters.todos?'checked':''}> Todo o período</label>`)}
   <div class="grid g3" style="margin-bottom:16px;">
     ${statCard('Cancelados', contDesm.Cancelado, 'var(--st-cancelado)')}
     ${statCard('Desmarcados', contDesm.Desmarcado, 'var(--st-desmarcado)')}
     ${statCard('Reagendados', contDesm.Reagendado, 'var(--st-reagendado)')}
   </div>
-  <div class="filters" style="margin-bottom:14px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+  <div class="fbar">
     <input type="text" id="desmBusca" placeholder="Buscar tutor ou animal" value="${desmarcacoesFilters.q||''}" style="min-width:210px;">
     ${[['','Todos'],['Cancelado','Cancelados'],['Desmarcado','Desmarcados'],['Reagendado','Reagendados']].map(([v,l])=>`<button class="chip-btn ${desmarcacoesFilters.tipo===v?'on':''}" data-desmtipo="${v}">${l}${v?` <span style="opacity:.7;">${contDesm[v]}</span>`:''}</button>`).join('')}
   </div>
   <div class="grid" style="grid-template-columns:2fr 1fr; gap:16px; align-items:start;">
     <div class="card">
-      <div class="pad" style="padding-bottom:0;"><div class="section-title">Registro de desmarcações, cancelamentos e reagendamentos</div></div>
+      <div class="pad" style="padding-bottom:0;"><div class="section-title">Registros</div></div>
       ${list.length? `<div class="table-wrap"><table><thead><tr><th>Tutor</th><th>Animal</th><th>Tipo</th><th>Data original</th><th>Status</th><th>Motivo</th><th>Reagendado?</th></tr></thead><tbody>
         ${list.map(a=>`
           <tr class="rowlink" data-open-ag="${a.id}">
@@ -2725,12 +2931,7 @@ function renderLembretes(){
   const pendentes = DB.lembretes.filter(l=>!l.concluido).sort((a,b)=>a.data.localeCompare(b.data));
   const concluidos = DB.lembretes.filter(l=>l.concluido && inRefPeriod(l.data)).sort((a,b)=>b.data.localeCompare(a.data));
   return `
-  ${renderDashNav()}
-  <div class="hint" style="margin:-10px 0 16px;">O período acima filtra os lembretes concluídos; os pendentes aparecem sempre, independente da data.</div>
-  <div class="view-head">
-    <div></div>
-    <button class="btn btn-primary" id="novoLembrete">${ICONS.plus} Novo lembrete</button>
-  </div>
+  ${renderDashNav(false, `<button class="btn btn-primary btn-sm" id="novoLembrete">${ICONS.plus} Novo lembrete</button>`)}
   <div class="grid g2">
     <div class="card pad">
       <div class="section-title">Pendentes <span class="tag">${pendentes.length}</span></div>
@@ -2755,7 +2956,7 @@ function renderLembretes(){
         </div>`).join('')}`).join('') : emptyState('Nenhum lembrete pendente','Cadastre lembretes pessoais ou administrativos.')}
     </div>
     <div class="card pad">
-      <div class="section-title">Concluídos</div>
+      <div class="section-title">Concluídos no período</div>
       ${concluidos.length? concluidos.slice(0,15).map(l=>`
         <div class="insight"><div class="dot" style="background:var(--st-realizado)"></div>
         <div style="flex:1; text-decoration:line-through; color:var(--ink-faint);">${l.titulo} — ${fmtDate(l.data)}</div>
@@ -2791,8 +2992,8 @@ function metaStepMonth(mesAno, dir){
 function renderMetas(){
   const mesAno = metasMesAno;
   return `
-  <div class="view-head">
-    <div class="dash-nav-ctrl" style="background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 10px;">
+  <div class="dash-nav">
+    <div class="dash-nav-ctrl">
       <button class="icon-btn" id="metaPrevMes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="dash-nav-label" data-mes-pick="meta" title="Escolher mês">${metaMesLabel(mesAno)}</button>
       <input type="month" id="mesInput_meta" value="${mesAno}" style="position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;">
@@ -2882,6 +3083,7 @@ function formMeta(categoria){
 ========================================================= */
 let visaoAnualAno = new Date().getFullYear();
 const MESES_ABREV = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+let vaZeros = false;
 function renderVisaoAnual(){
   const ano = visaoAnualAno;
   const tiposLista = tiposNomes();
@@ -2905,9 +3107,9 @@ function renderVisaoAnual(){
   const linhas = [{label:'Contatos', key:'contatos', color:'var(--brown)', top:true}];
   tiposLista.forEach((tipo,i)=>{
     const cor = coresPorTipo[i%coresPorTipo.length];
-    linhas.push({label:`${tipo} — agendados`, tipo, sub:'agendadas', color:cor});
-    linhas.push({label:`${tipo} — não realizados (contatos que não marcaram)`, tipo, sub:'naoRealizadas', color:'var(--st-cancelado)'});
-    linhas.push({label:`${tipo} — desmarcados/cancelados`, tipo, sub:'desmarcadas', color:'var(--st-desmarcado)'});
+    linhas.push({label:`${tipo} · agendados`, tipo, sub:'agendadas', color:cor});
+    linhas.push({label:`${tipo} · não realizados (contatos que não marcaram)`, tipo, sub:'naoRealizadas', color:'var(--st-cancelado)'});
+    linhas.push({label:`${tipo} · desmarcados/cancelados`, tipo, sub:'desmarcadas', color:'var(--st-desmarcado)'});
   });
   const getVal = (m,l) => l.top ? m[l.key] : m[l.tipo][l.sub];
   const anoTemDados = meses.some(m=>linhas.some(l=>getVal(m,l)>0));
@@ -2933,7 +3135,7 @@ function renderVisaoAnual(){
   let acc = 0;
   const pizzaGrad = totalRealizadas ? realizadasPorTipo.filter(x=>x.n>0).map(x=>{ const a=acc/totalRealizadas*100; acc+=x.n; return `${x.cor} ${a}% ${acc/totalRealizadas*100}%`; }).join(', ') : '';
   const resumoAnoHtml = `
-  <div class="card pad" style="margin-bottom:16px;">
+  <div class="card pad">
     <div class="section-title">Resumo de ${ano}</div>
     <div style="display:flex; align-items:center; gap:32px; flex-wrap:wrap;">
       ${totalRealizadas ? `<div style="width:130px; height:130px; border-radius:50%; background:conic-gradient(${pizzaGrad}); position:relative; flex-shrink:0;"><div style="position:absolute; inset:30px; border-radius:50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div style="font-family:'Fraunces',serif; font-size:22px; font-weight:700; line-height:1;">${totalRealizadas}</div><div style="font-size:10.5px; color:var(--ink-soft); margin-top:2px;">realizados</div></div></div>` : ''}
@@ -2945,8 +3147,8 @@ function renderVisaoAnual(){
   </div>`;
 
   return `
-  <div class="view-head">
-    <div class="dash-nav-ctrl" style="background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 10px;">
+  <div class="dash-nav">
+    <div class="dash-nav-ctrl">
       <button class="icon-btn" id="anoPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
       <span class="dash-nav-label" style="cursor:default;">${ano}</span>
       <button class="icon-btn" id="anoNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button>
@@ -2955,19 +3157,21 @@ function renderVisaoAnual(){
   </div>
 
   ${anoTemDados? `
-  <div class="grid g4" style="margin-bottom:16px;">
-    ${statCard('Mês com mais contatos', destaqueContatos.maisLabel, 'var(--brown)')}
-    ${destaquesPorTipo.map((d,i)=>statCard(`Mês com mais "${d.tipo}" realizados`, d.maisLabel, coresPorTipo[i%coresPorTipo.length])).join('')}
+  <div class="va-top">
+    ${resumoAnoHtml}
+    <div class="card pad">
+      <div class="section-title">Mês com mais</div>
+      <div class="kv-row"><span>Contatos</span>${destaqueContatos.maisLabel==='—'?'<span class="muted">—</span>':`<strong>${destaqueContatos.maisLabel}</strong>`}</div>
+      ${destaquesPorTipo.map(d=>`<div class="kv-row"><span>${d.tipo} realizados</span>${d.maisLabel==='—'?'<span class="muted">—</span>':`<strong>${d.maisLabel}</strong>`}</div>`).join('')}
+    </div>
   </div>
-
-  ${resumoAnoHtml}
   <div class="card pad">
-    <div class="section-title">Comparativo ${ano}</div>
+    <div class="section-title" style="justify-content:space-between; flex-wrap:wrap;"><span>Comparativo ${ano}</span><button type="button" class="chip-btn ${vaZeros?'on':''}" onclick="vaZeros=!vaZeros; render();">${vaZeros?'Esconder linhas zeradas':'Mostrar linhas zeradas'}</button></div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Indicador</th>${MESES_ABREV.map((m,i)=>`<th style="text-align:center; ${hl(i)}">${m}</th>`).join('')}<th style="text-align:center;">Total</th></tr></thead>
+        <thead><tr><th>Indicador</th>${MESES_ABREV.map((m,i)=>`<th style="text-align:center; ${hl(i)}${i===mesAtualIdx?'color:var(--sage-dark);':''}">${m}</th>`).join('')}<th style="text-align:center;">Total</th></tr></thead>
         <tbody>
-          ${linhas.map(l=>{
+          ${linhas.filter(l=>vaZeros || l.top || meses.some(m=>getVal(m,l)>0)).map(l=>{
             const total = meses.reduce((s,m)=>s+getVal(m,l),0);
             return `<tr ${l.top?'style="background:var(--sage-pale);"':''}><td><span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:${l.color};display:inline-block;"></span>${l.label}</span></td>
               ${meses.map((m,i)=>`<td style="text-align:center; ${hl(i)} ${getVal(m,l)>0?'font-weight:700;':'color:var(--ink-faint);'}">${getVal(m,l)}</td>`).join('')}
@@ -3080,21 +3284,18 @@ function renderNFListaTab(){
   return `
   ${alertas.length? `<div class="alert alert-danger" style="margin-bottom:16px; align-items:flex-start;">${ICONS.bell}<div>${alertas.map(a=>`<div>${a}</div>`).join('')}</div></div>`:''}
 
-  <div class="grid g3" style="margin-bottom:20px;">
+  ${renderDashNav(false, `<button class="btn btn-primary btn-sm" id="novaNF">${ICONS.plus} Nova nota fiscal</button>`)}
+  <div class="grid g3" style="margin-bottom:16px;">
     ${statCard('Pendentes', pendentes.length, 'var(--brown)', pendentes.length?`${fmtR(totalPendente)} a emitir`:'Nada a emitir')}
     ${statCard('Feitas no período', feitas.length, 'var(--brown)')}
     ${statCard('Valor emitido', fmtR(totalFeitas), 'var(--brown)')}
   </div>
-
-  <div class="view-head" style="margin-bottom:14px;">
-    <div class="filters" style="margin-bottom:0;">
-      <input type="text" placeholder="Buscar cliente" value="${nfFilters.nome||''}" data-nffx-text="nome" style="min-width:190px;">
-      ${filtrando?`<button class="btn btn-ghost btn-sm" id="clearNfFx">Limpar</button>`:''}
-    </div>
-    <button class="btn btn-primary" id="novaNF">${ICONS.plus} Nova nota fiscal</button>
+  <div class="fbar">
+    <input type="text" placeholder="Buscar cliente" value="${nfFilters.nome||''}" data-nffx-text="nome" style="min-width:220px;">
+    ${filtrando?`<button class="btn btn-ghost btn-sm" id="clearNfFx">Limpar</button>`:''}
   </div>
 
-  <div class="card" style="margin-bottom:22px;">
+  <div class="card" style="margin-bottom:16px;">
     <div style="padding:14px 18px 10px; display:flex; align-items:center; gap:10px;">
       <div class="section-title" style="margin-bottom:0;">Pendentes</div><span class="tag">${pendentes.length}</span>
     </div>
@@ -3111,13 +3312,12 @@ function renderNFListaTab(){
     </tbody></table></div>` : `<div style="padding:2px 18px 16px;" class="hint">Nenhuma nota pendente. Tudo em dia.</div>`}
   </div>
 
-  ${renderDashNav()}
   <div class="card">
     <div style="padding:12px 18px 10px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
       <div style="display:flex; align-items:center; gap:10px;"><div class="section-title" style="margin-bottom:0;">Já feitas</div><span class="tag">${feitas.length}</span></div>
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         <button class="chip-btn ${nfFilters.dataDe===addDays(todayISO(),-6)&&nfFilters.dataAte===todayISO()?'on':''}" id="nf7dias">Últimos 7 dias</button>
-        <label style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; cursor:pointer;"><input type="checkbox" id="nfTodosPeriodos" style="width:auto;" ${nfFilters.todos?'checked':''}> Todas</label>
+        <label class="chk-inline"><input type="checkbox" id="nfTodosPeriodos" ${nfFilters.todos?'checked':''}> Todas</label>
       </div>
     </div>
     ${feitas.length? `<div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Animal</th><th>Valor</th><th>Pagamento</th><th>Envio</th><th></th></tr></thead><tbody>
@@ -3692,9 +3892,9 @@ function renderRelatorioAuto(){
     <div class="rel-print-title">${P.titulo}</div>
     <div class="rel-print-per">${P.rotulo.charAt(0).toUpperCase()+P.rotulo.slice(1)}</div>
   </div>
-  <div class="view-head rel-noprint">
-    <div class="dash-nav-ctrl" style="background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 10px;">${nav}</div>
-    <button class="btn btn-primary" id="relatPdf">${ICONS.download} Exportar PDF</button>
+  <div class="dash-nav rel-noprint">
+    <div class="dash-nav-ctrl">${nav}</div>
+    <div class="dash-nav-extra"><button class="btn btn-primary btn-sm" id="relatPdf">${ICONS.download} Exportar PDF</button></div>
   </div>
   <div class="grid g3 rel-noprint" style="margin-bottom:18px;">
     ${cartoes.map(([n,k,ruim])=>{ const v=relVar(A[k],B[k]); const bom = v.dir===0?null:(ruim? v.dir<0 : v.dir>0);
@@ -4124,9 +4324,9 @@ function renderPendencias(){
 ========================================================= */
 function renderPersonalizacao(){
   return `
-  <div class="grid g2">
-    <div class="card pad">
-      <div class="section-title">Perfis desta conta <span class="tag">${(DB.usuarios||[]).length}/5</span></div>
+  <div class="set-list">
+    <div class="card pad ${accCard('p-perfis', false)}">
+      <div class="section-title" ${accTitleAttrs()}><span>Perfis desta conta</span><span class="tag">${(DB.usuarios||[]).length}/5</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Até 5 pessoas podem usar esta mesma conta (${auth.currentUser?.email||'conta Google'}), cada uma com seu próprio nome e foto. Trocar de perfil é rápido, pelo menu lateral, e cada ação fica registrada com o nome de quem estava selecionado.</p>
       <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
         ${(DB.usuarios||[]).map(u=>`
@@ -4148,8 +4348,8 @@ function renderPersonalizacao(){
       <button type="button" class="btn btn-secondary btn-sm" id="btnSairConfig" style="margin-top:14px;">Sair da conta</button>
     </div>
 
-    <div class="card pad">
-      <div class="section-title">Profissionais</div>
+    <div class="card pad ${accCard('p-prof', false)}">
+      <div class="section-title" ${accTitleAttrs()}><span>Profissionais</span><span class="tag">${(DB.profissionais||[]).length}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Quem pode ser marcado como responsável pelo atendimento, no agendamento e no calendário.</p>
       <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
         ${(DB.profissionais||[]).map(p=>`
@@ -4165,8 +4365,8 @@ function renderPersonalizacao(){
       </div>
     </div>
 
-    <div class="card pad" style="grid-column:1/-1;">
-      <div class="section-title" style="justify-content:space-between;"><span>Mensagens prontas</span><button type="button" class="chip-btn" id="msgRestaurar">Restaurar padrão</button></div>
+    <div class="card pad ${accCard('p-msg', false)}">
+      <div class="section-title" ${accTitleAttrs()}><span>Mensagens prontas</span><span class="tag">${mensagensLista().length}</span><button type="button" class="chip-btn" id="msgRestaurar">Restaurar padrão</button></div>
       <div class="rel-motivos" id="msgVars">${MSG_VARIAVEIS.map(([v,d])=>`<button type="button" class="chip-btn" data-msgvar="${v}" title="${d}">${v}</button>`).join('')}</div>
       <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:14px;">
         ${mensagensLista().map(m=>`
@@ -4181,8 +4381,8 @@ function renderPersonalizacao(){
       <button class="btn btn-secondary btn-sm" id="msgAdd">${ICONS.plus} Nova mensagem</button>
     </div>
 
-    <div class="card pad" style="grid-column:1/-1;">
-      <div class="section-title">Tipos de atendimento e cores</div>
+    <div class="card pad ${accCard('p-tipos', false)}">
+      <div class="section-title" ${accTitleAttrs()}><span>Tipos de atendimento e cores</span><span class="tag">${(DB.tiposAtendimento||[]).length}</span></div>
       <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
         ${(DB.tiposAtendimento||[]).map(t=>`
           <div style="display:flex; align-items:center; gap:10px; background:var(--sage-pale); border-radius:9px; padding:8px 12px;">
@@ -4199,8 +4399,8 @@ function renderPersonalizacao(){
       </div>
     </div>
 
-    <div class="card pad" style="grid-column:1/-1;">
-      <div class="section-title">Cidades e clínicas</div>
+    <div class="card pad ${accCard('p-cidades', false)}">
+      <div class="section-title" ${accTitleAttrs()}><span>Cidades e clínicas</span><span class="tag">${Object.keys(DB.cidadesClinicas||{}).length}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Onde a clínica atende, e os nomes usados em cada cidade.</p>
       <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:16px;">
         ${Object.keys(DB.cidadesClinicas||{}).map(cidade=>`
@@ -4225,8 +4425,8 @@ function renderPersonalizacao(){
       </div>
     </div>
 
-    <div class="card pad" style="grid-column:1/-1;">
-      <div class="section-title">Motivos de não agendamento e desmarque</div>
+    <div class="card pad ${accCard('p-motivos', false)}">
+      <div class="section-title" ${accTitleAttrs()}><span>Motivos de não agendamento e desmarque</span><span class="tag">${(DB.motivosPadrao||[]).length}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Aparecem como opções rápidas ao registrar um contato ou desmarcar um agendamento.</p>
       <div class="chip-list" style="margin-bottom:12px;">
         ${(DB.motivosPadrao||[]).map(m=>m==='Outro motivo'
@@ -4249,9 +4449,9 @@ function renderConfiguracoes(){
   const total = DB.tutores.length+DB.animais.length+DB.agendamentos.length+DB.contatos.length+DB.lembretes.length;
   const lixeira = (DB.lixeira||[]);
   return `
-  <div class="grid g2" style="align-items:start;">
-    <div class="card pad" style="grid-column:1/-1;">
-      <div class="section-title">Lixeira <span class="tag">${lixeira.length}</span></div>
+  <div class="set-list">
+    <div class="card pad ${accCard('c-lixeira', false)}">
+      <div class="section-title" ${accTitleAttrs()}><span>Lixeira</span><span class="tag">${lixeira.length}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:12px;">Tutores, animais, agendamentos, contatos e lembretes excluídos ficam aqui e podem ser restaurados a qualquer momento.</p>
       ${lixeira.length? `<div class="table-wrap sticky-head" style="max-height:340px; overflow-y:auto;"><table><thead><tr><th>Tipo</th><th>Registro</th><th>Excluído</th><th></th></tr></thead><tbody>
         ${agruparLixeira(lixeira).map(grupo=>{
@@ -4270,18 +4470,18 @@ function renderConfiguracoes(){
       : `<div class="hint">A lixeira está vazia.</div>`}
     </div>
 
-    <div class="card pad">
-      <div class="section-title">Sobre</div>
+    <div class="card pad ${accCard('c-sobre', false)}" style="order:9;">
+      <div class="section-title" ${accTitleAttrs()}><span>Sobre</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); line-height:1.6;">Sistema de gestão da <strong>Olhatta, Centro de Oftalmologia Veterinária</strong>. Os dados ficam sincronizados na nuvem entre todos os aparelhos onde a equipe faz login com a mesma conta.</p>
       <p style="font-size:13px; color:var(--ink-soft); margin-top:10px;">Precisa de ajuda? Fale com o suporte: <a href="mailto:miihzteir@gmail.com" style="color:var(--sage-dark); font-weight:700;">miihzteir@gmail.com</a></p>
     </div>
-    <div class="card pad">
-      <div class="section-title">Atualizações do app</div>
+    <div class="card pad ${accCard('c-atual', false)}" style="order:8;">
+      <div class="section-title" ${accTitleAttrs()}><span>Atualizações do app</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft);">Quando novas versões do sistema forem publicadas, use este botão para garantir que está usando a versão mais recente instalada.</p>
       <button class="btn btn-secondary btn-sm" id="btnAtualizarApp" style="margin-top:10px;">${ICONS.download} Verificar atualizações</button>
     </div>
-    <div class="card pad">
-      <div class="section-title">Exportar dados em CSV</div>
+    <div class="card pad ${accCard('c-csv', false)}" style="order:3;">
+      <div class="section-title" ${accTitleAttrs()}><span>Exportar dados em CSV</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:10px;">Baixe listas em CSV (abre direto no Excel/Sheets) para conferência ou uso fora do sistema.</p>
       <div style="display:flex; flex-wrap:wrap; gap:8px;">
         <button type="button" class="btn btn-secondary btn-sm" data-csv="tutores">${ICONS.download} Tutores</button>
@@ -4291,8 +4491,8 @@ function renderConfiguracoes(){
         <button type="button" class="btn btn-secondary btn-sm" data-csv="lembretes">${ICONS.download} Lembretes</button>
       </div>
     </div>
-    <div class="card pad">
-      <div class="section-title">Backup dos dados</div>
+    <div class="card pad ${accCard('c-backup', false)}" style="order:2;">
+      <div class="section-title" ${accTitleAttrs()}><span>Backup dos dados</span><span class="acc-sub">${(()=>{ const b=ultimoBackupInfo(); return b.data?`último: ${b.dias===0?'hoje':'há '+b.dias+' dia'+(b.dias===1?'':'s')}`:'nenhum backup baixado'; })()}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft);">Baixa um arquivo com uma cópia completa de tutores, animais, agendamentos, contatos e tudo mais do sistema, do jeito que está agora. Guarde esse arquivo no seu computador de vez em quando: se algo der errado, ele serve de rede de segurança.</p>
       <button class="btn btn-secondary btn-sm" id="btnBackupCompleto" style="margin-top:10px;">${ICONS.download} Baixar backup completo</button>
       <div class="hint" style="margin-top:8px;">${(()=>{ const b=ultimoBackupInfo(); return b.data?`Último backup baixado: ${fmtDate(b.data)} (${b.dias===0?'hoje':'há '+b.dias+' dia'+(b.dias===1?'':'s')})`:'Nenhum backup baixado ainda neste navegador.'; })()}</div>
@@ -4302,14 +4502,14 @@ function renderConfiguracoes(){
         <input type="file" id="importFile" accept="application/json" style="display:none;">
       </div>
     </div>
-    <div class="card pad" style="grid-column:1/-1;">
-      <div class="section-title" style="justify-content:space-between; flex-wrap:wrap; row-gap:8px;"><span>Histórico de alterações</span><button class="btn btn-secondary btn-sm" id="exportAlteracoesCsv">${ICONS.download} Exportar CSV</button></div>
+    <div class="card pad ${accCard('c-hist', false)}" style="order:4;">
+      <div class="section-title" ${accTitleAttrs()}><span>Histórico de alterações</span><span class="tag">${(DB.auditLog||[]).length}</span><button class="btn btn-secondary btn-sm" id="exportAlteracoesCsv">${ICONS.download} Exportar CSV</button></div>
       ${(()=>{ const log=(DB.auditLog||[]).slice().reverse(); return log.length? `<div class="table-wrap sticky-head" style="max-height:240px; overflow-y:auto; border:1px solid var(--line); border-radius:10px;"><table><thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th></tr></thead><tbody>
         ${log.slice(0,300).map(l=>`<tr><td style="white-space:nowrap;">${fmtDateTime(l.dataHora)}</td><td><strong>${l.usuario}</strong></td><td>${l.acao}</td></tr>`).join('')}
       </tbody></table></div>` : `<div class="hint">Nenhuma alteração registrada ainda.</div>`; })()}
     </div>
-    <div class="card pad" style="grid-column:1/-1;">
-      <div class="section-title" style="color:var(--st-cancelado);">Zona de risco</div>
+    <div class="card pad ${accCard('c-risco', false)}" style="order:10;">
+      <div class="section-title" ${accTitleAttrs()} style="color:var(--st-cancelado);"><span>Zona de risco</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft);">Apaga todos os cadastros, agendamentos, contatos, lembretes, usuários e histórico de alterações desta conta, incluindo a lixeira. Esta ação não pode ser desfeita.</p>
       <button class="btn btn-danger" id="wipeBtn" style="margin-top:10px;">${ICONS.trash} Apagar todos os dados</button>
       <div style="border-top:1px solid var(--line); margin:16px 0; padding-top:16px;">
@@ -5696,9 +5896,9 @@ function ativarTabelasInteligentes(){
   });
   document.querySelectorAll('.view .table-wrap').forEach(w=>{
     if(w.dataset.drag) return; w.dataset.drag='1';
-    let down=false, sx=0, sl=0, moved=false;
-    w.addEventListener('mousedown', e=>{ if(e.button!==0 || e.target.closest('button,a,input,select,textarea')) return; down=true; moved=false; sx=e.pageX; sl=w.scrollLeft; });
-    window.addEventListener('mousemove', e=>{ if(!down) return; const dx=e.pageX-sx; if(Math.abs(dx)>4){ moved=true; w.classList.add('arrastando'); } if(moved) w.scrollLeft=sl-dx; });
+    let down=false, sx=0, sl=0, sy=0, st=0, moved=false;
+    w.addEventListener('mousedown', e=>{ if(e.button!==0 || e.target.closest('button,a,input,select,textarea')) return; down=true; moved=false; sx=e.pageX; sl=w.scrollLeft; sy=e.pageY; st=w.scrollTop; });
+    window.addEventListener('mousemove', e=>{ if(!down) return; const dx=e.pageX-sx, dy=e.pageY-sy; if(Math.abs(dx)>4 || Math.abs(dy)>4){ moved=true; w.classList.add('arrastando'); } if(moved){ w.scrollLeft=sl-dx; w.scrollTop=st-dy; } });
     window.addEventListener('mouseup', ()=>{ down=false; w.classList.remove('arrastando'); });
     w.addEventListener('click', e=>{ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } }, true);
   });
@@ -6755,6 +6955,6 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="estoque.js?v=3"></script>
+<script src="estoque.js?v=8"></script>
 </body>
 </html>
