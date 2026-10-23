@@ -723,17 +723,17 @@ th.sortavel[data-dir=asc]::after{content:' \2191'; font-size:11px;} th.sortavel[
 .bn-s{font-size:12px; color:var(--ink-soft); margin-top:4px;}
 .bento.b3{grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(0,1fr));}
 .bento.b2{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);}
-.bento.b9{grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));}
-.bento.b9 .feat{grid-row:span 2;}
+.bento.b9{grid-template-columns:repeat(4,minmax(0,1fr));}
+.bento.b9 .feat{grid-column:span 2; grid-row:span 2; justify-content:center; align-items:center; text-align:center;}
 .bento.b9 .bn{min-height:96px;}
+.bento.b9 .bn:not(.feat){justify-content:flex-start;}
 .bento.b9 .bn-v{font-size:28px;}
-.bento.b9 .feat .bn-v{font-size:56px;}
+.bento.b9 .feat .bn-v{font-size:64px; margin-top:8px;}
 .bn-v.c-brown{color:#8A5F38;}
 .bn.feat .rel-var{color:#fff !important;}
 .bn .rel-var{display:inline; margin:0;}
 .stat-card .value.c-bad{color:#B0463C;} .stat-card .value.c-warn{color:#A8752A;} .stat-card .value.c-brown{color:#8A5F38;} .stat-card .value.c-ok{color:#4F7A45;}
-@media (max-width:1100px){ .bento.b9{grid-template-columns:repeat(4,minmax(0,1fr));} .bento.b9 .feat{grid-column:1/-1; grid-row:auto;} }
-@media (max-width:880px){ .bento.b3, .bento.b2{grid-template-columns:repeat(2,minmax(0,1fr));} .bento.b9{grid-template-columns:repeat(2,minmax(0,1fr));} .bento.b9 .bn-v{font-size:24px;} .bento.b9 .feat .bn-v{font-size:38px;} }
+@media (max-width:880px){ .bento.b3, .bento.b2{grid-template-columns:repeat(2,minmax(0,1fr));} .bento.b9{grid-template-columns:repeat(2,minmax(0,1fr));} .bento.b9 .feat{grid-column:1/-1; grid-row:auto; padding:22px 16px;} .bento.b9 .bn-v{font-size:24px;} .bento.b9 .feat .bn-v{font-size:38px;} }
 .bn-v.c-ok{color:#4F7A45;} .bn-v.c-bad{color:#B0463C;} .bn-v.c-warn{color:#A8752A;}
 .bn.feat{border:none; color:#fff; background:linear-gradient(130deg,#66805E 0%,#4A6143 100%); box-shadow:0 16px 30px -18px rgba(52,70,46,.75); position:relative; overflow:hidden;}
 .bn.feat::after{content:''; position:absolute; right:-40px; top:-50px; width:150px; height:150px; border-radius:50%; background:rgba(255,255,255,.08);}
