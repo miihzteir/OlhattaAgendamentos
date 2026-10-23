@@ -624,11 +624,126 @@ th.sortavel[data-dir=asc]::after{content:' \2191'; font-size:11px;} th.sortavel[
 .dash-hero .btn-primary{background:#fff; color:#3F5238; border-color:#fff; box-shadow:0 6px 16px -8px rgba(0,0,0,.4);}
 .dash-hero .btn-primary:hover{background:#F4F1E8; color:#3F5238;}
 
+/* ---------- Estrutura com menu flutuante ---------- */
+@media (min-width:881px){
+  .sidebar{top:12px; left:12px; bottom:12px; width:218px; border-radius:22px; box-shadow:0 22px 44px -26px rgba(40,52,34,.75);}
+  main{margin-left:242px;}
+  .topbar{padding:20px 30px 14px 28px;}
+}
+.topbar{border-bottom-color:transparent; background:rgba(234,237,224,.72);}
+.topbar h1{font-size:26px; letter-spacing:-.01em;}
+.eyebrow{font:800 10.5px 'Manrope',sans-serif; letter-spacing:.14em; text-transform:uppercase; color:var(--brown); margin-bottom:2px;}
+.dash-hero .dash-greeting-title em{font-style:italic; font-weight:500; color:#F3E3CC;}
+.mcal-h{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+.mcal-t{font-family:'Fraunces',serif; font-size:17px; font-weight:600; text-transform:capitalize; color:var(--ink);}
+.mcal-t span{color:var(--ink-soft); font-weight:500;}
+.mcal-g{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px; text-align:center;}
+.mcal-g b{font:800 10.5px 'Manrope',sans-serif; color:var(--ink-soft); padding:4px 0 6px; letter-spacing:.06em;}
+.mcal-d{position:relative; border:none; background:none; height:34px; border-radius:10px; font:700 12.5px 'Manrope',sans-serif; color:var(--ink); cursor:pointer; transition:background .15s, transform .18s cubic-bezier(.34,1.56,.64,1);}
+.mcal-d:hover{background:var(--sage-pale);}
+.mcal-d:active{transform:scale(.92);}
+.mcal-d i{position:absolute; left:50%; bottom:4px; width:5px; height:5px; margin-left:-2.5px; border-radius:50%; background:var(--brown);}
+.mcal-d.hoje{box-shadow:inset 0 0 0 1.5px var(--sage);}
+.mcal-d.sel{background:linear-gradient(135deg,#66805E,#4A6143); color:#fff; box-shadow:0 6px 14px -8px rgba(52,70,46,.8);}
+.mcal-d.sel i{background:#F3E3CC;}
+
 /* ---------- Ícone da tela no topo ---------- */
 .page-ic{width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:linear-gradient(135deg,#66805E,#4A6143); color:#fff; box-shadow:0 8px 18px -10px rgba(52,70,46,.75);}
 .page-ic:empty{display:none;}
 .page-ic svg{width:22px; height:22px; opacity:1;}
 @media (max-width:880px){ .page-ic{width:38px; height:38px; border-radius:12px;} .page-ic svg{width:19px; height:19px;} }
+
+/* ---------- Elementos próprios de cada tela ---------- */
+.acc-card > .section-title > span:first-child{flex:initial;}
+.acc-card > .section-title > .acc-tx, .acc-card > .section-title > span:first-child:not(.acc-ic){flex:1;}
+.acc-ic{width:38px; height:38px; border-radius:12px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; background:#DFE9D8; color:#4A6443;}
+.acc-ic svg{width:18px; height:18px;}
+.acc-ic.bad{background:#F6DCD7; color:#A6413A;}
+.acc-tx{display:flex; flex-direction:column; gap:1px;}
+.acc-tx small{font:600 12px 'Manrope',sans-serif; color:var(--ink-soft); letter-spacing:0;}
+.set-list .acc-card > .section-title{gap:14px;}
+.meta-def{margin-top:10px; display:inline-flex; align-items:center; gap:6px; border:1.5px dashed #C9D6BF; background:#F6F9F3; color:var(--sage-dark); border-radius:10px; padding:8px 12px; font:700 12.5px 'Manrope',sans-serif; cursor:pointer;}
+.meta-def svg{width:14px; height:14px;}
+.meta-def:hover{background:#EDF3E8;}
+.date-tile{width:46px; flex-shrink:0; border-radius:12px; background:#fff; text-align:center; padding:5px 0 6px; box-shadow:0 4px 12px -8px rgba(0,0,0,.35); align-self:center; color:inherit;}
+.date-tile b{display:block; font:600 19px 'Fraunces',serif; line-height:1.05;}
+.date-tile span{display:block; font:800 9.5px 'Manrope',sans-serif; letter-spacing:.1em; text-transform:uppercase; opacity:.8;}
+.ag-tl{position:relative; display:flex; flex-direction:column; gap:8px; padding-left:2px;}
+.ag-tl::before{content:''; position:absolute; left:63px; top:10px; bottom:10px; width:2px; background:#E4E8DB; border-radius:2px;}
+.ag-tl-row{display:grid; grid-template-columns:52px 20px minmax(0,1fr); align-items:center; gap:0 4px; cursor:pointer;}
+.ag-tl-time{font:800 13px 'Manrope',sans-serif; color:var(--ink); text-align:right; padding-right:6px;}
+.ag-tl-dot{width:12px; height:12px; border-radius:50%; background:var(--c); box-shadow:0 0 0 3px #fff, 0 0 0 4px #E4E8DB; justify-self:center; position:relative; z-index:1;}
+.ag-tl-card{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; background:#F7F8F3; border:1px solid #ECEFE4; border-radius:12px; padding:10px 14px; margin-left:8px; transition:background .15s, transform .18s cubic-bezier(.34,1.56,.64,1);}
+.ag-tl-row:hover .ag-tl-card{background:#EEF3E8; transform:translateX(2px);}
+.ag-tl-main{display:flex; flex-direction:column; min-width:0;}
+.ag-tl-main strong{font-size:14px;}
+.ag-tl-main span{font-size:12.5px; color:var(--ink-soft);}
+.ag-tl-meta{display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+.stat-card:has(> .sc-ic) > :not(.sc-ic):not(.label):not(.value):not(.stripe){grid-row:3;}
+
+.wk-strip{display:grid; grid-template-columns:repeat(14,minmax(46px,1fr)); gap:6px; margin:0 0 14px; overflow-x:auto; scrollbar-width:none; padding:2px;}
+.wk-strip::-webkit-scrollbar{display:none;}
+.wk-d{border:1px solid #ECEFE4; background:#F7F8F3; border-radius:14px; padding:7px 0 6px; display:flex; flex-direction:column; align-items:center; gap:1px; cursor:pointer; font-family:'Manrope',sans-serif; color:var(--ink); transition:background .15s, transform .18s cubic-bezier(.34,1.56,.64,1);}
+.wk-d span{font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft);}
+.wk-d b{font:600 18px 'Fraunces',serif; line-height:1.15;}
+.wk-d i{font-style:normal; font-size:10px; font-weight:800; min-width:18px; height:16px; line-height:16px; border-radius:8px; background:#E9DCCB; color:#7A5A3D; padding:0 5px;}
+.wk-d i.z{background:none; min-width:0; padding:0;}
+.wk-d:hover{background:#EEF3E8;}
+.wk-d:active{transform:scale(.94);}
+.wk-d.hoje{border-color:var(--sage);}
+.wk-d.on{background:linear-gradient(135deg,#66805E,#4A6143); border-color:transparent; color:#fff; box-shadow:0 8px 18px -10px rgba(52,70,46,.8);}
+.wk-d.on span{color:rgba(255,255,255,.8);}
+.wk-d.on i{background:rgba(255,255,255,.22); color:#fff;}
+@media (max-width:880px){ .wk-strip{grid-template-columns:repeat(14,52px);} }
+.prof-card{background:linear-gradient(180deg,#EEF3E8 0%, #fff 70%); border:1px solid #E3EADB; border-radius:18px; padding:20px 16px 16px; text-align:center; margin-bottom:16px;}
+.prof-av{width:72px; height:72px; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font:600 26px 'Fraunces',serif; color:#fff; background:linear-gradient(135deg,#66805E,#4A6143); box-shadow:0 0 0 5px #fff, 0 10px 22px -10px rgba(52,70,46,.8);}
+.prof-nm{font:600 19px 'Fraunces',serif; color:var(--ink);}
+.prof-sub{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+.prof-stats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:14px;}
+.prof-stats > div{background:#fff; border:1px solid #ECEFE4; border-radius:14px; padding:10px 6px; display:flex; flex-direction:column; align-items:center; gap:2px;}
+.prof-stats .acc-ic{width:30px; height:30px; border-radius:10px; margin-bottom:2px;}
+.prof-stats .acc-ic svg{width:15px; height:15px;}
+.prof-stats b{font:600 20px 'Fraunces',serif; line-height:1.1;}
+.prof-stats small{font-size:11px; font-weight:700; color:var(--ink-soft);}
+.acc-ic.brown{background:#F1E1CF; color:#8A5F38;}
+.meta-pill{font:800 10.5px 'Manrope',sans-serif; letter-spacing:.04em; background:#F1E1CF; color:#7A5A3D; padding:4px 9px; border-radius:20px; white-space:nowrap;}
+.meta-pill.done{background:#E9ECE4; color:var(--ink-soft);}
+.meta-card .bar-track{height:12px; border-radius:8px;}
+.chip-ic-btn{display:inline-flex; align-items:center; gap:7px; padding-left:6px;}
+.chip-ic{width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:#DFE9D8; color:#4A6443; flex-shrink:0;}
+.chip-ic svg{width:12px; height:12px;}
+.chip-ic.warn{background:#F7E7C6; color:#93661F;}
+.chip-ic.bad{background:#F6DCD7; color:#A6413A;}
+.chip-btn.on .chip-ic{background:rgba(255,255,255,.22); color:#fff;}
+
+.bento{display:grid; grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:16px;}
+.bn{background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 18px; display:flex; flex-direction:column; justify-content:flex-end; min-height:112px; box-shadow:0 1px 2px rgba(51,54,47,.04);}
+.bn-l{font:800 11px 'Manrope',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft);}
+.bn-v{font:600 34px 'Fraunces',serif; line-height:1.05; margin-top:6px; color:var(--ink);}
+.bn-s{font-size:12px; color:var(--ink-soft); margin-top:4px;}
+.bento.b3{grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(0,1fr));}
+.bento.b2{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);}
+.bento.b9{grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));}
+.bento.b9 .feat{grid-row:span 2;}
+.bento.b9 .bn{min-height:96px;}
+.bento.b9 .bn-v{font-size:28px;}
+.bento.b9 .feat .bn-v{font-size:56px;}
+.bn-v.c-brown{color:#8A5F38;}
+.bn.feat .rel-var{color:#fff !important;}
+.bn .rel-var{display:inline; margin:0;}
+.stat-card .value.c-bad{color:#B0463C;} .stat-card .value.c-warn{color:#A8752A;} .stat-card .value.c-brown{color:#8A5F38;} .stat-card .value.c-ok{color:#4F7A45;}
+@media (max-width:1100px){ .bento.b9{grid-template-columns:repeat(4,minmax(0,1fr));} .bento.b9 .feat{grid-column:1/-1; grid-row:auto;} }
+@media (max-width:880px){ .bento.b3, .bento.b2{grid-template-columns:repeat(2,minmax(0,1fr));} .bento.b9{grid-template-columns:repeat(2,minmax(0,1fr));} .bento.b9 .bn-v{font-size:24px;} .bento.b9 .feat .bn-v{font-size:38px;} }
+.bn-v.c-ok{color:#4F7A45;} .bn-v.c-bad{color:#B0463C;} .bn-v.c-warn{color:#A8752A;}
+.bn.feat{border:none; color:#fff; background:linear-gradient(130deg,#66805E 0%,#4A6143 100%); box-shadow:0 16px 30px -18px rgba(52,70,46,.75); position:relative; overflow:hidden;}
+.bn.feat::after{content:''; position:absolute; right:-40px; top:-50px; width:150px; height:150px; border-radius:50%; background:rgba(255,255,255,.08);}
+.bn.feat .bn-l{color:rgba(255,255,255,.75);}
+.bn.feat .bn-v{color:#fff; font-size:48px;}
+.bn.feat .bn-s{color:rgba(255,255,255,.8);}
+.chip-btn .cnt{display:inline-block; margin-left:7px; min-width:20px; padding:1px 6px; border-radius:10px; font-size:11px; font-weight:800; text-align:center; background:#EEF0E8; color:var(--ink-soft);}
+.chip-btn .cnt.ok{background:#E0ECD9; color:#4F7A45;} .chip-btn .cnt.bad{background:#F6DFDB; color:#B0463C;} .chip-btn .cnt.warn{background:#F6E9CF; color:#9A6A22;}
+.chip-btn.on .cnt{background:rgba(255,255,255,.25); color:#fff;}
+@media (max-width:880px){ .bento{grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;} .bento .feat{grid-column:1/-1; min-height:0;} .bn{min-height:0; padding:14px;} .bn-v{font-size:26px;} .bn.feat .bn-v{font-size:38px;} .bn-s{font-size:11px;} .bn-l{font-size:9.5px; letter-spacing:.03em;} .bn{justify-content:flex-start;} }
 
 /* ---------- Quadros de números com ícone ---------- */
 .stat-card:has(> .sc-ic){display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:14px; align-items:center;}
@@ -726,6 +841,7 @@ th.sortavel[data-dir=asc]::after{content:' \2191'; font-size:11px;} th.sortavel[
         </button>
         <span class="page-ic" id="pageIcon" aria-hidden="true"></span>
         <div>
+          <div class="eyebrow" id="pageEyebrow"></div>
           <h1 id="pageTitle">Visão Geral</h1>
           <div class="sub" id="pageSub">Visão geral da rotina de hoje</div>
         </div>
@@ -1055,7 +1171,9 @@ function exportCSV(tipo){
 }
 
 /* ---------- Helpers de data ---------- */
-function todayISO(){ return new Date().toISOString().slice(0,10); }
+function localISO(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function diaLocalDe(ts){ if(!ts) return ''; const d=new Date(ts); return isNaN(d) ? String(ts).slice(0,10) : localISO(d); }
+function todayISO(){ return localISO(new Date()); }
 function stripHtml(html){ const d = document.createElement('div'); d.innerHTML = html||''; return d.textContent||''; }
 function fmtDate(iso){
   if(!iso) return '—';
@@ -1067,10 +1185,10 @@ function fmtDateLong(iso){
   return d.toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'long'});
 }
 function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
-function addDays(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function addDays(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return localISO(d); }
 function monthKey(iso){ return iso.slice(0,7); }
 function isThisMonth(iso){ return monthKey(iso)===monthKey(todayISO()); }
-function prevMonthKey(){ const d=new Date(); d.setMonth(d.getMonth()-1); return d.toISOString().slice(0,7); }
+function prevMonthKey(){ const d=new Date(); d.setMonth(d.getMonth()-1); return localISO(d).slice(0,7); }
 
 /* ---------- Toast ---------- */
 function toast(msg){
@@ -1103,8 +1221,8 @@ let state = { view:'dashboard', drawer:null, globalQuery:'', dash:{granularity:'
 function dashStep(dir){
   const g = state.dash.granularity, d = state.dash.refDate;
   if(g==='dia') return addDays(d, dir);
-  if(g==='mes'){ const dt=new Date(d+'T00:00:00'); dt.setMonth(dt.getMonth()+dir); return dt.toISOString().slice(0,10); }
-  const dt=new Date(d+'T00:00:00'); dt.setFullYear(dt.getFullYear()+dir); return dt.toISOString().slice(0,10);
+  if(g==='mes'){ const dt=new Date(d+'T00:00:00'); dt.setMonth(dt.getMonth()+dir); return localISO(dt); }
+  const dt=new Date(d+'T00:00:00'); dt.setFullYear(dt.getFullYear()+dir); return localISO(dt);
 }
 function inRefPeriod(iso){
   if(!iso) return false;
@@ -1117,7 +1235,7 @@ function inPrevRefPeriod(iso){
   if(!iso) return false;
   const g = state.dash.granularity, d = state.dash.refDate;
   if(g==='dia') return iso===addDays(d,-1);
-  if(g==='mes'){ const dt=new Date(d+'T00:00:00'); dt.setMonth(dt.getMonth()-1); return monthKey(iso)===dt.toISOString().slice(0,7); }
+  if(g==='mes'){ const dt=new Date(d+'T00:00:00'); dt.setMonth(dt.getMonth()-1); return monthKey(iso)===localISO(dt).slice(0,7); }
   return iso.slice(0,4)===String(Number(d.slice(0,4))-1);
 }
 function dashPeriodLabel(){
@@ -1190,6 +1308,8 @@ function renderNav(){
     </button>`).join('');
   const pi=document.getElementById('pageIcon'), sv=nav.querySelector(`.navlink[data-nav="${state.view}"] svg`);
   if(pi) pi.innerHTML = sv ? sv.outerHTML : '';
+  const eb=document.getElementById('pageEyebrow');
+  if(eb) eb.textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'numeric', month:'long'});
 }
 let pendenciasDirty = false;
 let pendenciasBusca = '';
@@ -1553,7 +1673,7 @@ function contatosDoTutor(tutorId){ return DB.contatos.filter(c=>c.tutorId===tuto
 
 /* ---------- Última interação (agendamento OU contato mais recente) ---------- */
 function getUltimaInteracao(tutorId){
-  const ags = agendamentosDoTutor(tutorId).map(a=>({data:a.alteradoEm?a.alteradoEm.slice(0,10):a.data, tipo:'agendamento', ref:a}));
+  const ags = agendamentosDoTutor(tutorId).map(a=>({data:a.alteradoEm?diaLocalDe(a.alteradoEm):a.data, tipo:'agendamento', ref:a}));
   const contatos = contatosDoTutor(tutorId).map(c=>({data:c.dataContato, tipo:'contato', ref:c}));
   const all = [...ags, ...contatos].sort((a,b)=>b.data.localeCompare(a.data));
   if(!all.length) return null;
@@ -1755,6 +1875,29 @@ function accTitleAttrs(){ return 'role="button" tabindex="0"'; }
   document.addEventListener('click', e=>{ const t=e.target.closest('.acc-card > .section-title'); if(!t || e.target.closest('button, a, input, select, label')) return; tog(t); });
   document.addEventListener('keydown', e=>{ if(e.key!=='Enter' && e.key!==' ') return; const t=e.target; if(!t.matches || !t.matches('.acc-card > .section-title')) return; e.preventDefault(); tog(t); });
 })();
+let dashCalRef = null;
+function dashCalMes(d){ const base = dashCalRef || state.dash.refDate.slice(0,7); const dt = new Date(base+'-01T00:00:00'); dt.setMonth(dt.getMonth()+d); dashCalRef = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0'); render(); }
+function dashCalDia(d){ state.dash.granularity='dia'; state.dash.refDate=d; dashCalRef=null; render(); }
+function dashMiniCal(){
+  const mk = dashCalRef || state.dash.refDate.slice(0,7);
+  const [y,m] = mk.split('-').map(Number);
+  const first = new Date(y, m-1, 1).getDay(), dias = new Date(y, m, 0).getDate();
+  const hoje = todayISO(), sel = state.dash.granularity==='dia' ? state.dash.refDate : '';
+  const cont = {};
+  DB.agendamentos.forEach(a=>{ if(a.data && a.data.startsWith(mk) && !['Cancelado','Desmarcado','Reagendado'].includes(a.status)) cont[a.data]=(cont[a.data]||0)+1; });
+  const nomeMes = new Date(y, m-1, 1).toLocaleDateString('pt-BR',{month:'long'});
+  let cells = '';
+  for(let i=0;i<first;i++) cells += '<span></span>';
+  for(let d=1; d<=dias; d++){
+    const iso = `${mk}-${String(d).padStart(2,'0')}`, n = cont[iso]||0;
+    cells += `<button type="button" class="mcal-d ${iso===hoje?'hoje':''} ${iso===sel?'sel':''}" onclick="dashCalDia('${iso}')" title="${n?n+' agendamento'+(n>1?'s':''):'Sem agendamentos'}">${d}${n?'<i></i>':''}</button>`;
+  }
+  return `<div class="card pad mcal">
+    <div class="mcal-h"><div class="mcal-t">${nomeMes} <span>${y}</span></div>
+      <div style="display:flex; gap:2px;"><button class="icon-btn" onclick="dashCalMes(-1)" title="Mês anterior" aria-label="Mês anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button><button class="icon-btn" onclick="dashCalMes(1)" title="Próximo mês" aria-label="Próximo mês"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg></button></div></div>
+    <div class="mcal-g">${['D','S','T','Q','Q','S','S'].map(x=>`<b>${x}</b>`).join('')}${cells}</div>
+  </div>`;
+}
 function renderDashboard(){
   const today = todayISO();
   const refDay = state.dash.granularity==='dia' ? state.dash.refDate : today;
@@ -1767,7 +1910,7 @@ function renderDashboard(){
     let d = new Date(baseDateStr+'T00:00:00');
     d.setDate(d.getDate()+1);
     while(d.getDay()===0){ d.setDate(d.getDate()+1); }
-    return d.toISOString().slice(0,10);
+    return localISO(d);
   }
   const proximoDiaData = proximoDiaUtil(today);
   const ehRealmenteAmanha = proximoDiaData === addDays(today,1);
@@ -1794,7 +1937,7 @@ function renderDashboard(){
 
   // -- versões fixas em mês-calendário de verdade, só para "Inteligência da rotina" (não seguem o navegador de datas) --
   const inCurrentCalendarMonth = iso => iso && monthKey(iso)===monthKey(today);
-  const inPrevCalendarMonth = (()=>{ const d=new Date(today+'T00:00:00'); d.setMonth(d.getMonth()-1); const mk=monthKey(d.toISOString().slice(0,10)); return iso => iso && monthKey(iso)===mk; })();
+  const inPrevCalendarMonth = (()=>{ const d=new Date(today+'T00:00:00'); d.setMonth(d.getMonth()-1); const mk=monthKey(localISO(d)); return iso => iso && monthKey(iso)===mk; })();
   const contatosMesFixo = DB.contatos.filter(c=>!c.mesmoTelefonema && inCurrentCalendarMonth(c.dataContato));
   const naoAgendadosMesFixo = DB.contatos.filter(c=>!c.mesmoTelefonema && c.status==='Não agendado' && inCurrentCalendarMonth(c.dataContato));
   const agendadosViaContatoMesFixo = DB.contatos.filter(c=>!c.mesmoTelefonema && inCurrentCalendarMonth(c.dataContato) && ['Agendado','Faltou'].includes(contatoResultadoFinal(c)));
@@ -1942,7 +2085,7 @@ function renderDashboard(){
   <div class="dash-hero">
   <div class="dash-head">
     <div class="dash-greeting" style="margin:0;">
-      <div class="dash-greeting-title">${greetingText()}</div>
+      <div class="dash-greeting-title">${greetingText().replace(/, (.+)$/, ', <em>$1</em>')}</div>
       <div class="dash-greeting-sub">Aqui está o resumo da rotina da Olhatta.</div>
     </div>
     ${renderDashNav()}
@@ -2057,6 +2200,7 @@ function renderDashboard(){
     </div>
 
     <div class="dash-col">
+  ${dashMiniCal()}
   <div class="card pad" style="margin-bottom:20px; border-color:var(--brown);">
     <div class="section-title" style="margin-bottom:10px;">${ICONS.sparkle} O que preciso fazer${periodoTag==='hoje'?' hoje':''}? <span class="tag">${pendencias.length}</span></div>
     ${pendencias.length? `
@@ -2371,6 +2515,10 @@ function renderDashboard(){
     </div>
   </div>`;
 }
+function bentoHtml(items, extraCls){
+  const n = items.length, cls = n===2?'b2':(n===3?'b3':(n>4?'b9':''));
+  return `<div class="bento ${cls} ${extraCls||''}">${items.map((it,i)=>`<div class="bn ${i===0?'feat':''}"><div class="bn-l">${it.l}</div><div class="bn-v ${i===0?'':(it.t?'c-'+it.t:'')}">${it.v}</div>${it.s?`<div class="bn-s">${it.s}</div>`:''}</div>`).join('')}</div>`;
+}
 function statCardIcon(label){
   const t = String(label).toLowerCase();
   if(t.startsWith('contatos')) return ['contatos','brown'];
@@ -2383,6 +2531,16 @@ function statCardIcon(label){
   if(t.startsWith('valor')) return ['barchart','brown'];
   if(t.startsWith('aguardando')) return ['bell','warn'];
   if(t.startsWith('total de pedidos')) return ['star','brown'];
+  if(t.startsWith('agendaram')) return ['check',''];
+  if(t.startsWith('não agendaram')) return ['x','bad'];
+  if(t.startsWith('recontatar')) return ['phone','warn'];
+  if(t.startsWith('tutores')) return ['clientes',''];
+  if(t.startsWith('animais')) return ['paw','brown'];
+  if(t.startsWith('novos')) return ['sparkle','brown'];
+  if(t.startsWith('vieram do cliente')) return ['phone','brown'];
+  if(t.startsWith('partiram de nós')) return ['contatos',''];
+  if(t.includes('agendad')) return ['agenda',''];
+  if(t.startsWith('desmarques')) return ['desmarcacoes','bad'];
   return null;
 }
 function statCard(label,value,color,sub,go){
@@ -2527,15 +2685,11 @@ function abrirDiaCalendario(dataStr){
     closeModal(); formAgendamento(null, {data:dataStr});
   });
 }
+let agDiaSel = null;
 function renderAgenda(){
   const today = todayISO();
   if(agendaViewMode==='calendario' && state.dash.granularity!=='mes'){ state.dash.granularity='mes'; }
-  const hojePorTipo = tiposNomes().map(tipo=>({
-    tipo, cor: tipoColor(tipo),
-    lista: DB.agendamentos.filter(a=>a.data===today && a.tipo===tipo && !['Cancelado','Desmarcado','Reagendado'].includes(a.status)).sort((a,b)=>a.horario.localeCompare(b.horario))
-  }));
-  const agendadosHojeCriados = DB.agendamentos.filter(a=>(a.criadoEm||'').slice(0,10)===today).length;
-  const agendadosParaHoje = DB.agendamentos.filter(a=>a.data===today && !['Cancelado','Desmarcado','Reagendado'].includes(a.status)).length;
+  const agendadosHojeCriados = DB.agendamentos.filter(a=>diaLocalDe(a.criadoEm)===today).length;
 
   let list = DB.agendamentos.slice();
   const modoData = agendaFilters.modoData||'agendamento';
@@ -2555,7 +2709,14 @@ function renderAgenda(){
   const contatosNoPeriodo = agendaFilters.todos ? DB.contatos.filter(c=>!c.mesmoTelefonema).length : DB.contatos.filter(c=>!c.mesmoTelefonema && inRefPeriod(c.dataContato)).length;
   const agendadosNoPeriodo = agendaFilters.todos ? DB.agendamentos.filter(a=>!['Cancelado','Desmarcado','Reagendado'].includes(a.status)).length : DB.agendamentos.filter(a=>inRefPeriod(a.data) && !['Cancelado','Desmarcado','Reagendado'].includes(a.status)).length;
 
-  const comHoje = hojePorTipo.filter(g=>g.lista.length);
+  if(!agDiaSel) agDiaSel = today;
+  const _sel = agDiaSel;
+  const _ativos = a=>!['Cancelado','Desmarcado','Reagendado'].includes(a.status);
+  const _listaSel = DB.agendamentos.filter(a=>a.data===_sel && _ativos(a)).sort((x,y)=>(x.horario||'').localeCompare(y.horario||''));
+  const _ini = addDays(today, -new Date(today+'T00:00:00').getDay());
+  const _dias = Array.from({length:14},(_,i)=>{ const iso=addDays(_ini,i); const dt=new Date(iso+'T00:00:00'); return {iso, dia:dt.getDate(), sem:['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][dt.getDay()], n:DB.agendamentos.filter(a=>a.data===iso && _ativos(a)).length}; });
+  setTimeout(()=>{ const el=document.querySelector('.wk-d.on'); if(el){ const st=el.parentElement; st.scrollLeft = el.offsetLeft - st.clientWidth/2 + el.clientWidth/2; } },0);
+  const _selLabel = _sel===today?'Hoje':(_sel===addDays(today,1)?'Amanhã':(_sel===addDays(today,-1)?'Ontem':['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'][new Date(_sel+'T00:00:00').getDay()]));
   const agToggle = `<div class="seg" role="group" aria-label="Modo de exibição">
       <button type="button" class="${agendaViewMode==='calendario'?'on':''}" data-agenda-view="calendario">${ICONS.agenda} Calendário</button>
       <button type="button" class="${agendaViewMode==='lista'?'on':''}" data-agenda-view="lista">${ICONS.notepad} Lista</button>
@@ -2565,22 +2726,27 @@ function renderAgenda(){
   ${renderDashNav(agendaViewMode==='calendario', agToggle)}
   <div class="card pad ${accCard('ag-hoje', true)}" style="margin-bottom:16px;">
     <div class="section-title" ${accTitleAttrs()}>
-      <span>Hoje <span class="acc-sub hide-md">${fmtDateLong(today)}</span></span>
-      <span class="acc-sub">${agendadosParaHoje} marcado${agendadosParaHoje===1?'':'s'} · ${agendadosHojeCriados} agendado${agendadosHojeCriados===1?'':'s'} hoje</span>
+      <span>${_selLabel} <span class="acc-sub hide-md">${fmtDateLong(_sel)}</span></span>
+      <span class="acc-sub">${_listaSel.length} marcado${_listaSel.length===1?'':'s'}${_sel===today?` · ${agendadosHojeCriados} agendado${agendadosHojeCriados===1?'':'s'} hoje`:''}</span>
     </div>
-    ${comHoje.length? `<div class="hoje-grid">${comHoje.map(grupo=>`
-      <div>
-        <div class="pend-group-head">${grupo.tipo}${grupo.tipo.endsWith('s')?'':'s'} <span class="pill-muted">${grupo.lista.length}</span></div>
-        ${grupo.lista.map(a=>`<div class="pend-row rowlink" data-open-ag="${a.id}"><span class="pend-dot" style="background:${grupo.cor};"></span><span><strong>${a.horario}</strong> ${agAnimalNome(a)} · ${agTutorNome(a)}</span></div>`).join('')}
-      </div>`).join('')}</div>` : `<div class="hint">Nenhum atendimento marcado para hoje.</div>`}
+    <div class="wk-strip" role="tablist" aria-label="Escolher dia">${_dias.map(d=>`<button type="button" role="tab" aria-selected="${d.iso===_sel}" class="wk-d ${d.iso===_sel?'on':''} ${d.iso===today?'hoje':''}" onclick="agDiaSel='${d.iso}'; render();"><span>${d.sem}</span><b>${d.dia}</b>${d.n?`<i>${d.n}</i>`:'<i class="z"></i>'}</button>`).join('')}</div>
+    ${_listaSel.length? `<div class="ag-tl">${_listaSel.map(a=>`
+      <div class="ag-tl-row rowlink" data-open-ag="${a.id}">
+        <div class="ag-tl-time">${a.horario}</div>
+        <div class="ag-tl-dot" style="--c:${tipoColor(a.tipo)}"></div>
+        <div class="ag-tl-card">
+          <div class="ag-tl-main"><strong>${agAnimalNome(a)}</strong><span>${agTutorNome(a)}</span></div>
+          <div class="ag-tl-meta">${tipoPill(a.tipo)} ${badge(a.status)}</div>
+        </div>
+      </div>`).join('')}</div>` : `<div class="hint" style="padding:6px 2px 2px;">Nenhum atendimento marcado neste dia.</div>`}
   </div>
   ${agendaViewMode==='calendario' ? `
     ${renderCalendarioMes(state.dash.refDate)}
   ` : `
-  <div class="grid g2 dash-kpis" style="margin:0 0 14px;">
-    <div class="stat-card" style="--c:var(--brown)"><div class="stripe"></div><span class="sc-ic brown">${ICONS.contatos}</span><div class="label">Contatos no período</div><div class="value" style="font-size:24px;">${contatosNoPeriodo}</div></div>
-    <div class="stat-card" style="--c:var(--st-realizado)"><div class="stripe"></div><span class="sc-ic">${ICONS.agenda}</span><div class="label">Agendamentos no período</div><div class="value" style="font-size:24px;">${agendadosNoPeriodo}</div></div>
-  </div>
+  ${bentoHtml([
+    {l:'Agendamentos no período', v:agendadosNoPeriodo, s:agendaFilters.todos?'em todo o período':'no período escolhido'},
+    {l:'Contatos no período', v:contatosNoPeriodo, s:'recebidos e feitos', t:'brown'}
+  ])}
   <div class="fbar">
     <input type="text" placeholder="Nome do tutor" value="${agendaFilters.tutor}" data-fx="tutor" style="min-width:150px;">
     <input type="text" placeholder="Nome do animal" value="${agendaFilters.animal}" data-fx="animal" style="min-width:150px;">
@@ -2652,10 +2818,16 @@ function renderClientes(){
   const tutoresFiltrados = DB.tutores.filter(t=> !q || sa(t.nome).includes(q) || sa(t.nome2).includes(q) || (t.telefone||'').includes(q) || (t.telefone2||'').includes(q) || animaisDoTutor(t.id).some(a=>sa(a.nome).includes(q))).sort((a,b)=>clientesOrdem*(a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
   const animaisFiltrados = DB.animais.filter(a=> !q || sa(a.nome).includes(q) || tutoresDoAnimal(a.id).some(t=>sa(t.nome).includes(q)||( t.telefone||'').includes(q))).sort((a,b)=>clientesOrdem*(a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
 
+  const _mesAtual = todayISO().slice(0,7);
+  const _novos = DB.tutores.filter(t=>t.criadoEm && diaLocalDe(t.criadoEm).startsWith(_mesAtual)).length;
   return `
+  ${bentoHtml([
+    {l:'Tutores', v:DB.tutores.length, s:'cadastrados no sistema'},
+    {l:'Animais', v:DB.animais.length, s:DB.animais.filter(a=>a.obito).length?DB.animais.filter(a=>a.obito).length+' em memória':'cadastrados', t:'brown'},
+    {l:'Novos tutores no mês', v:_novos, s:'cadastrados este mês', t:'ok'}
+  ])}
   <div class="view-head">
     <div class="filters search-input" style="margin-bottom:0; max-width:340px;">
-      ${ICONS.clientes ? '' : ''}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-faint);"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input id="clientesSearch" style="padding-left:32px;" placeholder="Filtrar esta lista por nome ou telefone…" value="${clientesQuery}">
     </div>
@@ -2744,6 +2916,13 @@ function renderContatos(){
 
   return `
   ${renderDashNav(false, `<button class="btn btn-primary btn-sm" id="novoContato">${ICONS.plus} Novo contato</button>`)}
+  ${(()=>{ const ag=DB.contatos.filter(c=>c.status==='Aguardando' && !c.mesmoTelefonema); const rec=ag.filter(c=>c.recontatarEm && c.recontatarEm<=todayISO()).length;
+    return `<div class="bento">
+      <div class="bn feat"><div class="bn-l">Aguardando resposta</div><div class="bn-v">${ag.length}</div><div class="bn-s">${ag.length===1?'contato ainda sem retorno':'contatos ainda sem retorno'}</div></div>
+      <div class="bn"><div class="bn-l">Agendaram</div><div class="bn-v c-ok">${contagemStatus['Agendado']||0}</div><div class="bn-s">no período</div></div>
+      <div class="bn"><div class="bn-l">Não agendaram</div><div class="bn-v c-bad">${contagemStatus['Não agendado']||0}</div><div class="bn-s">no período</div></div>
+      <div class="bn"><div class="bn-l">Recontatar hoje</div><div class="bn-v c-warn">${rec}</div><div class="bn-s">${rec?'inclui atrasados':'nenhum pendente'}</div></div>
+    </div>`; })()}
   <div class="fbar">
     <input type="text" placeholder="Buscar nome, animal ou telefone" value="${contatosFilters.q||''}" id="contatosBusca" style="min-width:230px;">
     <select data-cfx="tipo" style="width:auto;">
@@ -2756,7 +2935,7 @@ function renderContatos(){
     </select>
   </div>
   <div class="fbar">
-    ${['','Aguardando','Agendado','Não agendado'].map(st=>`<button class="chip-btn ${contatosFilters.status===st?'on':''}" data-cstatus="${st}">${st||'Todos'}${st?` <span style="opacity:.7;">${contagemStatus[st]||0}</span>`:''}</button>`).join('')}
+    ${[['',''],['Aguardando','warn'],['Agendado','ok'],['Não agendado','bad']].map(([st,tn])=>`<button class="chip-btn ${contatosFilters.status===st?'on':''}" data-cstatus="${st}">${st||'Todos'}${st?`<span class="cnt ${tn}">${contagemStatus[st]||0}</span>`:''}</button>`).join('')}
     <span class="grow"></span>
     ${(contatosFilters.de||contatosFilters.ate)?`<button type="button" class="chip-btn on" id="contatosLimpaIntervalo">${contatosFilters.de?fmtDate(contatosFilters.de).slice(0,5):''} a ${contatosFilters.ate?fmtDate(contatosFilters.ate).slice(0,5):''} ✕</button>`:''}
     <button type="button" class="chip-btn ${contatosFilters.ult7?'on':''}" id="contatosUlt7">Últimos 7 dias</button>
@@ -2821,14 +3000,15 @@ function renderDesmarcacoes(){
 
   return `
   ${renderDashNav(false, `<label class="chk-inline"><input type="checkbox" id="desmarcacoesTodosPeriodos" ${desmarcacoesFilters.todos?'checked':''}> Todo o período</label>`)}
-  <div class="grid g3" style="margin-bottom:16px;">
-    ${statCard('Cancelados', contDesm.Cancelado, 'var(--st-cancelado)')}
-    ${statCard('Desmarcados', contDesm.Desmarcado, 'var(--st-desmarcado)')}
-    ${statCard('Reagendados', contDesm.Reagendado, 'var(--st-reagendado)')}
+  <div class="bento">
+    <div class="bn feat"><div class="bn-l">Mudanças na agenda</div><div class="bn-v">${contDesm.Cancelado+contDesm.Desmarcado+contDesm.Reagendado}</div><div class="bn-s">${desmarcacoesFilters.todos?'em todo o período':'no período escolhido'}</div></div>
+    <div class="bn"><div class="bn-l">Cancelados</div><div class="bn-v c-bad">${contDesm.Cancelado}</div><div class="bn-s">não vão voltar</div></div>
+    <div class="bn"><div class="bn-l">Desmarcados</div><div class="bn-v c-warn">${contDesm.Desmarcado}</div><div class="bn-s">podem remarcar</div></div>
+    <div class="bn"><div class="bn-l">Reagendados</div><div class="bn-v c-ok">${contDesm.Reagendado}</div><div class="bn-s">horário recuperado</div></div>
   </div>
   <div class="fbar">
     <input type="text" id="desmBusca" placeholder="Buscar tutor ou animal" value="${desmarcacoesFilters.q||''}" style="min-width:210px;">
-    ${[['','Todos'],['Cancelado','Cancelados'],['Desmarcado','Desmarcados'],['Reagendado','Reagendados']].map(([v,l])=>`<button class="chip-btn ${desmarcacoesFilters.tipo===v?'on':''}" data-desmtipo="${v}">${l}${v?` <span style="opacity:.7;">${contDesm[v]}</span>`:''}</button>`).join('')}
+    ${[['','Todos',''],['Cancelado','Cancelados','bad'],['Desmarcado','Desmarcados','warn'],['Reagendado','Reagendados','ok']].map(([v,l,tn])=>`<button class="chip-btn ${desmarcacoesFilters.tipo===v?'on':''}" data-desmtipo="${v}">${l}${v?`<span class="cnt ${tn}">${contDesm[v]}</span>`:''}</button>`).join('')}
   </div>
   <div class="grid" style="grid-template-columns:2fr 1fr; gap:16px; align-items:start;">
     <div class="card">
@@ -2932,7 +3112,7 @@ function renderLembretes(){
   const concluidos = DB.lembretes.filter(l=>l.concluido && inRefPeriod(l.data)).sort((a,b)=>b.data.localeCompare(a.data));
   return `
   ${renderDashNav(false, `<button class="btn btn-primary btn-sm" id="novoLembrete">${ICONS.plus} Novo lembrete</button>`)}
-  <div class="grid g2">
+  <div class="grid" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:16px; align-items:start;">
     <div class="card pad">
       <div class="section-title">Pendentes <span class="tag">${pendentes.length}</span></div>
       ${pendentes.length? [
@@ -2941,10 +3121,10 @@ function renderLembretes(){
         {t:'Próximos dias', cor:'var(--ink-soft)', l:pendentes.filter(l=>l.data>todayISO())},
       ].filter(g=>g.l.length).map(g=>`<div style="font-size:11.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:${g.cor}; margin:14px 0 8px;">${g.t} · ${g.l.length}</div>${g.l.map(l=>`
         <div class="alert lemb-row ${l.data<todayISO()?'alert-danger':(l.data===todayISO()?'alert-hoje':'alert-brown')}" style="margin-bottom:10px; align-items:center;">
-          ${ICONS.bell}
+          <div class="date-tile"><b>${l.data.slice(8,10)}</b><span>${MESES_ABREV[Number(l.data.slice(5,7))-1]}</span></div>
           <div style="flex:1;">
             <div class="t1">${l.titulo} ${l.data===todayISO()?'<span class="pill-muted">HOJE</span>':''}</div>
-            <div>${fmtDate(l.data)}${l.horario?' às '+l.horario:''}${l.data<todayISO()?` <span style="font-weight:700;">(há ${daysBetween(l.data,todayISO())} dia${daysBetween(l.data,todayISO())===1?'':'s'})</span>`:(l.data===addDays(todayISO(),1)?' <span style="font-weight:700;">(amanhã)</span>':'')}${l.observacao?' — '+l.observacao:''}</div>
+            <div>${fmtDate(l.data)}${l.horario?' às '+l.horario:''}${l.data<todayISO()?` <span style="font-weight:700;">(há ${daysBetween(l.data,todayISO())} dia${daysBetween(l.data,todayISO())===1?'':'s'})</span>`:(l.data===addDays(todayISO(),1)?' <span style="font-weight:700;">(amanhã)</span>':'')}${l.observacao?' · '+l.observacao:''}</div>
             ${l.tutorId?(()=>{ const t=tutorById(l.tutorId); const partes=t?[t.nome,t.telefone,t.cidade,t.clinica].filter(Boolean):[]; return partes.length?`<div style="font-size:11.5px; opacity:.8; margin-top:2px;">${partes.join(' · ')}</div>`:''; })():''}
           </div>
           <div class="lemb-acoes" style="display:flex; align-items:center; gap:4px;">
@@ -2959,7 +3139,7 @@ function renderLembretes(){
       <div class="section-title">Concluídos no período</div>
       ${concluidos.length? concluidos.slice(0,15).map(l=>`
         <div class="insight"><div class="dot" style="background:var(--st-realizado)"></div>
-        <div style="flex:1; text-decoration:line-through; color:var(--ink-faint);">${l.titulo} — ${fmtDate(l.data)}</div>
+        <div style="flex:1; text-decoration:line-through; color:var(--ink-faint);">${l.titulo} · ${fmtDate(l.data)}</div>
         <button class="icon-btn" data-del-lembrete="${l.id}">${ICONS.trash}</button></div>`).join('') : `<div class="hint">Nenhum lembrete concluído ainda.</div>`}
     </div>
   </div>`;
@@ -2987,7 +3167,7 @@ function metaMesLabel(mesAno){
 }
 function metaStepMonth(mesAno, dir){
   const dt = new Date(mesAno+'-01T00:00:00'); dt.setMonth(dt.getMonth()+dir);
-  return dt.toISOString().slice(0,7);
+  return localISO(dt).slice(0,7);
 }
 function renderMetas(){
   const mesAno = metasMesAno;
@@ -3017,12 +3197,15 @@ function renderMetas(){
         else { status='Meta em andamento'; statusColor='var(--brown-dark)'; }
       }
       const faltam = meta ? meta-real : 0;
+      const _hojeMes = todayISO().slice(0,7);
+      const _diasRest = (()=>{ const [yy,mm]=mesAno.split('-').map(Number); return new Date(yy,mm,0).getDate() - new Date().getDate(); })();
+      const _pillMes = mesAno===_hojeMes ? `<span class="meta-pill">${_diasRest===0?'Último dia do mês':`Faltam ${_diasRest} dia${_diasRest===1?'':'s'}`}</span>` : (mesAno<_hojeMes?'<span class="meta-pill done">Mês encerrado</span>':'');
       const faltamTxt = !meta ? '' : (faltam>0 ? `Faltam <strong>${faltam}</strong> para a meta${supermeta?` · <strong>${Math.max(0,supermeta-real)}</strong> para a supermeta`:''}` : `<strong>${-faltam}</strong> acima da meta`);
       return `
       <div class="card pad meta-card" style="--c:${statusColor==='var(--st-realizado)'?'var(--st-realizado)':'var(--sage)'};">
         <div class="section-title" style="justify-content:space-between;">
-          <span>${cat.label} ${meta?`<span class="tag" style="margin-left:6px;">${meta?Math.round(real/meta*100):0}%</span>`:''}</span>
-          <button class="icon-btn" data-edit-meta="${cat.key}" title="Definir meta">${ICONS.edit}</button>
+          <span style="display:inline-flex; align-items:center; gap:10px;"><span class="acc-ic">${ICONS[({Consultas:'agenda',Cirurgias:'star',Produtos:'receipt',Exames:'target'})[cat.key]||'target']}</span>${cat.label} ${meta?`<span class="tag">${meta?Math.round(real/meta*100):0}%</span>`:''}</span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">${_pillMes}<button class="icon-btn" data-edit-meta="${cat.key}" title="Definir meta">${ICONS.edit}</button></span>
         </div>
         ${cat.manual?`
         <div style="margin-bottom:10px;">
@@ -3044,7 +3227,7 @@ function renderMetas(){
           <div class="bar-track"><div class="bar-fill" style="width:${pctReal}%; background:var(--brown);"></div></div>
         `:''}
         `}
-        <div style="margin-top:10px; font-size:12.5px; font-weight:700; color:${statusColor};">${status}${meta?` · ${Math.round(real/meta*100)}%`:''}</div>
+        ${meta?`<div style="margin-top:10px; font-size:12.5px; font-weight:700; color:${statusColor};">${status} · ${Math.round(real/meta*100)}%</div>`:`<button type="button" class="meta-def" data-edit-meta="${cat.key}">${ICONS.plus} Definir meta do mês</button>`}
         ${faltamTxt?`<div style="margin-top:3px; font-size:12.5px; color:var(--ink-soft);">${faltamTxt}</div>`:''}
       </div>`;
     }).join('')}
@@ -3285,11 +3468,11 @@ function renderNFListaTab(){
   ${alertas.length? `<div class="alert alert-danger" style="margin-bottom:16px; align-items:flex-start;">${ICONS.bell}<div>${alertas.map(a=>`<div>${a}</div>`).join('')}</div></div>`:''}
 
   ${renderDashNav(false, `<button class="btn btn-primary btn-sm" id="novaNF">${ICONS.plus} Nova nota fiscal</button>`)}
-  <div class="grid g3" style="margin-bottom:16px;">
-    ${statCard('Pendentes', pendentes.length, 'var(--brown)', pendentes.length?`${fmtR(totalPendente)} a emitir`:'Nada a emitir')}
-    ${statCard('Feitas no período', feitas.length, 'var(--brown)')}
-    ${statCard('Valor emitido', fmtR(totalFeitas), 'var(--brown)')}
-  </div>
+  ${bentoHtml([
+    {l:'Notas pendentes', v:pendentes.length, s:pendentes.length?`${fmtR(totalPendente)} a emitir`:'Nada a emitir'},
+    {l:'Feitas no período', v:feitas.length, s:'notas emitidas', t:'ok'},
+    {l:'Valor emitido', v:fmtR(totalFeitas), s:'no período', t:'brown'}
+  ])}
   <div class="fbar">
     <input type="text" placeholder="Buscar cliente" value="${nfFilters.nome||''}" data-nffx-text="nome" style="min-width:220px;">
     ${filtrando?`<button class="btn btn-ghost btn-sm" id="clearNfFx">Limpar</button>`:''}
@@ -3896,10 +4079,10 @@ function renderRelatorioAuto(){
     <div class="dash-nav-ctrl">${nav}</div>
     <div class="dash-nav-extra"><button class="btn btn-primary btn-sm" id="relatPdf">${ICONS.download} Exportar PDF</button></div>
   </div>
-  <div class="grid g3 rel-noprint" style="margin-bottom:18px;">
-    ${cartoes.map(([n,k,ruim])=>{ const v=relVar(A[k],B[k]); const bom = v.dir===0?null:(ruim? v.dir<0 : v.dir>0);
+  <div class="bento b9 rel-noprint" style="margin-bottom:18px;">
+    ${[...cartoes.filter(c=>c[1]==='realizados'), ...cartoes.filter(c=>c[1]!=='realizados')].map(([n,k,ruim],i)=>{ const v=relVar(A[k],B[k]); const bom = v.dir===0?null:(ruim? v.dir<0 : v.dir>0);
       const cor = bom===null?'ink':(bom?'ok':'bad');
-      return `<div class="stat-card"><div class="label">${n}</div><div class="value">${A[k]}</div><div class="delta rel-var ${cor}">${v.txt}<span class="rel-prev"> · antes ${B[k]}</span></div></div>`; }).join('')}
+      return `<div class="bn ${i===0?'feat':''}"><div class="bn-l">${n}</div><div class="bn-v">${A[k]}</div><div class="bn-s"><span class="rel-var ${cor}" style="font-weight:800;">${v.txt}</span> · antes ${B[k]}</div></div>`; }).join('')}
   </div>
   <div class="card pad rel-resumo" style="margin-bottom:18px;">
     <div class="section-title">Resumo do período</div>
@@ -4197,11 +4380,11 @@ function renderAvaliacoes(){
   const contAv = {'':todasAv.length, vouPedir:todasAv.filter(a=>a.status==='Vou pedir').length, aguardando:pendentes, avaliou:avaliaram, naoAvaliou:todasAv.filter(a=>a.avaliou===false).length};
   const taxaAv = total ? Math.round(avaliaram/total*100) : 0;
   return `
-  <div class="grid g3" style="margin-bottom:16px;">
-    ${statCard('Total de pedidos', total, 'var(--brown)')}
-    ${statCard('Avaliaram', avaliaram, 'var(--st-realizado)', total?`${taxaAv}% dos pedidos viraram avaliação`:'')}
-    ${statCard('Aguardando resposta', pendentes, 'var(--st-aguardando)')}
-  </div>
+  ${bentoHtml([
+    {l:'Pedidos de avaliação', v:total, s:'feitos até agora'},
+    {l:'Avaliaram', v:avaliaram, s:total?`${taxaAv}% dos pedidos`:'nenhum ainda', t:'ok'},
+    {l:'Aguardando resposta', v:pendentes, s:'ainda não avaliaram', t:'warn'}
+  ])}
   <div class="view-head">
     <div class="filters" style="margin-bottom:0;">
 <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -4326,7 +4509,7 @@ function renderPersonalizacao(){
   return `
   <div class="set-list">
     <div class="card pad ${accCard('p-perfis', false)}">
-      <div class="section-title" ${accTitleAttrs()}><span>Perfis desta conta</span><span class="tag">${(DB.usuarios||[]).length}/5</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.clientes}</span><span class="acc-tx">Perfis desta conta<small>Quem usa o sistema nesta conta</small></span><span class="tag">${(DB.usuarios||[]).length}/5</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Até 5 pessoas podem usar esta mesma conta (${auth.currentUser?.email||'conta Google'}), cada uma com seu próprio nome e foto. Trocar de perfil é rápido, pelo menu lateral, e cada ação fica registrada com o nome de quem estava selecionado.</p>
       <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
         ${(DB.usuarios||[]).map(u=>`
@@ -4349,7 +4532,7 @@ function renderPersonalizacao(){
     </div>
 
     <div class="card pad ${accCard('p-prof', false)}">
-      <div class="section-title" ${accTitleAttrs()}><span>Profissionais</span><span class="tag">${(DB.profissionais||[]).length}</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.star}</span><span class="acc-tx">Profissionais<small>Responsáveis pelos atendimentos</small></span><span class="tag">${(DB.profissionais||[]).length}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Quem pode ser marcado como responsável pelo atendimento, no agendamento e no calendário.</p>
       <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
         ${(DB.profissionais||[]).map(p=>`
@@ -4366,7 +4549,7 @@ function renderPersonalizacao(){
     </div>
 
     <div class="card pad ${accCard('p-msg', false)}">
-      <div class="section-title" ${accTitleAttrs()}><span>Mensagens prontas</span><span class="tag">${mensagensLista().length}</span><button type="button" class="chip-btn" id="msgRestaurar">Restaurar padrão</button></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.contatos}</span><span class="acc-tx">Mensagens prontas<small>Textos para enviar no WhatsApp</small></span><span class="tag">${mensagensLista().length}</span><button type="button" class="chip-btn" id="msgRestaurar">Restaurar padrão</button></div>
       <div class="rel-motivos" id="msgVars">${MSG_VARIAVEIS.map(([v,d])=>`<button type="button" class="chip-btn" data-msgvar="${v}" title="${d}">${v}</button>`).join('')}</div>
       <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:14px;">
         ${mensagensLista().map(m=>`
@@ -4382,7 +4565,7 @@ function renderPersonalizacao(){
     </div>
 
     <div class="card pad ${accCard('p-tipos', false)}">
-      <div class="section-title" ${accTitleAttrs()}><span>Tipos de atendimento e cores</span><span class="tag">${(DB.tiposAtendimento||[]).length}</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.palette}</span><span class="acc-tx">Tipos de atendimento e cores<small>Nomes e cores usados na agenda</small></span><span class="tag">${(DB.tiposAtendimento||[]).length}</span></div>
       <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
         ${(DB.tiposAtendimento||[]).map(t=>`
           <div style="display:flex; align-items:center; gap:10px; background:var(--sage-pale); border-radius:9px; padding:8px 12px;">
@@ -4400,7 +4583,7 @@ function renderPersonalizacao(){
     </div>
 
     <div class="card pad ${accCard('p-cidades', false)}">
-      <div class="section-title" ${accTitleAttrs()}><span>Cidades e clínicas</span><span class="tag">${Object.keys(DB.cidadesClinicas||{}).length}</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.pin}</span><span class="acc-tx">Cidades e clínicas<small>Onde a clínica atende</small></span><span class="tag">${Object.keys(DB.cidadesClinicas||{}).length}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Onde a clínica atende, e os nomes usados em cada cidade.</p>
       <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:16px;">
         ${Object.keys(DB.cidadesClinicas||{}).map(cidade=>`
@@ -4426,7 +4609,7 @@ function renderPersonalizacao(){
     </div>
 
     <div class="card pad ${accCard('p-motivos', false)}">
-      <div class="section-title" ${accTitleAttrs()}><span>Motivos de não agendamento e desmarque</span><span class="tag">${(DB.motivosPadrao||[]).length}</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.notepad}</span><span class="acc-tx">Motivos de não agendamento e desmarque<small>Opções rápidas de contato e desmarque</small></span><span class="tag">${(DB.motivosPadrao||[]).length}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Aparecem como opções rápidas ao registrar um contato ou desmarcar um agendamento.</p>
       <div class="chip-list" style="margin-bottom:12px;">
         ${(DB.motivosPadrao||[]).map(m=>m==='Outro motivo'
@@ -4451,7 +4634,7 @@ function renderConfiguracoes(){
   return `
   <div class="set-list">
     <div class="card pad ${accCard('c-lixeira', false)}">
-      <div class="section-title" ${accTitleAttrs()}><span>Lixeira</span><span class="tag">${lixeira.length}</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.trash}</span><span class="acc-tx">Lixeira<small>Itens excluídos que podem voltar</small></span><span class="tag">${lixeira.length}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:12px;">Tutores, animais, agendamentos, contatos e lembretes excluídos ficam aqui e podem ser restaurados a qualquer momento.</p>
       ${lixeira.length? `<div class="table-wrap sticky-head" style="max-height:340px; overflow-y:auto;"><table><thead><tr><th>Tipo</th><th>Registro</th><th>Excluído</th><th></th></tr></thead><tbody>
         ${agruparLixeira(lixeira).map(grupo=>{
@@ -4471,17 +4654,17 @@ function renderConfiguracoes(){
     </div>
 
     <div class="card pad ${accCard('c-sobre', false)}" style="order:9;">
-      <div class="section-title" ${accTitleAttrs()}><span>Sobre</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.sparkle}</span><span class="acc-tx">Sobre<small>Informações e suporte</small></span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); line-height:1.6;">Sistema de gestão da <strong>Olhatta, Centro de Oftalmologia Veterinária</strong>. Os dados ficam sincronizados na nuvem entre todos os aparelhos onde a equipe faz login com a mesma conta.</p>
       <p style="font-size:13px; color:var(--ink-soft); margin-top:10px;">Precisa de ajuda? Fale com o suporte: <a href="mailto:miihzteir@gmail.com" style="color:var(--sage-dark); font-weight:700;">miihzteir@gmail.com</a></p>
     </div>
     <div class="card pad ${accCard('c-atual', false)}" style="order:8;">
-      <div class="section-title" ${accTitleAttrs()}><span>Atualizações do app</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.reagendar}</span><span class="acc-tx">Atualizações do app<small>Garantir a versão mais recente</small></span></div>
       <p style="font-size:13.5px; color:var(--ink-soft);">Quando novas versões do sistema forem publicadas, use este botão para garantir que está usando a versão mais recente instalada.</p>
       <button class="btn btn-secondary btn-sm" id="btnAtualizarApp" style="margin-top:10px;">${ICONS.download} Verificar atualizações</button>
     </div>
     <div class="card pad ${accCard('c-csv', false)}" style="order:3;">
-      <div class="section-title" ${accTitleAttrs()}><span>Exportar dados em CSV</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.barchart}</span><span class="acc-tx">Exportar dados em CSV<small>Listas para abrir no Excel</small></span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:10px;">Baixe listas em CSV (abre direto no Excel/Sheets) para conferência ou uso fora do sistema.</p>
       <div style="display:flex; flex-wrap:wrap; gap:8px;">
         <button type="button" class="btn btn-secondary btn-sm" data-csv="tutores">${ICONS.download} Tutores</button>
@@ -4492,7 +4675,7 @@ function renderConfiguracoes(){
       </div>
     </div>
     <div class="card pad ${accCard('c-backup', false)}" style="order:2;">
-      <div class="section-title" ${accTitleAttrs()}><span>Backup dos dados</span><span class="acc-sub">${(()=>{ const b=ultimoBackupInfo(); return b.data?`último: ${b.dias===0?'hoje':'há '+b.dias+' dia'+(b.dias===1?'':'s')}`:'nenhum backup baixado'; })()}</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.download}</span><span class="acc-tx">Backup dos dados<small>Cópia completa dos dados</small></span><span class="acc-sub">${(()=>{ const b=ultimoBackupInfo(); return b.data?`último: ${b.dias===0?'hoje':'há '+b.dias+' dia'+(b.dias===1?'':'s')}`:'nenhum backup baixado'; })()}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft);">Baixa um arquivo com uma cópia completa de tutores, animais, agendamentos, contatos e tudo mais do sistema, do jeito que está agora. Guarde esse arquivo no seu computador de vez em quando: se algo der errado, ele serve de rede de segurança.</p>
       <button class="btn btn-secondary btn-sm" id="btnBackupCompleto" style="margin-top:10px;">${ICONS.download} Baixar backup completo</button>
       <div class="hint" style="margin-top:8px;">${(()=>{ const b=ultimoBackupInfo(); return b.data?`Último backup baixado: ${fmtDate(b.data)} (${b.dias===0?'hoje':'há '+b.dias+' dia'+(b.dias===1?'':'s')})`:'Nenhum backup baixado ainda neste navegador.'; })()}</div>
@@ -4503,13 +4686,13 @@ function renderConfiguracoes(){
       </div>
     </div>
     <div class="card pad ${accCard('c-hist', false)}" style="order:4;">
-      <div class="section-title" ${accTitleAttrs()}><span>Histórico de alterações</span><span class="tag">${(DB.auditLog||[]).length}</span><button class="btn btn-secondary btn-sm" id="exportAlteracoesCsv">${ICONS.download} Exportar CSV</button></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.historico}</span><span class="acc-tx">Histórico de alterações<small>O que foi alterado e por quem</small></span><span class="tag">${(DB.auditLog||[]).length}</span><button class="btn btn-secondary btn-sm" id="exportAlteracoesCsv">${ICONS.download} Exportar CSV</button></div>
       ${(()=>{ const log=(DB.auditLog||[]).slice().reverse(); return log.length? `<div class="table-wrap sticky-head" style="max-height:240px; overflow-y:auto; border:1px solid var(--line); border-radius:10px;"><table><thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th></tr></thead><tbody>
         ${log.slice(0,300).map(l=>`<tr><td style="white-space:nowrap;">${fmtDateTime(l.dataHora)}</td><td><strong>${l.usuario}</strong></td><td>${l.acao}</td></tr>`).join('')}
       </tbody></table></div>` : `<div class="hint">Nenhuma alteração registrada ainda.</div>`; })()}
     </div>
     <div class="card pad ${accCard('c-risco', false)}" style="order:10;">
-      <div class="section-title" ${accTitleAttrs()} style="color:var(--st-cancelado);"><span>Zona de risco</span></div>
+      <div class="section-title" ${accTitleAttrs()}><span class="acc-ic bad">${ICONS.x}</span><span class="acc-tx">Zona de risco<small>Apagar dados ou excluir a conta</small></span></div>
       <p style="font-size:13.5px; color:var(--ink-soft);">Apaga todos os cadastros, agendamentos, contatos, lembretes, usuários e histórico de alterações desta conta, incluindo a lixeira. Esta ação não pode ser desfeita.</p>
       <button class="btn btn-danger" id="wipeBtn" style="margin-top:10px;">${ICONS.trash} Apagar todos os dados</button>
       <div style="border-top:1px solid var(--line); margin:16px 0; padding-top:16px;">
@@ -5620,11 +5803,21 @@ function openTutorDrawer(tutorId){
 
   openDrawer(`
     <div class="drawer-head">
-      <div><h2>${t.nome} ${t.codigo?`<span class="pill-muted" style="font-size:12px; vertical-align:middle;">#${t.codigo}</span>`:''}</h2><div class="drawer-sub">${t.telefone||''}${t.cidade?' · '+t.cidade:''}${t.clinica?' · '+t.clinica:''}</div></div>
+      <div><h2 style="font-size:16px;">Ficha do tutor ${t.codigo?`<span class="pill-muted" style="font-size:12px; vertical-align:middle;">#${t.codigo}</span>`:''}</h2></div>
       <button class="icon-btn" id="drawerClose">${ICONS.x}</button>
     </div>
     <div class="drawer-body">
-      <div style="display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;">
+      <div class="prof-card">
+        <div class="prof-av">${(t.nome||'?').trim().split(/\s+/).filter(Boolean).map((p,i,arr)=>(i===0||i===arr.length-1)?p[0]:'').join('').slice(0,2).toUpperCase()}</div>
+        <div class="prof-nm">${t.nome}</div>
+        <div class="prof-sub">${[t.telefone, t.cidade, t.clinica].filter(Boolean).join(' · ')||'Sem telefone cadastrado'}</div>
+        <div class="prof-stats">
+          <div><span class="acc-ic">${ICONS.paw}</span><b>${animais.length}</b><small>${animais.length===1?'Animal':'Animais'}</small></div>
+          <div><span class="acc-ic">${ICONS.check}</span><b>${agsHist.filter(a=>a.status==='Realizado').length}</b><small>Atendimentos</small></div>
+          <div><span class="acc-ic brown">${ICONS.contatos}</span><b>${contatosHist.length}</b><small>Contatos</small></div>
+        </div>
+      </div>
+      <div class="drawer-actions" style="display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" data-edit-tutor="${t.id}">${ICONS.edit} Editar</button>
         <button class="btn btn-primary btn-sm" data-quick-ag-tutor="${t.id}">${ICONS.plus} Agendar</button>
         ${t.telefone?`<button class="btn btn-primary btn-sm" style="background:#25D366; border-color:#25D366;" data-msg-menu="tutor" data-msg-id="${t.id}">Mensagem pronta</button>`:''}
@@ -6955,6 +7148,6 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="estoque.js?v=8"></script>
+<script src="estoque.js?v=10"></script>
 </body>
 </html>

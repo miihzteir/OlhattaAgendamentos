@@ -1,10 +1,15 @@
 (() => {
   // src/styles.js
   var CSS = `
-.est-tabs{display:flex; flex-wrap:wrap; gap:4px; overflow-x:auto; background:#fff; border:1px solid var(--line); border-radius:12px; padding:5px; margin-bottom:20px; scrollbar-width:none;}
+.est-tabs{display:flex; flex-wrap:wrap; gap:2px; overflow-x:auto; background:#fff; border:1px solid var(--line); border-radius:12px; padding:5px; margin-bottom:20px; scrollbar-width:none;}
 .est-tabs::-webkit-scrollbar{display:none;}
-.est-tab{display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border-radius:9px; border:none; background:none; font-family:'Manrope',sans-serif; font-size:13px; font-weight:700; color:var(--ink-soft); cursor:pointer; white-space:nowrap; transition:background .15s, color .15s, transform .18s cubic-bezier(.34,1.56,.64,1);}
-.est-tab svg{width:15px; height:15px;}
+.est-tab{display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:9px; border:none; background:none; font-family:'Manrope',sans-serif; font-size:12.5px; font-weight:700; color:var(--ink-soft); cursor:pointer; white-space:nowrap; transition:background .15s, color .15s, transform .18s cubic-bezier(.34,1.56,.64,1);}
+.est-tab svg{width:14px; height:14px;}
+@media (min-width:881px){ .est-tabs{display:grid; grid-template-columns:repeat(6,minmax(0,1fr));} .est-tab{justify-content:center;} }
+@media (min-width:881px) and (max-width:1150px){ .est-tabs{grid-template-columns:repeat(4,minmax(0,1fr));} }
+.est-k6{grid-template-columns:repeat(6,minmax(0,1fr));}
+@media (max-width:1300px){ .est-k6{grid-template-columns:repeat(3,minmax(0,1fr));} }
+@media (max-width:880px){ .view .grid.est-k6{grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:10px !important;} }
 .est-tab:hover{background:var(--sage-pale); color:var(--ink);}
 .est-tab:active{transform:scale(.95);}
 .est-tab.on{background:var(--sage-dark); color:#fff;}
@@ -160,7 +165,7 @@ td.est-c, th.est-c{text-align:center;}
   .est-rowe.e5 > :first-child{grid-column:1/-1;}
   .est-rowe-h{display:none;}
   .est-prev, .est-mini{grid-template-columns:1fr 1fr;}
-  .est-period input[type=date]{flex:1; width:auto;}
+  .est-period input[type=date]{flex:1 1 calc(50% - 30px); width:auto; min-width:120px;}
   .est-bar{width:56px;}
   .stat-card .est-val.est-money{font-size:19px;}
   .filters .search-input{flex-basis:100%;}
@@ -221,14 +226,17 @@ td.est-c, th.est-c{text-align:center;}
     relatorios: "Acessar relatórios"
   };
   var DEFAULT_PERMS = {
-    gerente: { vender: true, desconto: true, cancelar: true, entradas: true, ajustar: true, cadastros: true, custos: true, relatorios: true },
+    gerente: { vender: true, desconto: true, cancelar: true, entradas: true, ajustar: false, cadastros: true, custos: true, relatorios: true },
     funcionario: { vender: true, desconto: false, cancelar: false, entradas: true, ajustar: false, cadastros: false, custos: false, relatorios: false }
   };
+  var ADMIN_ONLY = ["ajustar"];
   function can(user, perms, p) {
     if (!user || user.active === false)
       return false;
     if (user.role === "admin")
       return true;
+    if (ADMIN_ONLY.includes(p))
+      return false;
     const table = perms && perms[user.role] || DEFAULT_PERMS[user.role] || {};
     return table[p] === true;
   }
@@ -345,10 +353,17 @@ td.est-c, th.est-c{text-align:center;}
 
   // src/fmt.js
   var esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  var brlF = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-  var brl = (n) => brlF.format(Number(n) || 0);
+  var intF = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+  var decF = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var brl = (n) => {
+    const v = Math.round((Number(n) || 0) * 100) / 100;
+    return Number.isInteger(v) ? intF.format(v) : decF.format(v);
+  };
   var numF = (n, d = 3) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits: d }).format(Number(n) || 0);
-  var moneyIn = (n) => (Number(n) || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var moneyIn = (n) => {
+    const v = Math.round((Number(n) || 0) * 100) / 100;
+    return Number.isInteger(v) ? String(v) : v.toFixed(2).replace(".", ",");
+  };
   var pct = (n) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(n) + "%";
   var fmtD = (ms) => ms ? new Date(ms).toLocaleDateString("pt-BR") : "";
   var fmtT = (ms) => ms ? new Date(ms).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
@@ -641,7 +656,29 @@ td.est-c, th.est-c{text-align:center;}
     const m = MOV[t] || [t, "st-Reagendado"];
     return `<span class="badge ${m[1]}">${m[0]}</span>`;
   };
-  var stat = (label, value, sub = "", go = "") => `<div class="stat-card${go ? " clicavel" : ""}" ${go ? `data-est-go="${go}" role="button" tabindex="0"` : ""}><div class="label">${label}</div><div class="value est-val">${value}</div>${sub ? `<div class="est-statsub">${sub}</div>` : ""}</div>`;
+  var statIc = (l) => {
+    const t = l.toLowerCase();
+    if (t.includes("sem estoque"))
+      return ["ban", "bad"];
+    if (t.includes("vencido"))
+      return ["clock", "bad"];
+    if (t.includes("produto"))
+      return ["produto", ""];
+    if (t.includes("baixo") || t.includes("mínimo"))
+      return ["reposicao", "warn"];
+    if (t.includes("lote") || t.includes("venc"))
+      return ["clock", "warn"];
+    if (t.includes("categor"))
+      return ["tag", "brown"];
+    if (t.includes("cartão") || t.includes("nota"))
+      return ["receipt", "warn"];
+    if (t.includes("valor") || t.includes("fatur") || t.includes("mês"))
+      return ["receipt", "brown"];
+    if (t.includes("venda"))
+      return ["vendas", ""];
+    return ["estoque", ""];
+  };
+  var stat = (label, value, sub = "", go = "") => `<div class="stat-card${go ? " clicavel" : ""}" ${go ? `data-est-go="${go}" role="button" tabindex="0"` : ""}><div class="label">${label}</div><div class="value est-val ${statIc(label)[1] ? "c-" + statIc(label)[1] : ""}">${value}</div>${sub ? `<div class="est-statsub">${sub}</div>` : ""}</div>`;
   var empty = (t, d, btn = "") => `<div class="empty">${ICONS.inbox}<div class="t">${esc(t)}</div><div class="d">${d}</div>${btn ? `<div style="margin-top:12px;">${btn}</div>` : ""}</div>`;
   var searchBox = (id, ph, val, extra = "") => `<div class="search-input" ${extra}>${ic("search")}<input id="${id}" placeholder="${ph}" value="${esc(val)}" autocomplete="off"></div>`;
   function modal(title, body, foot, opts = {}) {
@@ -870,7 +907,7 @@ td.est-c, th.est-c{text-align:center;}
       return `<div class="card pad">${empty("O estoque ainda está vazio", "Comece cadastrando os produtos (colírios, medicamentos, materiais). Depois monte os pacotes, como consulta com colírio.", canDo("cadastros") ? `<button class="btn btn-primary" data-est-go="produtos">${ic("plus")} Cadastrar produtos</button>` : "")}</div>`;
     }
     return `
-  <div class="grid g3" style="margin-bottom:16px;">
+  <div class="grid est-k6" style="margin-bottom:16px;">
     ${stat("Produtos ativos", prods.length, `${pkgs.length} pacote${pkgs.length === 1 ? "" : "s"} à venda`, "produtos")}
     ${stat("Estoque baixo", al.baixo.length, "no mínimo ou abaixo", "reposicao")}
     ${stat("Sem estoque", al.sem.length, "indisponíveis para venda", "reposicao")}
@@ -1457,9 +1494,9 @@ td.est-c, th.est-c{text-align:center;}
     const name = String(input.name || "").trim();
     if (!name)
       throw new ValidationError("Informe o nome do produto.");
-    const sku = normalizeSku(input.sku);
+    let sku = normalizeSku(input.sku);
     if (!sku)
-      throw new ValidationError("Informe o código interno (SKU).");
+      sku = "P" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
     if (!/^[A-Z0-9._-]+$/.test(sku))
       throw new ValidationError("O código interno aceita só letras, números, ponto, hífen e sublinhado.");
     const data = {
@@ -1489,6 +1526,10 @@ td.est-c, th.est-c{text-align:center;}
       const old = isNew ? null : await t.get("products", id);
       if (!isNew && !old)
         throw new ValidationError("Produto não encontrado.");
+      if (old && !normalizeSku(input.sku))
+        sku = old.sku;
+      if (old && old.price !== data.price && ctx.user.role !== "admin")
+        throw new PermissionError("Só o administrador pode alterar preços.");
       const skuDoc = !old || old.sku !== sku ? await t.get("skus", sku) : null;
       if (skuDoc && skuDoc.productId !== id)
         throw new ValidationError(`O código interno ${sku} já está em uso.`);
@@ -1557,6 +1598,8 @@ td.est-c, th.est-c{text-align:center;}
         if (!p)
           throw new ValidationError("Produto do pacote não encontrado.");
       }
+      if (old && old.price !== data.price && ctx.user.role !== "admin")
+        throw new PermissionError("Só o administrador pode alterar preços.");
       const compChanged = old && JSON.stringify(old.components) !== JSON.stringify(components);
       const version = old ? (old.version || 1) + (compChanged ? 1 : 0) : 1;
       if (old) {
@@ -1940,7 +1983,7 @@ td.est-c, th.est-c{text-align:center;}
     }).join("")}</div>
     <div class="field-row" style="margin-top:14px;">
       <div class="field"><label for="estPay">Pagamento</label><select id="estPay"><option value="">Selecione</option>${payments().map((p) => `<option ${cart.payment === p ? "selected" : ""}>${esc(p)}</option>`).join("")}</select></div>
-      ${canDo("desconto") ? `<div class="field"><label for="estDisc">Desconto</label><div style="display:flex; gap:6px;"><input id="estDisc" inputmode="decimal" value="${esc(cart.discount)}" placeholder="0,00"><div class="dash-nav-gran" style="flex-shrink:0;"><button class="dgran ${cart.discMode === "valor" ? "active" : ""}" data-dm="valor">R$</button><button class="dgran ${cart.discMode === "pct" ? "active" : ""}" data-dm="pct">%</button></div></div></div>` : ""}
+      ${canDo("desconto") ? `<div class="field"><label for="estDisc">Desconto</label><div style="display:flex; gap:6px;"><input id="estDisc" inputmode="decimal" value="${esc(cart.discount)}" placeholder="0"><div class="dash-nav-gran" style="flex-shrink:0;"><button class="dgran ${cart.discMode === "valor" ? "active" : ""}" data-dm="valor">R$</button><button class="dgran ${cart.discMode === "pct" ? "active" : ""}" data-dm="pct">%</button></div></div></div>` : ""}
     </div>
     <div class="field"><label for="estNotes">Observação <span style="font-weight:500;">(opcional)</span></label><input id="estNotes" value="${esc(cart.notes)}"></div>
     <div class="est-totals"><div><span>Subtotal</span><strong class="est-num">${brl(tt.gross)}</strong></div>${tt.discount ? `<div><span>Desconto</span><strong class="est-num">−${brl(tt.discount)}</strong></div>` : ""}<div class="big"><span>Total</span><span class="est-num">${brl(tt.total)}</span></div></div>
@@ -2245,7 +2288,7 @@ td.est-c, th.est-c{text-align:center;}
     ${stat("Valor líquido", `<span class="est-money">${brl(net)}</span>`, "descontadas devoluções")}
     ${(() => {
       const cs = S.sales.filter((s) => inRange(s.createdAt, hist.r) && s.status !== "cancelada" && isCard(s) && !nfOfSale(s)).length;
-      return `<div class="stat-card${cs ? " clicavel" : ""}" ${cs ? 'data-est-hf="cartaosemnf" role="button" tabindex="0"' : ""}><div class="label">Cartão sem nota</div><div class="value est-val">${cs}</div><div class="est-statsub">${cs ? "toque para ver e lançar" : "todas as vendas no cartão têm nota"}</div></div>`;
+      return `<div class="stat-card${cs ? " clicavel" : ""}" ${cs ? 'data-est-hf="cartaosemnf" role="button" tabindex="0"' : ""}><div class="label">Cartão sem nota</div><div class="value est-val ${cs ? "c-warn" : ""}">${cs}</div><div class="est-statsub">${cs ? "toque para ver e lançar" : "todas as vendas no cartão têm nota"}</div></div>`;
     })()}
   </div>
   <div class="card pad">
@@ -2465,7 +2508,7 @@ td.est-c, th.est-c{text-align:center;}
     });
     const c = el.querySelector("#estRcsv");
     if (c)
-      c.onclick = () => downloadCSV(`reposicao_${today()}`, ["Produto", "Código", "Unidade", "Disponível", "Mínimo", `Saiu em ${S.geral.consumoDias} dias`, "Comprar", "Fornecedor"], restockRows().filter((x) => x.v > 0).map(({ p, st, c: cc, v }) => [p.name, p.sku, p.unit, st.available, p.minStock || 0, cc, v, supName(p.supplierId)]));
+      c.onclick = () => downloadCSV(`reposicao_${today()}`, ["Produto", "Unidade", "Disponível", "Mínimo", `Saiu em ${S.geral.consumoDias} dias`, "Comprar", "Fornecedor"], restockRows().filter((x) => x.v > 0).map(({ p, st, c: cc, v }) => [p.name, p.unit, st.available, p.minStock || 0, cc, v, supName(p.supplierId)]));
     const e = el.querySelector("#estRent");
     if (e)
       e.onclick = () => {
@@ -2498,7 +2541,7 @@ td.est-c, th.est-c{text-align:center;}
       return `<div class="est-rowe e5">
         <select data-ef="productId" data-i="${i}" aria-label="Produto"><option value="">Escolha o produto</option>${prods.map((x) => `<option value="${x.id}" ${x.id === it.productId ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select>
         <input data-ef="qty" data-i="${i}" inputmode="decimal" placeholder="Qtd." value="${esc(it.qty)}" aria-label="Quantidade">
-        <input data-ef="cost" data-i="${i}" inputmode="decimal" placeholder="0,00" value="${esc(it.cost)}" aria-label="Custo unitário">
+        <input data-ef="cost" data-i="${i}" inputmode="decimal" placeholder="0" value="${esc(it.cost)}" aria-label="Custo unitário">
         <input data-ef="lotCode" data-i="${i}" placeholder="${p && p.controlsLot ? "Obrigatório" : "Opcional"}" value="${esc(it.lotCode)}" aria-label="Lote">
         <input type="date" data-ef="expiry" data-i="${i}" value="${esc(it.expiry)}" aria-label="Validade">
         <button class="icon-btn" data-er="${i}" aria-label="Remover">${ic("trash")}</button></div>`;
@@ -2871,7 +2914,7 @@ td.est-c, th.est-c{text-align:center;}
     ${list.map((p) => {
       const st = status(p);
       const ne = nearestExpiry(p, today()) || st.expiredLots[0] && st.expiredLots[0].expiry || "";
-      return `<tr class="rowlink" data-est-prod="${p.id}"><td><div class="est-cell"><div class="est-thumb">${ic(p.kind === "kit" ? "kit" : "produto")}</div><div class="est-two"><b>${esc(p.name)}</b><small>${esc(p.sku)}${catName(p.categoryId) ? " · " + esc(catName(p.categoryId)) : ""}${p.kind === "kit" ? " · kit" : ""}</small></div></div></td>
+      return `<tr class="rowlink" data-est-prod="${p.id}"><td><div class="est-cell"><div class="est-thumb">${ic(p.kind === "kit" ? "kit" : "produto")}</div><div class="est-two"><b>${esc(p.name)}</b><small>${esc(catName(p.categoryId) || "Sem categoria")}${p.kind === "kit" ? " · kit" : ""}</small></div></div></td>
         <td class="est-r est-num ${st.level === "sem" ? "est-neg" : ""}">${qty(st.available, p.unit)}</td><td class="est-r est-num">${numF(p.minStock || 0)}</td><td class="est-r est-num">${brl(p.price)}</td>${c ? `<td class="est-r est-num">${p.cost === null || p.cost === undefined ? "—" : brl(p.cost)}</td>` : ""}
         <td class="est-num">${ne ? st.expiredLots.some((l) => l.expiry === ne) ? `<span class="badge st-Cancelado">${fmtISO(ne)}</span>` : st.nearLots.some((l) => l.expiry === ne) ? `<span class="badge st-AguardandoConfirmacao">${fmtISO(ne)}</span>` : fmtISO(ne) : "—"}</td>
         <td>${p.status === "inativo" ? '<span class="pill-muted">Inativo</span>' : levelBadge(st.level)}</td></tr>`;
@@ -2907,9 +2950,9 @@ td.est-c, th.est-c{text-align:center;}
     };
     el.querySelector("#estPcsv").onclick = () => {
       const c = canDo("custos");
-      downloadCSV("produtos", ["Produto", "Código", "Código de barras", "Categoria", "Unidade", "Disponível", "Total físico", "Mínimo", "Preço", ...c ? ["Custo"] : [], "Fornecedor", "Validade mais próxima", "Situação", "Status"], rows().map((p) => {
+      downloadCSV("produtos", ["Produto", "Código de barras", "Categoria", "Unidade", "Disponível", "Total físico", "Mínimo", "Preço", ...c ? ["Custo"] : [], "Fornecedor", "Validade mais próxima", "Situação", "Status"], rows().map((p) => {
         const st = status(p);
-        return [p.name, p.sku, p.barcode, catName(p.categoryId), p.unit, st.available, st.total, p.minStock, p.price, ...c ? [p.cost ?? ""] : [], supName(p.supplierId), fmtISO(nearestExpiry(p, today())), { sem: "Sem estoque", baixo: "Estoque baixo", ok: "Normal" }[st.level], p.status];
+        return [p.name, p.barcode, catName(p.categoryId), p.unit, st.available, st.total, p.minStock, p.price, ...c ? [p.cost ?? ""] : [], supName(p.supplierId), fmtISO(nearestExpiry(p, today())), { sem: "Sem estoque", baixo: "Estoque baixo", ok: "Normal" }[st.level], p.status];
       }));
     };
   }
@@ -2923,7 +2966,7 @@ td.est-c, th.est-c{text-align:center;}
     const inPk = S.packages.filter((k) => (k.components || []).some((c) => c.productId === id));
     const cons = consumptionByProduct(S.sales.filter((s) => s.createdAt >= Date.now() - 30 * 86400000))[id];
     const c = canDo("custos");
-    const d = drawer(esc(p.name), `${esc(p.sku)}${catName(p.categoryId) ? " · " + esc(catName(p.categoryId)) : ""}`, `
+    const d = drawer(esc(p.name), esc(catName(p.categoryId) || "Sem categoria"), `
     <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">${p.status === "inativo" ? '<span class="pill-muted">Inativo</span>' : levelBadge(st.level)}${p.controlsLot ? '<span class="pill-muted">Controla lote</span>' : ""}${p.kind === "kit" ? '<span class="pill">Kit montado</span>' : ""}</div>
     <div class="est-kv">
       <div class="mini-stat"><div class="l">Disponível</div><div class="n">${qty(st.available, p.unit)}</div></div>
@@ -2992,7 +3035,6 @@ td.est-c, th.est-c{text-align:center;}
     const kit = p && p.kind === "kit" ? p.kitComponents.map((x) => ({ ...x })) : [];
     const m = modal(isNew ? "Novo produto" : "Editar produto", `<form id="estPf" class="est-g3" novalidate>
     <div class="field full"><label for="pfName">Nome</label><input id="pfName" name="name" value="${v("name")}"></div>
-    <div class="field"><label for="pfSku">Código interno</label><input id="pfSku" name="sku" value="${v("sku")}" autocapitalize="characters"></div>
     <div class="field"><label for="pfBar">Código de barras <span style="font-weight:500;">(opcional)</span></label><input id="pfBar" name="barcode" value="${v("barcode")}" inputmode="numeric"></div>
     <div class="field"><label for="pfCat">Categoria</label><select id="pfCat" name="categoryId"><option value="">Sem categoria</option>${S.categories.map((x) => `<option value="${x.id}" ${p && p.categoryId === x.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></div>
     <div class="field full"><label for="pfDesc">Descrição <span style="font-weight:500;">(opcional)</span></label><textarea id="pfDesc" name="description" rows="2" style="min-height:0;">${v("description")}</textarea></div>
@@ -3000,8 +3042,8 @@ td.est-c, th.est-c{text-align:center;}
     <div class="field"><label for="pfUnit">Unidade</label><select id="pfUnit" name="unit">${units.map((u) => `<option ${(p ? p.unit : "unidade") === u ? "selected" : ""}>${esc(u)}</option>`).join("")}</select></div>
     <div class="field"><label for="pfMin">Estoque mínimo</label><input id="pfMin" name="minStock" inputmode="decimal" value="${p ? numF(p.minStock) : ""}" placeholder="0"></div>
     <div class="field"><label for="pfSup">Fornecedor</label><select id="pfSup" name="supplierId"><option value="">Nenhum</option>${S.suppliers.map((x) => `<option value="${x.id}" ${p && p.supplierId === x.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></div>
-    <div class="field"><label for="pfPrice">Preço de venda avulsa</label><input id="pfPrice" name="price" inputmode="decimal" value="${p ? moneyIn(p.price) : ""}" placeholder="0,00"></div>
-    ${c ? `<div class="field"><label for="pfCost">Custo de compra <span style="font-weight:500;">(opcional)</span></label><input id="pfCost" name="cost" inputmode="decimal" value="${p && p.cost !== null && p.cost !== undefined ? moneyIn(p.cost) : ""}" placeholder="0,00"></div>` : ""}
+    <div class="field"><label for="pfPrice">Preço de venda avulsa</label><input id="pfPrice" name="price" inputmode="decimal" value="${p ? moneyIn(p.price) : ""}" placeholder="0" ${p && !isAdmin() ? 'readonly title="Só o administrador altera preços"' : ""}></div>
+    ${c ? `<div class="field"><label for="pfCost">Custo de compra <span style="font-weight:500;">(opcional)</span></label><input id="pfCost" name="cost" inputmode="decimal" value="${p && p.cost !== null && p.cost !== undefined ? moneyIn(p.cost) : ""}" placeholder="0"></div>` : ""}
     <div class="field"><label for="pfKind">Tipo</label><select id="pfKind" name="kind"><option value="produto">Produto</option><option value="kit" ${p && p.kind === "kit" ? "selected" : ""}>Kit montado</option></select></div>
     <label class="est-check full"><input type="checkbox" name="controlsLot" ${p && p.controlsLot ? "checked" : ""}> Controla lote e validade</label>
     <div class="full" id="pfKitBox" ${p && p.kind === "kit" ? "" : "hidden"}><div class="est-formsec" style="margin-bottom:8px;">Componentes do kit</div><div class="est-rows" id="pfKitRows"></div><button type="button" class="btn btn-secondary btn-sm" id="pfKitAdd" style="margin-top:8px;">${ic("plus")} Adicionar componente</button></div>
@@ -3034,7 +3076,6 @@ td.est-c, th.est-c{text-align:center;}
     const lot = () => m.querySelectorAll(".est-lotf").forEach((x) => x.hidden = !f.controlsLot.checked);
     f.controlsLot.onchange = lot;
     lot();
-    f.sku.onblur = () => f.sku.value = normalizeSku(f.sku.value);
     m.querySelector("#pfSave").onclick = async () => {
       const d = Object.fromEntries(new FormData(f));
       const err = (x) => m.querySelector("#pfErr").innerHTML = errBox(esc(x));
@@ -3047,8 +3088,6 @@ td.est-c, th.est-c{text-align:center;}
           return err("Confira os números digitados.");
       if (!String(d.name || "").trim())
         return err("Informe o nome do produto.");
-      if (!String(d.sku || "").trim())
-        return err("Informe o código interno.");
       const b = m.querySelector("#pfSave");
       b.disabled = true;
       try {
@@ -3056,7 +3095,7 @@ td.est-c, th.est-c{text-align:center;}
           ...p || {},
           id: p ? p.id : undefined,
           name: d.name,
-          sku: d.sku,
+          sku: p ? p.sku : "",
           barcode: d.barcode,
           categoryId: d.categoryId,
           description: d.description,
@@ -3170,7 +3209,7 @@ td.est-c, th.est-c{text-align:center;}
     const ro = edit ? "" : "readonly";
     const m = modal(k ? esc(k.name) : "Novo pacote", `<form id="estKf" class="est-g2" novalidate>
     <div class="field"><label for="kfName">Nome do pacote</label><input id="kfName" name="name" value="${esc(k ? k.name : "")}" ${ro}></div>
-    <div class="field"><label for="kfPrice">Preço do pacote</label><input id="kfPrice" name="price" inputmode="decimal" value="${k ? moneyIn(k.price) : ""}" placeholder="0,00" ${ro}></div>
+    <div class="field"><label for="kfPrice">Preço do pacote</label><input id="kfPrice" name="price" inputmode="decimal" value="${k ? moneyIn(k.price) : ""}" placeholder="0" ${ro || (k && !isAdmin() ? 'readonly title="Só o administrador altera preços"' : "")}></div>
     <div class="field full"><label for="kfDesc">Descrição <span style="font-weight:500;">(opcional)</span></label><textarea id="kfDesc" name="description" rows="2" style="min-height:0;" ${ro}>${esc(k ? k.description : "")}</textarea></div>
     <div class="full"><div class="est-formsec" style="margin-bottom:8px;">Serviços <span style="text-transform:none; letter-spacing:0; font-weight:600; color:var(--ink-soft);">(não mexem no estoque)</span></div><div class="est-rows" id="kfS"></div>${edit ? `<button type="button" class="btn btn-secondary btn-sm" id="kfSa" style="margin-top:8px;">${ic("plus")} Adicionar serviço</button>` : ""}</div>
     <div class="full"><div class="est-formsec" style="margin-bottom:8px;">Produtos do estoque</div><div class="est-rows" id="kfP"></div>${edit ? `<button type="button" class="btn btn-secondary btn-sm" id="kfPa" style="margin-top:8px;">${ic("plus")} Adicionar produto</button>` : ""}</div>
@@ -3294,7 +3333,7 @@ td.est-c, th.est-c{text-align:center;}
         tv += val;
       return { p, st, val };
     });
-    exp.posicao = { h: ["Produto", "Código", "Categoria", "Unidade", "Disponível", "Vencido", "Total físico", "Mínimo", ...c ? ["Custo unitário", "Valor em estoque"] : [], "Situação"], rows: rows.map(({ p, st, val }) => [p.name, p.sku, catName(p.categoryId), p.unit, st.available, st.total - st.available, st.total, p.minStock || 0, ...c ? [p.cost ?? "", val ?? ""] : [], { sem: "Sem estoque", baixo: "Estoque baixo", ok: "Normal" }[st.level]]) };
+    exp.posicao = { h: ["Produto", "Categoria", "Unidade", "Disponível", "Vencido", "Total físico", "Mínimo", ...c ? ["Custo unitário", "Valor em estoque"] : [], "Situação"], rows: rows.map(({ p, st, val }) => [p.name, catName(p.categoryId), p.unit, st.available, st.total - st.available, st.total, p.minStock || 0, ...c ? [p.cost ?? "", val ?? ""] : [], { sem: "Sem estoque", baixo: "Estoque baixo", ok: "Normal" }[st.level]]) };
     const venc = [...al.vencidos.map((x) => ({ ...x, v: true })), ...al.vencendo];
     exp.validade = { h: ["Produto", "Lote", "Validade", "Quantidade", "Situação"], rows: venc.map(({ p, l, v }) => [p.name, l.code, fmtISO(l.expiry), l.qty, v ? "Vencido" : "Vence em breve"]) };
     const mv = {};
@@ -3313,7 +3352,7 @@ td.est-c, th.est-c{text-align:center;}
     }
     const mr = Object.entries(mv).sort((a, b) => a[1].name.localeCompare(b[1].name));
     exp.es = { h: ["Produto", "Unidade", "Entradas", "Saídas por venda", "Devoluções e estornos", "Outras saídas", "Saldo atual"], rows: mr.map(([id, o]) => [o.name, o.unit, o.ent, o.venda, o.volta, o.outras, S.pMap[id] ? sumLots(S.pMap[id].lots) : ""]) };
-    return card("Posição atual do estoque", "posicao", table([["Produto"], ["Disponível", "est-r"], ["Vencido", "est-r"], ["Mínimo", "est-r"], ...c ? [["Custo un.", "est-r"], ["Valor em estoque", "est-r"]] : [], ["Situação"]], rows.map(({ p, st, val }) => `<tr><td><div class="est-two"><b>${esc(p.name)}</b><small>${esc(p.sku)}</small></div></td><td class="est-r est-num">${qty(st.available, p.unit)}</td><td class="est-r est-num">${st.total - st.available ? numF(st.total - st.available) : "—"}</td><td class="est-r est-num">${numF(p.minStock || 0)}</td>${c ? `<td class="est-r est-num">${p.cost === null || p.cost === undefined ? "—" : brl(p.cost)}</td><td class="est-r est-num">${val === null ? "—" : brl(val)}</td>` : ""}<td>${levelBadge(st.level)}</td></tr>`)) + (c ? `<div class="hint">Valor total em estoque, pelo custo: <strong style="color:var(--ink);">${brl(tv)}</strong></div>` : ""), chips) + card(`Validade: vencidos e próximos ${S.geral.expiryDays} dias`, "validade", table([["Produto"], ["Lote"], ["Validade"], ["Quantidade", "est-r"], ["Situação"]], venc.map(({ p, l, v }) => `<tr><td>${esc(p.name)}</td><td>${esc(l.code || "—")}</td><td class="est-num">${fmtISO(l.expiry)}</td><td class="est-r est-num">${qty(l.qty, p.unit)}</td><td>${v ? '<span class="badge st-Cancelado">Vencido</span>' : '<span class="badge st-AguardandoConfirmacao">Vence em breve</span>'}</td></tr>`))) + card(`Entradas e saídas em ${periodLabel(rf.r)}`, "es", table([["Produto"], ["Entradas", "est-r"], ["Saídas por venda", "est-r"], ["Devoluções e estornos", "est-r"], ["Outras saídas", "est-r"], ["Saldo atual", "est-r"]], mr.map(([id, o]) => `<tr><td>${esc(o.name)}</td><td class="est-r est-num est-pos-n">${o.ent ? "+" + numF(o.ent) : "—"}</td><td class="est-r est-num est-neg">${o.venda ? "−" + numF(o.venda) : "—"}</td><td class="est-r est-num">${o.volta ? "+" + numF(o.volta) : "—"}</td><td class="est-r est-num">${o.outras ? "−" + numF(o.outras) : "—"}</td><td class="est-r est-num">${S.pMap[id] ? qty(sumLots(S.pMap[id].lots), o.unit) : "—"}</td></tr>`)));
+    return card("Posição atual do estoque", "posicao", table([["Produto"], ["Disponível", "est-r"], ["Vencido", "est-r"], ["Mínimo", "est-r"], ...c ? [["Custo un.", "est-r"], ["Valor em estoque", "est-r"]] : [], ["Situação"]], rows.map(({ p, st, val }) => `<tr><td><div class="est-two"><b>${esc(p.name)}</b><small>${esc(catName(p.categoryId) || "Sem categoria")}</small></div></td><td class="est-r est-num">${qty(st.available, p.unit)}</td><td class="est-r est-num">${st.total - st.available ? numF(st.total - st.available) : "—"}</td><td class="est-r est-num">${numF(p.minStock || 0)}</td>${c ? `<td class="est-r est-num">${p.cost === null || p.cost === undefined ? "—" : brl(p.cost)}</td><td class="est-r est-num">${val === null ? "—" : brl(val)}</td>` : ""}<td>${levelBadge(st.level)}</td></tr>`)) + (c ? `<div class="hint">Valor total em estoque, pelo custo: <strong style="color:var(--ink);">${brl(tv)}</strong></div>` : ""), chips) + card(`Validade: vencidos e próximos ${S.geral.expiryDays} dias`, "validade", table([["Produto"], ["Lote"], ["Validade"], ["Quantidade", "est-r"], ["Situação"]], venc.map(({ p, l, v }) => `<tr><td>${esc(p.name)}</td><td>${esc(l.code || "—")}</td><td class="est-num">${fmtISO(l.expiry)}</td><td class="est-r est-num">${qty(l.qty, p.unit)}</td><td>${v ? '<span class="badge st-Cancelado">Vencido</span>' : '<span class="badge st-AguardandoConfirmacao">Vence em breve</span>'}</td></tr>`))) + card(`Entradas e saídas em ${periodLabel(rf.r)}`, "es", table([["Produto"], ["Entradas", "est-r"], ["Saídas por venda", "est-r"], ["Devoluções e estornos", "est-r"], ["Outras saídas", "est-r"], ["Saldo atual", "est-r"]], mr.map(([id, o]) => `<tr><td>${esc(o.name)}</td><td class="est-r est-num est-pos-n">${o.ent ? "+" + numF(o.ent) : "—"}</td><td class="est-r est-num est-neg">${o.venda ? "−" + numF(o.venda) : "—"}</td><td class="est-r est-num">${o.volta ? "+" + numF(o.volta) : "—"}</td><td class="est-r est-num">${o.outras ? "−" + numF(o.outras) : "—"}</td><td class="est-r est-num">${S.pMap[id] ? qty(sumLots(S.pMap[id].lots), o.unit) : "—"}</td></tr>`)));
   }
   function rVendas() {
     const sales = pSales();
@@ -3431,9 +3470,9 @@ td.est-c, th.est-c{text-align:center;}
   </div>
   <div class="card pad">
     <div class="section-title">Permissões de cada perfil</div>
-    <div class="hint" style="margin:-6px 0 12px;">O administrador tem acesso completo. As regras também valem no servidor: quem não tem permissão não consegue gravar.</div>
+    <div class="hint" style="margin:-6px 0 12px;">Ajustes de estoque, perdas, inventário, montagem de kits e mudança de preços são só do administrador.</div>
     <div class="table-wrap"><table class="est-perm"><thead><tr><th>Permissão</th><th>Gerente</th><th>Funcionário</th></tr></thead><tbody>
-    ${Object.entries(PERMS).map(([k, l]) => `<tr><td>${l}</td>${["gerente", "funcionario"].map((r) => `<td><label class="est-switch"><input type="checkbox" data-perm="${r}.${k}" ${((S.perms || {})[r] || {})[k] ? "checked" : ""} ${adm ? "" : "disabled"} aria-label="${l} para ${ROLES[r]}"><i></i></label></td>`).join("")}</tr>`).join("")}
+    ${Object.entries(PERMS).filter(([k]) => !ADMIN_ONLY.includes(k)).map(([k, l]) => `<tr><td>${l}</td>${["gerente", "funcionario"].map((r) => `<td><label class="est-switch"><input type="checkbox" data-perm="${r}.${k}" ${((S.perms || {})[r] || {})[k] ? "checked" : ""} ${adm ? "" : "disabled"} aria-label="${l} para ${ROLES[r]}"><i></i></label></td>`).join("")}</tr>`).join("")}
     </tbody></table></div>
     ${adm ? `<div style="display:flex; justify-content:flex-end; gap:10px; margin-top:14px; flex-wrap:wrap;"><button class="btn btn-secondary" id="cReset">Voltar ao padrão</button><button class="btn btn-primary" id="cSave">${ic("check")} Salvar perfis e permissões</button></div>` : '<div class="hint" style="margin-top:12px;">Só o administrador altera perfis e permissões.</div>'}
   </div>`;
@@ -3820,13 +3859,14 @@ td.est-c, th.est-c{text-align:center;}
     <div class="est-card-h"><div class="section-title">${ic("estoque")} Estoque e vendas</div><button class="btn btn-ghost btn-sm" data-est-go="painel">Abrir</button></div>
     <div class="est-dash-kpis"><div class="mini-stat est-li click" data-est-go="vendas" data-est-p="hoje" style="display:block; border:none;"><div class="n">${sm.day.length}</div><div class="l">Vendas hoje · ${brl(sm.dayV)}</div></div><div class="mini-stat est-li click" data-est-go="vendas" data-est-p="mes" style="display:block; border:none;"><div class="n">${brl(sm.monthV)}</div><div class="l">Vendido no mês</div></div></div>
     ${alertRows(al)}
-    ${canDo("vender") ? `<button class="btn btn-primary btn-sm" data-est-go="vender" style="margin-top:12px;">${ic("plus")} Nova venda</button>` : ""}
   </div>`;
   }
   var _dash = window.renderDashboard;
   window.renderDashboard = function() {
     const html = _dash();
     const card = dashCard();
+    if (html.includes("<!--EST_DASH-->"))
+      return html.replace("<!--EST_DASH-->", card);
     if (!card)
       return html;
     const anchor = html.indexOf("Inteligência da rotina");
@@ -3852,7 +3892,7 @@ td.est-c, th.est-c{text-align:center;}
     screens.slice(0, 4).forEach((x) => out.push({ kind: "tela", ...x }));
     if (!ready())
       return out;
-    S.products.filter((p) => match(qq, p.name, p.sku, p.barcode)).slice(0, 5).forEach((p) => out.push({ kind: "prod", id: p.id, label: p.name, meta: [p.sku, `${brl(p.price)}`] }));
+    S.products.filter((p) => match(qq, p.name, p.sku, p.barcode)).slice(0, 5).forEach((p) => out.push({ kind: "prod", id: p.id, label: p.name, meta: [catName(p.categoryId), brl(p.price)] }));
     S.packages.filter((k) => match(qq, k.name, k.description)).slice(0, 3).forEach((k) => out.push({ kind: "pk", id: k.id, label: k.name, meta: [brl(k.price)] }));
     const n = qq.replace(/^#|n[ºo°]\s*/i, "");
     S.sales.filter((s) => String(s.number) === n || match(qq, s.client, s.animalName, ...s.items.map((i) => i.name))).slice(0, 4).forEach((s) => out.push({ kind: "sale", id: s.id, label: `Venda nº ${s.number}${s.client ? " · " + s.client : ""}`, meta: [fmtD(s.createdAt), brl(s.total)] }));
@@ -3904,7 +3944,7 @@ td.est-c, th.est-c{text-align:center;}
     const body = document.querySelector("#drawerRoot .drawer-body");
     if (!body)
       return;
-    const btns = body.firstElementChild;
+    const btns = body.querySelector(".drawer-actions") || body.firstElementChild;
     if (btns && canDo("vender"))
       btns.insertAdjacentHTML("beforeend", `<button class="btn btn-secondary btn-sm" data-est-nova-venda="${tutorId}||">${ic("vender")} Nova venda</button>`);
     injectTutor(body, tutorId);
@@ -3918,7 +3958,7 @@ td.est-c, th.est-c{text-align:center;}
     if (!body)
       return;
     const a = (DB.animais || []).find((x) => x.id === animalId);
-    const btns = body.firstElementChild;
+    const btns = body.querySelector(".drawer-actions") || body.firstElementChild;
     if (btns && canDo("vender") && a && !a.obito) {
       const t = (DB.vinculos || []).find((v) => v.animalId === animalId);
       btns.insertAdjacentHTML("beforeend", `<button class="btn btn-secondary btn-sm" data-est-nova-venda="${t ? t.tutorId : ""}|${animalId}|">${ic("vender")} Nova venda</button>`);
