@@ -745,6 +745,17 @@ th.sortavel[data-dir=asc]::after{content:' \2191'; font-size:11px;} th.sortavel[
 .chip-btn.on .cnt{background:rgba(255,255,255,.25); color:#fff;}
 @media (max-width:880px){ .bento{grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;} .bento .feat{grid-column:1/-1; min-height:0;} .bn{min-height:0; padding:14px;} .bn-v{font-size:26px;} .bn.feat .bn-v{font-size:38px;} .bn-s{font-size:11px;} .bn-l{font-size:9.5px; letter-spacing:.03em;} .bn{justify-content:flex-start;} }
 
+.ind-grid{display:grid; grid-template-columns:minmax(110px,1.1fr) repeat(3,minmax(0,1fr)); gap:8px; align-items:stretch;}
+.ind-h{font:800 10.5px 'Manrope',sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); text-align:center; padding-bottom:2px;}
+.ind-r{display:flex; align-items:center; gap:9px; font-weight:700; font-size:13.5px;}
+.ind-r i{width:4px; height:26px; border-radius:4px; background:#9DB394;}
+.ind-r i.bad{background:#D08A80;} .ind-r i.warn{background:#D9B36A;}
+.ind-c{border-radius:14px; padding:10px 8px; text-align:center; background:#F2F6EE;}
+.ind-c.bad{background:#FBEEEC;} .ind-c.warn{background:#FBF3E3;}
+.ind-c b{display:block; font:600 24px 'Fraunces',serif; line-height:1.1; color:#4F7A45;}
+.ind-c.bad b{color:#B0463C;} .ind-c.warn b{color:#A8752A;}
+.ind-c small{display:block; font-size:10px; font-weight:700; color:var(--ink-soft); margin-top:2px; line-height:1.3;}
+@media (max-width:640px){ .ind-grid{grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px;} .ind-grid > span:first-child{display:none;} .ind-r{grid-column:1/-1; margin-top:6px;} .ind-r i{height:16px;} .ind-c b{font-size:20px;} }
 /* ---------- Quadros de números com ícone ---------- */
 .stat-card:has(> .sc-ic){display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:14px; align-items:center;}
 .stat-card > .sc-ic{grid-column:1; grid-row:1 / span 3; align-self:center; width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:#DFE9D8; color:#4A6443;}
@@ -2197,6 +2208,20 @@ function renderDashboard(){
     </div>` : emptyState('Nenhum contato aguardando resposta', 'Assim que você registrar um contato, ele aparece aqui até ser marcado como agendado ou não.')}
   </div>
       ${semanaGraficoHtml()}
+      ${(()=>{
+        const linhas = [['Agendado','ok'],['Não agendado','bad'],['Desmarcado','warn']].map(([rotulo,tn])=>{
+          const field = rotulo==='Desmarcado' ? 'tipo' : 'tipoAtendimento';
+          const f = (de)=> rotulo==='Desmarcado' ? ags.filter(a=>a.status==='Desmarcado' && a.data>=de && a.data<=today) : DB.contatos.filter(c=>c.status===rotulo && c.dataContato>=de && c.dataContato<=today);
+          const mes = rotulo==='Desmarcado' ? ags.filter(a=>a.status==='Desmarcado' && isThisMonth(a.data)) : DB.contatos.filter(c=>c.status===rotulo && isThisMonth(c.dataContato));
+          return {rotulo, tn, field, cols:[f(today), f(addDays(today,-7)), mes]};
+        });
+        return `<div class="card pad ind-card">
+          <div class="section-title" style="justify-content:space-between;"><span>Indicadores de contato</span><span style="font:600 12.5px Manrope,sans-serif; color:var(--ink-soft);">Reagendamentos ${periodoTag}: <b style="color:var(--ink); font-weight:800;">${reagendadosMes.length}</b></span></div>
+          <div class="ind-grid">
+            <span></span><span class="ind-h">Hoje</span><span class="ind-h">Semana</span><span class="ind-h">Mês</span>
+            ${linhas.map(l=>`<span class="ind-r"><i class="${l.tn}"></i>${l.rotulo}</span>${l.cols.map(list=>`<div class="ind-c ${l.tn}"><b>${list.length}</b>${list.length?`<small>${tipoBreakdownAbrev(list, l.field)}</small>`:''}</div>`).join('')}`).join('')}
+          </div>
+        </div>`; })()}
     </div>
 
     <div class="dash-col">
@@ -2401,35 +2426,6 @@ function renderDashboard(){
         <div class="section-title">${ICONS.sparkle} Inteligência da rotina</div>
         ${insights.length? `<div>${insights.map(t=>`<div class="insight"><div class="dot"></div><div>${t}</div></div>`).join('')}</div>`
           : `<div class="hint">As análises aparecem automaticamente conforme mais dados forem cadastrados.</div>`}
-      </div>
-        </div>
-      </details>
-      <details class="dash-acc" data-acc="indicadores" ${dashAccOpen('indicadores')?'open':''} ontoggle="dashAccToggle(this)">
-        <summary>Indicadores de contato</summary>
-        <div class="dash-embed">
-      <div class="card pad">
-        <div class="section-title">Indicadores de contato</div>
-        <div class="table-wrap">
-          <table style="font-size:12px;">
-            <thead><tr><th></th><th style="text-align:center;">Hoje</th><th style="text-align:center;">Semana</th><th style="text-align:center;">Mês</th></tr></thead>
-            <tbody>
-              ${['Agendado','Não agendado','Desmarcado'].map(rotulo=>{
-                const field = rotulo==='Desmarcado' ? 'tipo' : 'tipoAtendimento';
-                const hojeList = rotulo==='Desmarcado'? ags.filter(a=>a.status==='Desmarcado' && a.data===today) : DB.contatos.filter(c=>c.status===rotulo && c.dataContato===today);
-                const semanaList = rotulo==='Desmarcado'? ags.filter(a=>a.status==='Desmarcado' && a.data>=addDays(today,-7) && a.data<=today) : DB.contatos.filter(c=>c.status===rotulo && c.dataContato>=addDays(today,-7) && c.dataContato<=today);
-                const mesList = rotulo==='Desmarcado'? ags.filter(a=>a.status==='Desmarcado' && isThisMonth(a.data)) : DB.contatos.filter(c=>c.status===rotulo && isThisMonth(c.dataContato));
-                const cell = (list)=> `<div style="font-weight:700; font-size:13px;">${list.length}</div>${list.length?`<div style="font-size:9.5px; color:var(--ink-soft); font-weight:600; line-height:1.3;">${tipoBreakdownAbrev(list, field)}</div>`:''}`;
-                return `<tr>
-                  <td style="font-weight:700; white-space:nowrap;">${rotulo}</td>
-                  <td style="text-align:center;">${cell(hojeList)}</td>
-                  <td style="text-align:center;">${cell(semanaList)}</td>
-                  <td style="text-align:center;">${cell(mesList)}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:13.5px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line);"><span>Reagendamentos (${periodoTag})</span><strong>${reagendadosMes.length}</strong></div>
       </div>
         </div>
       </details>
