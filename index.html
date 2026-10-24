@@ -783,6 +783,10 @@ th.sortavel[data-dir=asc]::after{content:' \2191'; font-size:11px;} th.sortavel[
 }
 .hoje-list .pend-row{margin:0;}
 @media (max-width:880px){ .va-top{grid-template-columns:1fr;} .dash-nav-extra{margin-left:0; width:100%;} .dash-nav-extra .btn-primary{margin-left:auto;} .fbar input[type=text], .fbar input:not([type]){min-width:0; flex:1 1 100%;} }
+
+/* ---------- Barras de rolagem invisíveis (a rolagem continua funcionando) ---------- */
+*, *::before, *::after, html, body{scrollbar-width:none !important; -ms-overflow-style:none !important;}
+*::-webkit-scrollbar, html::-webkit-scrollbar, body::-webkit-scrollbar{width:0 !important; height:0 !important; display:none !important; background:transparent !important;}
 </style>
 </head>
 <body>
