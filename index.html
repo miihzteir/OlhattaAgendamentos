@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Olhatta</title>
 <link rel="icon" type="image/svg+xml" sizes="any" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%235C7355'/%3E%3Cpath d='M20 10C12 10 6.5 20 6.5 20S12 30 20 30 33.5 20 33.5 20 28 10 20 10Z' fill='%23EFEFE6'/%3E%3Ccircle cx='20' cy='20' r='6.2' fill='%238A6647'/%3E%3Ccircle cx='20' cy='20' r='2.8' fill='%23331F12'/%3E%3C/svg%3E">
@@ -967,13 +968,88 @@ function blankDB(){
     cidadesClinicas:{'Sinop':['Olhatta','Volante','Equibem','Outro'], 'Lucas':['Pet Center','Espaço Pet','Outro']},
     meta:{criadoEm:Date.now(), proximoCodigoTutor:1} };
 }
+
+/* ---------- Segurança: limpeza de todos os dados antes de mostrar ou salvar ---------- */
+// Textos comuns não podem carregar código (< > e aspas viram símbolos parecidos e inofensivos).
+// Textos com formatação (anotações e observações dos relatórios) passam por uma lista de tags permitidas.
+// Links só podem ser http/https; fotos e PDFs só no formato esperado.
+const SEG_MAX_TEXTO = 20000;
+function segTexto(s){
+  s = String(s);
+  if(s.length > SEG_MAX_TEXTO) s = s.slice(0, SEG_MAX_TEXTO);
+  return s.replace(/</g,'‹').replace(/>/g,'›').replace(/"/g,'”');
+}
+function segLink(s){
+  s = String(s||'').trim();
+  if(!s) return '';
+  if(/^https?:\/\//i.test(s)) return segTexto(s).replace(/\s/g,'%20');
+  if(/^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(s)) return 'https://' + segTexto(s).replace(/\s/g,'%20');
+  return '';
+}
+function segRico(html){
+  html = String(html||'');
+  if(html.length > 200000) html = html.slice(0, 200000);
+  const doc = new DOMParser().parseFromString('<div>'+html+'</div>', 'text/html');
+  const ok = ['B','STRONG','I','EM','U','BR','DIV','P','SPAN','FONT'];
+  const corOk = v=>/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|[a-z]{3,20})$/i.test(v.trim());
+  (function limpa(n){ [...n.childNodes].forEach(c=>{
+    if(c.nodeType===1){
+      if(!ok.includes(c.tagName)){ c.replaceWith(doc.createTextNode(c.textContent)); return; }
+      const keep = {};
+      if(c.tagName==='FONT'){
+        const sz=c.getAttribute('size'); if(sz && /^[1-7]$/.test(sz)) keep.size=sz;
+        const co=c.getAttribute('color'); if(co && corOk(co)) keep.color=co;
+      }
+      const st = c.getAttribute('style')||'';
+      const est = st.split(';').map(x=>x.split(':')).filter(([k,v])=>k&&v&&['color','font-size','background-color','font-weight','font-style','text-decoration'].includes(k.trim().toLowerCase()) && /^[#a-z0-9().,%\s-]+$/i.test(v.trim()) && !/url|expression/i.test(v)).map(([k,v])=>k.trim()+':'+v.trim()).join(';');
+      [...c.attributes].forEach(a=>c.removeAttribute(a.name));
+      Object.entries(keep).forEach(([k,v])=>c.setAttribute(k,v));
+      if(est) c.setAttribute('style', est);
+      limpa(c);
+    } else if(c.nodeType!==3){ c.remove(); }
+  }); })(doc.body.firstChild);
+  return doc.body.firstChild.innerHTML;
+}
+function segString(v, key, pai){
+  if(key==='foto') return /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(v) ? v : null;
+  if(key==='dataUrl') return /^data:application\/pdf;base64,[A-Za-z0-9+/=]+$/.test(v) ? v : '';
+  if(key==='url' || key==='link') return segLink(v);
+  if((pai==='pendencias' && key==='texto') || (pai==='relatObs' && key==='html')) return segRico(v);
+  return segTexto(v);
+}
+// Limpa no próprio objeto (sem trocar as referências que telas abertas estão usando).
+function segNoLugar(o, key, pai, prof){
+  if(prof>12) return;
+  if(Array.isArray(o)){
+    for(let i=0;i<o.length;i++){
+      const v=o[i];
+      if(typeof v==='string'){ const n=segString(v, key, pai); if(n!==v) o[i]=n; }
+      else if(v && typeof v==='object') segNoLugar(v, key, key, prof+1);
+      else if(typeof v==='function') o[i]=null;
+    }
+    return;
+  }
+  for(const k of Object.keys(o)){
+    if(k==='__proto__' || k==='constructor' || k==='prototype' || /[<>"]/.test(k)){ delete o[k]; continue; }
+    const v=o[k];
+    const paiFilho = (pai==='relatObs' && key!=='relatObs') ? 'relatObs' : key;
+    if(typeof v==='string'){ const n=segString(v, k, paiFilho); if(n!==v) o[k]=n; }
+    else if(v && typeof v==='object') segNoLugar(v, k, paiFilho, prof+1);
+    else if(typeof v==='function') o[k]=null;
+  }
+}
+function segDB(db){
+  if(!db || typeof db!=='object' || Array.isArray(db)) return blankDB();
+  segNoLugar(db, '', '', 0);
+  return db;
+}
 let DB = loadDB();
 function loadDB(){
   try{
     const raw = localStorage.getItem(DB_KEY);
     if(!raw) return blankDB();
     const parsed = JSON.parse(raw);
-    const db = Object.assign(blankDB(), parsed);
+    const db = Object.assign(blankDB(), segDB(parsed));
     // migração: versões antigas guardavam usuarios como lista de nomes (strings)
     if(db.usuarios && db.usuarios.length && typeof db.usuarios[0]==='string'){
       db.usuarios = db.usuarios.map(nome=>({id:uid(), nome, foto:null}));
@@ -983,6 +1059,7 @@ function loadDB(){
   }catch(e){ console.error('Erro ao carregar dados', e); return blankDB(); }
 }
 function saveDB(){
+  DB = segDB(DB);
   localStorage.setItem(DB_KEY, JSON.stringify(DB));
   pushToFirestore();
 }
@@ -995,6 +1072,7 @@ function pushToFirestore(){
 }
 function pushToFirestoreImmediate(){
   if(!auth.currentUser) return Promise.resolve();
+  DB = segDB(DB);
   return FIRESTORE_DOC.set(DB).catch(e=>console.error('Erro ao sincronizar', e));
 }
 function uid(){ return 'id' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
@@ -1068,10 +1146,13 @@ function showProfilePicker(){
   }));
 }
 function attachFirestoreListener(fbUser){
+  const minhaSessao = {};
+  ouvinteAtivo = minhaSessao;
   unsubscribeSnapshot = FIRESTORE_DOC.onSnapshot(doc=>{
+    if(ouvinteAtivo!==minhaSessao) return; // chegou depois de sair: ignora
     const existed = doc.exists;
     if(existed){
-      DB = Object.assign(blankDB(), doc.data());
+      DB = Object.assign(blankDB(), segDB(doc.data()));
     }
     else {
       DB = blankDB();
@@ -1089,7 +1170,9 @@ function attachFirestoreListener(fbUser){
     showLoginError('Não foi possível conectar ao banco de dados na nuvem. Verifique se o Firestore foi criado e as regras permitem acesso.');
   });
 }
+let ouvinteAtivo = null;
 function detachFirestoreListener(){
+  ouvinteAtivo = null;
   if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot=null; }
   state.__appShown = false;
 }
@@ -1189,7 +1272,7 @@ function exportCSV(tipo){
 function localISO(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function diaLocalDe(ts){ if(!ts) return ''; const d=new Date(ts); return isNaN(d) ? String(ts).slice(0,10) : localISO(d); }
 function todayISO(){ return localISO(new Date()); }
-function stripHtml(html){ const d = document.createElement('div'); d.innerHTML = html||''; return d.textContent||''; }
+function stripHtml(html){ return new DOMParser().parseFromString('<div>'+(html||'')+'</div>','text/html').body.textContent||''; }
 function fmtDate(iso){
   if(!iso) return '—';
   const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`;
@@ -1448,7 +1531,7 @@ function renderQuickLinks(){
   const bar = document.getElementById('quickLinksBar');
   if(!bar) return;
   const links = DB.linksRapidos||[];
-  bar.innerHTML = links.map(l=>`<a href="${l.url}" target="_blank" rel="noopener" class="quicklink-pill" title="${l.nome}">${l.nome}</a>`).join('')
+  bar.innerHTML = links.filter(l=>segLink(l.url)).map(l=>`<a href="${segLink(l.url)}" target="_blank" rel="noopener noreferrer" class="quicklink-pill" title="${l.nome}">${l.nome}</a>`).join('')
     + `<button type="button" class="icon-btn" id="quickLinksManageBtn" title="Gerenciar links" style="width:26px; height:26px;">${ICONS.plus}</button>`;
   document.getElementById('quickLinksManageBtn').addEventListener('click', abrirGerenciarLinksRapidos);
 }
@@ -3894,12 +3977,15 @@ function openNFDrawer(nfId){
     navigator.clipboard?.writeText(valor).then(()=>toast('Copiado!')).catch(()=>toast('Não foi possível copiar'));
   }));
   document.getElementById('nfAnexoUpload').addEventListener('change', e=>{
-    const file = e.target.files[0]; if(!file) return;
-    if(file.type!=='application/pdf'){ toast('Apenas arquivos PDF'); return; }
+    const file = e.target.files[0]; e.target.value=''; if(!file) return;
+    if(file.type!=='application/pdf' || !/\.pdf$/i.test(file.name)){ toast('Apenas arquivos PDF'); return; }
+    if(file.size > 600*1024){ toast('PDF grande demais (máximo 600 KB)'); return; }
     const reader = new FileReader();
     reader.onload = ev=>{
+      let ehPdf = false; try{ ehPdf = atob(String(ev.target.result).split(',')[1]||'').slice(0,5)==='%PDF-'; }catch(_){}
+      if(!ehPdf){ toast('Esse arquivo não é um PDF válido'); return; }
       nf.anexos = nf.anexos||[];
-      nf.anexos.push({id:uid(), nome:file.name, dataUrl:ev.target.result});
+      nf.anexos.push({id:uid(), nome:segTexto(file.name).slice(0,120), dataUrl:ev.target.result});
       logAction(`anexou um PDF à nota fiscal de ${nome}`);
       saveDB(); toast('Anexo adicionado');
       document.getElementById('nfAnexosList').innerHTML = nfAnexosListHtml(nf);
@@ -4303,7 +4389,7 @@ function openRelatorioDrawer(relId){
     <div class="drawer-body">
       <p style="font-size:13.5px; white-space:pre-wrap; line-height:1.6;">${rel.texto||''}</p>
       ${(rel.links||[]).length?`<div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;">
-        ${rel.links.map(l=>`<a href="${l.url}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="text-decoration:none;">${ICONS.download} ${l.nome}</a>`).join('')}
+        ${rel.links.map(l=>`<a href="${segLink(l.url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="text-decoration:none;">${ICONS.download} ${l.nome}</a>`).join('')}
       </div>`:''}
       <button class="btn btn-primary btn-sm" data-edit-relatorio="${rel.id}" style="margin-top:16px;">${ICONS.edit} Editar</button>
     </div>`);
@@ -4404,7 +4490,7 @@ function renderAvaliacoes(){
           <td>
             ${a.status==='Vou pedir'?`<button class="btn btn-secondary btn-sm" data-marcar-ja-pedi="${a.id}">Marcar "Já pedi"</button>`
               : a.avaliou===null?`<div style="display:flex; gap:6px;"><button class="btn btn-secondary btn-sm" data-marcar-avaliou="${a.id}" data-valor="nao">Ainda não</button><button class="btn btn-primary btn-sm" data-marcar-avaliou="${a.id}" data-valor="sim">Avaliou</button></div>`
-              : a.avaliou? `<div style="display:flex; align-items:center; gap:8px;"><span class="badge st-Realizado">Sim</span>${a.link?`<a href="${a.link}" target="_blank" rel="noopener" style="font-size:12px;">Ver avaliação</a>`:`<button class="btn btn-secondary btn-sm" data-add-link-avaliacao="${a.id}">+ Link</button>`}</div>` : `<span class="badge st-Cancelado">Não</span>`}
+              : a.avaliou? `<div style="display:flex; align-items:center; gap:8px;"><span class="badge st-Realizado">Sim</span>${a.link?`<a href="${segLink(a.link)}" target="_blank" rel="noopener noreferrer" style="font-size:12px;">Ver avaliação</a>`:`<button class="btn btn-secondary btn-sm" data-add-link-avaliacao="${a.id}">+ Link</button>`}</div>` : `<span class="badge st-Cancelado">Não</span>`}
           </td>
           <td style="max-width:180px;">
             <div style="display:flex; align-items:center; gap:6px;">
@@ -6866,7 +6952,9 @@ function attachViewHandlers(){
     formUsuario(u);
   }));
   document.querySelectorAll('[data-foto-usuario]').forEach(el=>el.addEventListener('change', e=>{
-    const file = e.target.files[0]; if(!file) return;
+    const file = e.target.files[0]; e.target.value=''; if(!file) return;
+    if(!['image/png','image/jpeg','image/webp','image/gif'].includes(file.type)){ toast('Use uma foto JPG, PNG, WEBP ou GIF'); return; }
+    if(file.size > 10*1024*1024){ toast('Foto grande demais (máximo 10 MB)'); return; }
     const u = DB.usuarios.find(x=>x.id===el.dataset.fotoUsuario); if(!u) return;
     const reader = new FileReader();
     reader.onload = ev=>{
@@ -6881,6 +6969,7 @@ function attachViewHandlers(){
         logAction(`atualizou a foto do usuário "${u.nome}"`);
         saveDB(); render(); renderUserSelect(); toast('Foto atualizada');
       };
+      img.onerror = ()=>toast('Não foi possível ler essa imagem');
       img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
@@ -6907,11 +6996,16 @@ function attachViewHandlers(){
 
 /* ---------- Exportações ---------- */
 function importBackup(e){
-  const file = e.target.files[0]; if(!file) return;
+  const file = e.target.files[0]; e.target.value=''; if(!file) return;
+  if(!/\.json$/i.test(file.name) || (file.type && !/json/.test(file.type))){ toast('Escolha um arquivo de backup (.json)'); return; }
+  if(file.size > 15*1024*1024){ toast('Arquivo grande demais para ser um backup do sistema'); return; }
   const reader = new FileReader();
   reader.onload = ev=>{
     try{
-      const data = JSON.parse(ev.target.result);
+      let data = JSON.parse(ev.target.result);
+      const ok = data && typeof data==='object' && !Array.isArray(data) && ['tutores','animais','agendamentos'].every(k=>Array.isArray(data[k]));
+      if(!ok){ toast('Esse arquivo não é um backup do sistema'); return; }
+      data = segDB(data);
       confirmDialog('Importar backup?','Isso substituirá todos os dados atuais deste navegador pelos dados do arquivo importado.', ()=>{
         DB = Object.assign(blankDB(), data); saveDB(); closeModal(); render(); toast('Backup importado com sucesso');
       });
@@ -6957,7 +7051,13 @@ async function doLogout(){
   toast('Salvando antes de sair…');
   await pushToFirestoreImmediate();
   detachFirestoreListener();
+  limparCacheLocal();
   auth.signOut();
+}
+function limparCacheLocal(){
+  // Dados de clientes não ficam guardados no computador depois de sair (importante em computador compartilhado).
+  try{ localStorage.removeItem(DB_KEY); }catch(e){}
+  DB = blankDB();
 }
 function showLoginError(msg){
   const el = document.getElementById('loginError');
@@ -6976,9 +7076,13 @@ function traduzErroFirebase(e){
     'auth/network-request-failed':'Falha de conexão. Verifique a internet.',
     'auth/unauthorized-domain':'Este endereço não está autorizado no Firebase (Authentication → Settings → Authorized domains).',
     'auth/operation-not-allowed':'Esse método de login não está ativado no Firebase (Authentication → Sign-in method).',
+    'auth/too-many-requests':'Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.',
+    'auth/user-disabled':'Esta conta foi desativada.',
+    'auth/popup-blocked':'O navegador bloqueou a janela de login. Libere pop-ups para este site.',
     'auth/requires-recent-login':'Por segurança, você precisa confirmar sua senha/login de novo antes de excluir a conta.',
   };
-  return map[e.code] || ('Erro ao entrar: '+(e.message||e.code||'desconhecido'));
+  if(!map[e.code]) console.error(e);
+  return map[e.code] || 'Não foi possível entrar agora. Tente de novo em instantes.';
 }
 
 /* ---------- Exclusão de conta ---------- */
@@ -7067,6 +7171,7 @@ auth.onAuthStateChanged(fbUser=>{
     const emailOk = fbUser.email && EMAILS_AUTORIZADOS.map(e=>e.toLowerCase()).includes(fbUser.email.toLowerCase());
     if(!emailOk){
       detachFirestoreListener();
+      limparCacheLocal();
       auth.signOut().then(()=>{
         showLogin();
         setTimeout(()=>showLoginError(`O e-mail ${fbUser.email||''} não tem acesso a este sistema. Fale com quem administra a conta para ser autorizado.`), 50);
@@ -7148,6 +7253,6 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="estoque.js?v=10"></script>
+<script src="estoque.js?v=11"></script>
 </body>
 </html>

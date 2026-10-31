@@ -445,6 +445,12 @@ td.est-c, th.est-c{text-align:center;}
       x.code = e.code;
       return x;
     }
+    if (e && (e.name === "FirebaseError" || typeof e.code === "string" && !e.shortages)) {
+      console.error(e);
+      const x = new Error("Não foi possível concluir agora. Tente de novo em instantes.");
+      x.code = e.code;
+      return x;
+    }
     return e;
   }
   function createCompatStore() {
