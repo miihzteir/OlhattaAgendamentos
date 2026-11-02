@@ -488,504 +488,89 @@ td.est-c, th.est-c{text-align:center;}
     };
   }
 
-  // src/state.js
-  var DEFAULT_GERAL = {
-    expiryDays: 30,
-    consumoDias: 30,
-    units: ["unidade", "frasco", "caixa", "comprimido", "dose", "tubo", "ampola", "pacote", "mililitro", "quilograma"]
-  };
-  var S = {
-    store: null,
-    started: false,
-    perfis: null,
-    perms: DEFAULT_PERMS,
-    geral: DEFAULT_GERAL,
-    products: [],
-    packages: [],
-    suppliers: [],
-    categories: [],
-    sales: [],
-    movements: [],
-    entries: [],
-    adjustments: [],
-    audit: [],
-    pMap: {},
-    kMap: {},
-    sMap: {},
-    cMap: {},
-    loaded: {}
-  };
-  var ROLES = { admin: "Administrador", gerente: "Gerente", funcionario: "Funcionário" };
-  var myEmail = () => (auth.currentUser && auth.currentUser.email || "").toLowerCase();
-  function roleOf(email) {
-    if (!S.perfis)
-      return "admin";
-    return (S.perfis.emails || {})[String(email).toLowerCase()] || "funcionario";
-  }
-  function me() {
-    const u = auth.currentUser;
-    let nome = "";
-    try {
-      nome = getCurrentUser();
-    } catch (e) {}
-    return { uid: u ? u.uid : "", name: nome || u && (u.displayName || u.email) || "", email: myEmail(), role: roleOf(myEmail()), active: true };
-  }
-  var ctx = () => ({ user: me(), perms: S.perms });
-  var canDo = (p) => can(me(), S.perms, p);
-  var isAdmin = () => me().role === "admin";
-  var payments = () => typeof FORMAS_PAGAMENTO !== "undefined" ? FORMAS_PAGAMENTO : ["Dinheiro", "Pix", "Cartão de Débito", "Cartão de Crédito"];
-  var authorizedEmails = () => (typeof EMAILS_AUTORIZADOS !== "undefined" ? EMAILS_AUTORIZADOS : []).map((e) => e.toLowerCase());
-  var today = () => todayISO();
-  var status = (p) => stockStatus(p, today(), Number(S.geral.expiryDays) || 30);
-  var avail = (p) => availableQty(p, today());
-  var activeProducts = () => S.products.filter((p) => p.status === "ativo");
-  var catName = (id) => S.cMap[id] && S.cMap[id].name || "";
-  var supName = (id) => S.sMap[id] && S.sMap[id].name || "";
-  var saleNet = (s) => s.status === "cancelada" ? 0 : Math.max(0, (s.total || 0) - (s.refunded || 0));
-  var validSales = () => S.sales.filter((s) => s.status !== "cancelada");
-  function reindex() {
-    S.pMap = Object.fromEntries(S.products.map((p) => [p.id, p]));
-    S.kMap = Object.fromEntries(S.packages.map((p) => [p.id, p]));
-    S.sMap = Object.fromEntries(S.suppliers.map((p) => [p.id, p]));
-    S.cMap = Object.fromEntries(S.categories.map((p) => [p.id, p]));
-  }
-  function computeAlerts() {
-    const out = { sem: [], baixo: [], vencidos: [], vencendo: [] };
-    for (const p of activeProducts()) {
-      const st = status(p);
-      if (st.level === "sem")
-        out.sem.push(p);
-      else if (st.level === "baixo")
-        out.baixo.push(p);
-      for (const l of st.expiredLots)
-        out.vencidos.push({ p, l });
-      for (const l of st.nearLots)
-        out.vencendo.push({ p, l });
-    }
-    out.vencendo.sort((a, b) => a.l.expiry.localeCompare(b.l.expiry));
-    out.total = out.sem.length + out.baixo.length + out.vencidos.length + out.vencendo.length;
-    out.urgent = out.sem.length + out.baixo.length + out.vencidos.length;
-    return out;
-  }
-  function consumptionByProduct(sales) {
-    const out = {};
-    for (const s of sales) {
-      if (s.status === "cancelada")
-        continue;
-      for (const it of s.items) {
-        const net = it.qty - ((s.returnedByKey || {})[it.key] || 0);
-        if (net <= 0)
-          continue;
-        if (it.type === "produto") {
-          const o = out[it.refId] || (out[it.refId] = { avulso: 0, pacote: 0, name: it.name, unit: it.unit });
-          o.avulso += net;
-        } else
-          for (const c of it.composition) {
-            const o = out[c.productId] || (out[c.productId] = { avulso: 0, pacote: 0, name: c.name, unit: c.unit });
-            o.pacote += net * c.qty;
+  // src/store-memory.js
+  function createMemoryStore({ yieldBetweenReads = false } = {}) {
+    const data = {};
+    const watchers = {};
+    let seq = 0;
+    const col = (c) => data[c] || (data[c] = {});
+    const clone = (o) => o === null || o === undefined ? o : JSON.parse(JSON.stringify(o));
+    const notify = (c) => (watchers[c] || []).forEach((cb) => cb(list(c)));
+    const list = (c) => Object.entries(col(c)).map(([id, r]) => ({ id, ...clone(r.doc) }));
+    const stats = { commits: 0, retries: 0 };
+    async function tx(fn) {
+      for (let attempt = 0;attempt < 8; attempt++) {
+        const reads = new Map;
+        const writes = [];
+        const t = {
+          async get(c, id) {
+            if (writes.length)
+              throw new Error("Leitura depois de gravação na transação");
+            if (yieldBetweenReads)
+              await new Promise((r) => setTimeout(r, 0));
+            const r = col(c)[id];
+            reads.set(c + "/" + id, r ? r.v : 0);
+            return r ? { id, ...clone(r.doc) } : null;
+          },
+          set(c, id, d) {
+            writes.push({ op: "set", c, id, d: clone(d) });
+          },
+          update(c, id, d) {
+            writes.push({ op: "update", c, id, d: clone(d) });
+          },
+          delete(c, id) {
+            writes.push({ op: "delete", c, id });
           }
-      }
-    }
-    return out;
-  }
-  function monthRange(off = 0) {
-    const d = new Date;
-    return { from: todayISO(new Date(d.getFullYear(), d.getMonth() + off, 1).getTime()), to: todayISO(new Date(d.getFullYear(), d.getMonth() + off + 1, 0).getTime()) };
-  }
-  var inRange = (ms, r) => ms >= new Date(r.from + "T00:00:00").getTime() && ms <= new Date(r.to + "T23:59:59.999").getTime();
-  var periodLabel = (r) => r.from === r.to ? fmtISO(r.from) : `${fmtISO(r.from)} a ${fmtISO(r.to)}`;
-  function periodHTML(r, key) {
-    const t = today(), m = monthRange(0), pm = monthRange(-1);
-    const on = (x) => r.from === x.from && r.to === x.to ? "on" : "";
-    return `<div class="est-period" data-period="${key}">
-    <input type="date" data-pf value="${r.from}" aria-label="De"><span class="est-ate">até</span><input type="date" data-pt value="${r.to}" aria-label="Até">
-    <button class="chip-btn ${on({ from: t, to: t })}" data-pq="hoje">Hoje</button>
-    <button class="chip-btn ${on({ from: addDaysISO(t, -6), to: t })}" data-pq="7">7 dias</button>
-    <button class="chip-btn ${on(m)}" data-pq="mes">Este mês</button>
-    <button class="chip-btn ${on(pm)}" data-pq="mesp">Mês passado</button></div>`;
-  }
-  function bindPeriod(el, r, rerender) {
-    const f = el.querySelector("[data-pf]"), t = el.querySelector("[data-pt]");
-    if (!f)
-      return;
-    f.onchange = () => {
-      if (f.value) {
-        r.from = f.value;
-        if (r.to < r.from)
-          r.to = r.from;
-        rerender();
-      }
-    };
-    t.onchange = () => {
-      if (t.value) {
-        r.to = t.value;
-        if (r.from > r.to)
-          r.from = r.to;
-        rerender();
-      }
-    };
-    el.querySelectorAll("[data-pq]").forEach((b) => b.onclick = () => {
-      const d = today(), q = b.dataset.pq;
-      const x = q === "hoje" ? { from: d, to: d } : q === "7" ? { from: addDaysISO(d, -6), to: d } : q === "mes" ? monthRange(0) : monthRange(-1);
-      r.from = x.from;
-      r.to = x.to;
-      rerender();
-    });
-  }
-  var levelBadge = (lv) => lv === "sem" ? '<span class="badge st-Cancelado">Sem estoque</span>' : lv === "baixo" ? '<span class="badge st-AguardandoConfirmacao">Estoque baixo</span>' : '<span class="badge st-Realizado">Normal</span>';
-  function saleBadge(s) {
-    if (s.status === "cancelada")
-      return '<span class="badge st-Cancelado">Cancelada</span>';
-    if (s.status === "devolvida")
-      return '<span class="badge st-Desmarcado">Devolvida</span>';
-    if (s.refunded > 0)
-      return '<span class="badge st-Desmarcado">Devolução parcial</span>';
-    return '<span class="badge st-Realizado">Concluída</span>';
-  }
-  var MOV = {
-    entrada: ["Entrada por compra", "st-Realizado"],
-    estoque_inicial: ["Estoque inicial", "st-Realizado"],
-    venda_avulsa: ["Venda avulsa", "st-Confirmado"],
-    venda_pacote: ["Venda de pacote", "st-Confirmado"],
-    estorno: ["Estorno de cancelamento", "st-Desmarcado"],
-    devolucao: ["Devolução", "st-Desmarcado"],
-    ajuste_entrada: ["Ajuste (acréscimo)", "st-Reagendado"],
-    ajuste_saida: ["Ajuste (retirada)", "st-Reagendado"],
-    inventario_entrada: ["Inventário (acréscimo)", "st-Reagendado"],
-    inventario_saida: ["Inventário (retirada)", "st-Reagendado"],
-    perda: ["Perda ou avaria", "st-Cancelado"],
-    vencido: ["Descarte de vencido", "st-Cancelado"],
-    montagem_saida: ["Montagem de kit (saída)", "st-Reagendado"],
-    montagem_entrada: ["Montagem de kit (entrada)", "st-Realizado"]
-  };
-  var movBadge = (t) => {
-    const m = MOV[t] || [t, "st-Reagendado"];
-    return `<span class="badge ${m[1]}">${m[0]}</span>`;
-  };
-  var statIc = (l) => {
-    const t = l.toLowerCase();
-    if (t.includes("sem estoque"))
-      return ["ban", "bad"];
-    if (t.includes("vencido"))
-      return ["clock", "bad"];
-    if (t.includes("produto"))
-      return ["produto", ""];
-    if (t.includes("baixo") || t.includes("mínimo"))
-      return ["reposicao", "warn"];
-    if (t.includes("lote") || t.includes("venc"))
-      return ["clock", "warn"];
-    if (t.includes("categor"))
-      return ["tag", "brown"];
-    if (t.includes("cartão") || t.includes("nota"))
-      return ["receipt", "warn"];
-    if (t.includes("valor") || t.includes("fatur") || t.includes("mês"))
-      return ["receipt", "brown"];
-    if (t.includes("venda"))
-      return ["vendas", ""];
-    return ["estoque", ""];
-  };
-  var stat = (label, value, sub = "", go = "") => `<div class="stat-card${go ? " clicavel" : ""}" ${go ? `data-est-go="${go}" role="button" tabindex="0"` : ""}><div class="label">${label}</div><div class="value est-val ${statIc(label)[1] ? "c-" + statIc(label)[1] : ""}">${value}</div>${sub ? `<div class="est-statsub">${sub}</div>` : ""}</div>`;
-  var empty = (t, d, btn = "") => `<div class="empty">${ICONS.inbox}<div class="t">${esc(t)}</div><div class="d">${d}</div>${btn ? `<div style="margin-top:12px;">${btn}</div>` : ""}</div>`;
-  var searchBox = (id, ph, val, extra = "") => `<div class="search-input" ${extra}>${ic("search")}<input id="${id}" placeholder="${ph}" value="${esc(val)}" autocomplete="off"></div>`;
-  function modal(title, body, foot, opts = {}) {
-    openModal(modalShell(title, body, foot), { narrow: !!opts.narrow });
-    const root = document.getElementById("modalRoot");
-    const m = root.querySelector(".modal");
-    if (opts.wide)
-      m.classList.add("est-wide");
-    document.getElementById("modalClose").addEventListener("click", closeModal);
-    root.querySelectorAll("[data-mclose]").forEach((b) => b.addEventListener("click", closeModal));
-    return m;
-  }
-  function confirmar({ title, text, ok = "Confirmar", danger = false, reason = null }, cb) {
-    const m = modal(title, `<p style="font-size:13.5px; color:var(--ink-soft); margin:0 0 ${reason ? 12 : 0}px;">${text}</p>${reason ? `<div class="field" style="margin:0;"><label for="estReason">${reason}</label><textarea id="estReason" rows="2"></textarea></div>` : ""}`, `<button class="btn btn-secondary" data-mclose>Voltar</button><button class="btn ${danger ? "btn-danger" : "btn-primary"}" id="estOk">${ok}</button>`, { narrow: true });
-    m.querySelector("#estOk").onclick = () => {
-      const r = reason ? m.querySelector("#estReason").value.trim() : true;
-      if (reason && !r) {
-        m.querySelector("#estReason").focus();
-        m.querySelector("#estReason").style.borderColor = "var(--st-cancelado)";
-        return;
-      }
-      cb(r, m);
-    };
-  }
-  function drawer(title, sub, body) {
-    openDrawer(`<div class="drawer-head"><div style="min-width:0;"><h2>${title}</h2>${sub ? `<div class="drawer-sub">${sub}</div>` : ""}</div><button class="icon-btn" id="drawerClose">${ICONS.x}</button></div><div class="drawer-body est-drawer">${body}</div>`);
-    document.getElementById("drawerClose").addEventListener("click", closeDrawer);
-    return document.querySelector("#drawerRoot .drawer");
-  }
-  var errBox = (msg) => `<div class="alert alert-danger" style="margin-top:12px;"><div>${msg}</div></div>`;
-
-  // src/nav.js
-  var SUBS = [
-    { id: "painel", label: "Painel", icon: "painel" },
-    { id: "vender", label: "Vender", icon: "vender", perm: "vender" },
-    { id: "vendas", label: "Vendas", icon: "vendas" },
-    { id: "produtos", label: "Produtos", icon: "produto" },
-    { id: "pacotes", label: "Pacotes", icon: "pacote" },
-    { id: "reposicao", label: "Reposição", icon: "reposicao" },
-    { id: "entradas", label: "Entradas", icon: "entrada", perm: "entradas" },
-    { id: "ajustes", label: "Ajustes e kits", icon: "ajuste", perm: "ajustar" },
-    { id: "movimentacoes", label: "Movimentações", icon: "mov" },
-    { id: "fornecedores", label: "Fornecedores", icon: "fornecedor" },
-    { id: "relatorios", label: "Relatórios", icon: "relatorio", perm: "relatorios" },
-    { id: "configuracoes", label: "Configurações", icon: "config" }
-  ];
-  var NESTED = {
-    relatorios: { def: "estoque", opts: ["estoque", "vendas", "consumo", "financeiro"] },
-    configuracoes: { def: "perfis", opts: ["perfis", "categorias", "preferencias", "auditoria", "backup"] }
-  };
-  var ui = { sub: "painel", nested: { relatorios: "estoque", configuracoes: "perfis" } };
-  var visibleSubs = () => SUBS.filter((s) => !s.perm || canDo(s.perm));
-  function routeGet() {
-    const n = NESTED[ui.sub];
-    const nest = n && ui.nested[ui.sub] !== n.def ? "-" + ui.nested[ui.sub] : "";
-    return ui.sub === "painel" && !nest ? "" : ui.sub + nest;
-  }
-  function routeSet(v) {
-    const [sub, nest] = String(v || "").split("-");
-    ui.sub = SUBS.some((s) => s.id === sub) ? sub : "painel";
-    const n = NESTED[ui.sub];
-    if (n)
-      ui.nested[ui.sub] = n.opts.includes(nest) ? nest : n.def;
-  }
-  var subLabel = () => (SUBS.find((s) => s.id === ui.sub) || SUBS[0]).label;
-  function estGo(sub, nested) {
-    ui.sub = sub;
-    if (nested && NESTED[sub])
-      ui.nested[sub] = nested;
-    if (state.view !== "estoque")
-      goTo("estoque");
-    else {
-      render();
-      window.scrollTo(0, 0);
-    }
-  }
-  function tabsHTML() {
-    const al = computeAlerts();
-    return `<div class="est-tabs" role="tablist">${visibleSubs().map((s) => {
-      const badge = s.id === "reposicao" && al.urgent ? `<span class="nav-badge">${al.urgent}</span>` : "";
-      return `<button class="est-tab ${ui.sub === s.id ? "on" : ""}" data-est-sub="${s.id}" role="tab">${ic(s.icon)}<span>${s.label}</span>${badge}</button>`;
-    }).join("")}</div>`;
-  }
-  function nestedHTML(sub, labels) {
-    return `<div class="est-sub">${NESTED[sub].opts.filter((o) => labels[o]).map((o) => `<button class="chip-btn ${ui.nested[sub] === o ? "on" : ""}" data-est-nest="${sub}:${o}">${labels[o]}</button>`).join("")}</div>`;
-  }
-  function loadingHTML() {
-    return `<div class="card pad">${empty("Carregando o estoque", "Buscando produtos e vendas na nuvem.")}</div>`;
-  }
-  function deniedHTML() {
-    return `<div class="card pad">${empty("Acesso restrito", "Seu perfil não tem acesso a esta área do estoque. Fale com quem administra o sistema.")}</div>`;
-  }
-  var ready = () => S.loaded.products && S.loaded.packages && S.loaded.sales && S.loaded.movements;
-
-  // src/charts.js
-  function nice(max) {
-    if (max <= 0)
-      return 10;
-    const p = 10 ** Math.floor(Math.log10(max));
-    const m = max / p;
-    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
-  }
-  var short = (v) => v >= 1000 ? (v / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " mil" : v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
-  function lineChart(host, { labels, series, fmt = brl }) {
-    if (!host)
-      return;
-    const draw = () => {
-      if (!host.isConnected)
-        return;
-      const W = Math.max(260, Math.floor(host.getBoundingClientRect().width) - 1), H = 220;
-      const pl = 44, pr = 8, pt = 10, pb = 26;
-      const max = nice(Math.max(1, ...series.flatMap((s) => s.values)) * 1.1);
-      const n = labels.length;
-      const x = (i) => pl + (n <= 1 ? 0 : i * (W - pl - pr) / (n - 1));
-      const y = (v) => pt + (H - pt - pb) * (1 - v / max);
-      const every = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(W / 80))));
-      let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de vendas">`;
-      for (const f of [0, 0.25, 0.5, 0.75, 1]) {
-        const t = max * f;
-        s += `<line x1="${pl}" x2="${W - pr}" y1="${y(t)}" y2="${y(t)}" stroke="#ECE6D8" ${t ? 'stroke-dasharray="3 4"' : ""}/><text x="${pl - 8}" y="${y(t) + 4}" text-anchor="end" font-size="10.5" fill="#9A9C90" font-family="Manrope">${short(t)}</text>`;
-      }
-      labels.forEach((l, i) => {
-        if (i % every === 0 || i === n - 1)
-          s += `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 ? "start" : i === n - 1 ? "end" : "middle"}" font-size="10.5" fill="#9A9C90" font-family="Manrope">${esc(l)}</text>`;
-      });
-      series.forEach((se, si) => {
-        const pts = se.values.map((v, i) => [x(i), y(v)]);
-        const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
-        if (si === 0)
-          s += `<path d="${d} L${x(n - 1)} ${y(0)} L${x(0)} ${y(0)} Z" fill="${se.color}" opacity=".08"/>`;
-        s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;
-        const last = pts[pts.length - 1];
-        if (last)
-          s += `<circle cx="${last[0]}" cy="${last[1]}" r="3.5" fill="${se.color}"/>`;
-      });
-      s += `<line class="hl" x1="0" x2="0" y1="${pt}" y2="${H - pb}" stroke="#C9D3C2" opacity="0"/><rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" class="hz"/></svg><div class="est-tip" hidden></div>`;
-      host.innerHTML = s;
-      const hz = host.querySelector(".hz"), hl = host.querySelector(".hl"), tip = host.querySelector(".est-tip");
-      const move = (cx) => {
-        const r = host.getBoundingClientRect();
-        const i = Math.max(0, Math.min(n - 1, Math.round((cx - r.left - pl) / (W - pl - pr) * (n - 1))));
-        hl.setAttribute("x1", x(i));
-        hl.setAttribute("x2", x(i));
-        hl.setAttribute("opacity", 1);
-        tip.innerHTML = `<b>${esc(labels[i])}</b>${series.map((se) => `<div><i style="background:${se.color}"></i>${esc(se.name)}<span>${fmt(se.values[i])}</span></div>`).join("")}`;
-        tip.hidden = false;
-        tip.style.left = Math.min(W - tip.offsetWidth - 4, Math.max(4, x(i) + 12)) + "px";
-      };
-      hz.addEventListener("pointermove", (e) => move(e.clientX));
-      hz.addEventListener("pointerdown", (e) => move(e.clientX));
-      hz.addEventListener("pointerleave", () => {
-        hl.setAttribute("opacity", 0);
-        tip.hidden = true;
-      });
-    };
-    draw();
-    let t;
-    const ro = new ResizeObserver(() => {
-      clearTimeout(t);
-      t = setTimeout(draw, 120);
-    });
-    ro.observe(host);
-  }
-
-  // src/v-painel.js
-  var ui2 = { days: 30 };
-  function split(s) {
-    const f = s.gross > 0 ? s.total / s.gross : 0;
-    let p = 0, k = 0;
-    for (const it of s.items) {
-      const v = (it.qty - ((s.returnedByKey || {})[it.key] || 0)) * it.unitPrice * f;
-      if (it.type === "produto")
-        p += v;
-      else
-        k += v;
-    }
-    return [p, k];
-  }
-  function trend(cur, prev) {
-    if (!prev && !cur)
-      return "";
-    if (!prev)
-      return '<span class="est-trend">novo</span>';
-    const d = (cur - prev) / prev * 100;
-    if (Math.abs(d) < 0.5)
-      return '<span class="est-trend eq">igual</span>';
-    return `<span class="est-trend ${d < 0 ? "down" : ""}">${d < 0 ? "▼" : "▲"} ${numF(Math.min(100, Math.abs(d)), 0)}%</span>`;
-  }
-  function salesSummary() {
-    const sales = validSales();
-    const now = new Date;
-    const mStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    const pmStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
-    const pmEnd = new Date(now.getFullYear(), now.getMonth() - 1, Math.min(now.getDate(), new Date(now.getFullYear(), now.getMonth(), 0).getDate()), 23, 59, 59).getTime();
-    const t = today();
-    const day = sales.filter((s) => todayISO(s.createdAt) === t);
-    const month = sales.filter((s) => s.createdAt >= mStart);
-    const prev = sales.filter((s) => s.createdAt >= pmStart && s.createdAt <= pmEnd);
-    const sum = (a) => a.reduce((x, s) => x + saleNet(s), 0);
-    return { day, month, prev, dayV: sum(day), monthV: sum(month), prevV: sum(prev) };
-  }
-  function alertRows(al) {
-    const r = [];
-    if (al.vencidos.length)
-      r.push(["danger", `${al.vencidos.length} lote${al.vencidos.length > 1 ? "s" : ""} vencido${al.vencidos.length > 1 ? "s" : ""}`, "Bloqueados para venda"]);
-    if (al.sem.length)
-      r.push(["danger", `${al.sem.length} produto${al.sem.length > 1 ? "s" : ""} sem estoque`, "Impedem novas vendas"]);
-    if (al.baixo.length)
-      r.push(["warn", `${al.baixo.length} produto${al.baixo.length > 1 ? "s" : ""} com estoque baixo`, "No mínimo ou abaixo"]);
-    if (al.vencendo.length)
-      r.push(["warn", `${al.vencendo.length} lote${al.vencendo.length > 1 ? "s" : ""} perto do vencimento`, `Em até ${S.geral.expiryDays} dias`]);
-    if (!r.length)
-      return `<div class="alert alert-sage">${ic("check")}<div><div class="t1">Tudo em ordem</div>Nenhum alerta no momento</div></div>`;
-    return r.map(([c, t, s]) => `<div class="alert alert-${c} est-alert" data-est-go="reposicao" role="button" tabindex="0"><div class="grow"><div class="t1">${t}</div>${s}</div>${ic("chevron")}</div>`).join("");
-  }
-  function renderPainel() {
-    const al = computeAlerts();
-    const prods = activeProducts();
-    const pkgs = S.packages.filter((p) => p.status === "ativo");
-    const sm = salesSummary();
-    const restock = [...al.sem, ...al.baixo];
-    const cons = consumptionByProduct(S.sales.filter((s) => s.createdAt >= Date.now() - 30 * 86400000));
-    const top = Object.entries(cons).map(([id, c]) => ({ id, ...c, total: c.avulso + c.pacote })).sort((a, b) => b.total - a.total).slice(0, 5);
-    const ok = prods.length - al.sem.length - al.baixo.length;
-    if (!S.products.length && !S.packages.length) {
-      return `<div class="card pad">${empty("O estoque ainda está vazio", "Comece cadastrando os produtos (colírios, medicamentos, materiais). Depois monte os pacotes, como consulta com colírio.", canDo("cadastros") ? `<button class="btn btn-primary" data-est-go="produtos">${ic("plus")} Cadastrar produtos</button>` : "")}</div>`;
-    }
-    return `
-  <div class="grid est-k6" style="margin-bottom:16px;">
-    ${stat("Produtos ativos", prods.length, `${pkgs.length} pacote${pkgs.length === 1 ? "" : "s"} à venda`, "produtos")}
-    ${stat("Estoque baixo", al.baixo.length, "no mínimo ou abaixo", "reposicao")}
-    ${stat("Sem estoque", al.sem.length, "indisponíveis para venda", "reposicao")}
-    ${stat("Vendas hoje", sm.day.length, brl(sm.dayV), "vendas")}
-    ${stat("Vendas do mês", `<span class="est-money">${brl(sm.monthV)}</span>`, `${sm.month.length} venda${sm.month.length === 1 ? "" : "s"} ${trend(sm.monthV, sm.prevV)}`, "vendas")}
-    ${stat("Lotes vencendo", al.vencendo.length, `em até ${S.geral.expiryDays} dias${al.vencidos.length ? ` · ${al.vencidos.length} vencido${al.vencidos.length > 1 ? "s" : ""}` : ""}`, "reposicao")}
-  </div>
-  <div class="est-row2">
-    <div class="card pad">
-      <div class="est-card-h"><div class="section-title">Vendas</div><div class="dash-nav-gran" id="estDays">${[7, 30, 90].map((d) => `<button class="dgran ${ui2.days === d ? "active" : ""}" data-d="${d}">${d} dias</button>`).join("")}</div></div>
-      <div class="est-chart" id="estChart"></div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:8px;"><div class="est-legend"><span><i style="background:#5C7355"></i>Produtos</span><span><i style="background:#A9805F"></i>Pacotes</span></div><div style="margin-left:auto; font-size:12.5px; color:var(--ink-soft);" id="estChartTot"></div></div>
-    </div>
-    <div class="card pad">
-      <div class="section-title">Situação do estoque</div>
-      ${prods.length ? `<div class="est-donut">${donutChartHtml([{ value: ok, color: "#5C7355" }, { value: al.baixo.length, color: "#C9A66B" }, { value: al.sem.length, color: "#B03B3B" }], prods.length, "produtos")}
-        <div class="est-donut-leg"><div><i style="background:#5C7355"></i>Normal<b>${ok}</b></div><div><i style="background:#C9A66B"></i>Estoque baixo<b>${al.baixo.length}</b></div><div><i style="background:#B03B3B"></i>Sem estoque<b>${al.sem.length}</b></div></div></div>` : empty("Sem produtos", "Cadastre produtos para acompanhar.")}
-    </div>
-    <div class="card pad"><div class="section-title">${ic("reposicao")} Alertas</div>${alertRows(al)}</div>
-  </div>
-  <div class="est-row2">
-    <div class="card pad">
-      <div class="est-card-h"><div class="section-title">Precisam de reposição <span class="tag">${restock.length}</span></div>${restock.length ? '<button class="btn btn-ghost btn-sm" data-est-go="reposicao">Ver reposição</button>' : ""}</div>
-      ${restock.length ? `<div class="est-list est-scroll" data-keep="prest">${restock.map((p) => {
-      const st = status(p);
-      return `<div class="est-li click" data-est-prod="${p.id}"><div class="est-thumb">${ic("produto")}</div><div class="grow"><b>${esc(p.name)}</b><small>Mínimo ${qty(p.minStock, p.unit)}</small></div><div class="side"><b class="est-num ${st.level === "sem" ? "est-neg" : ""}">${qty(st.available, p.unit)}</b>${levelBadge(st.level)}</div></div>`;
-    }).join("")}</div>` : `<div class="alert alert-sage">${ic("check")}<div>Nenhum produto abaixo do mínimo.</div></div>`}
-    </div>
-    <div class="card pad">
-      <div class="est-card-h"><div class="section-title">Mais vendidos <span class="tag">30 dias</span></div></div>
-      ${top.length ? `<div class="est-list">${top.map((x, i) => `<div class="est-li click" data-est-prod="${x.id}"><span class="est-rank">${i + 1}</span><div class="grow"><b>${esc(x.name)}</b><small>${qty(x.total, x.unit)}${x.pacote ? ` · ${numF(x.pacote)} em pacotes` : ""}</small></div><div class="est-bar"><i style="width:${Math.max(6, x.total / top[0].total * 100)}%"></i></div></div>`).join("")}</div>` : '<div class="hint">Nenhuma venda nos últimos 30 dias.</div>'}
-    </div>
-    <div class="card pad">
-      <div class="est-card-h"><div class="section-title">Últimas vendas</div>${S.sales.length ? '<button class="btn btn-ghost btn-sm" data-est-go="vendas">Ver todas</button>' : ""}</div>
-      ${S.sales.length ? `<div class="est-list">${S.sales.slice(0, 5).map((s) => `<div class="est-li click" data-est-sale="${s.id}"><div class="est-thumb ${s.items.some((i) => i.type === "pacote") ? "pk" : ""}">${ic(s.items.some((i) => i.type === "pacote") ? "pacote" : "produto")}</div><div class="grow"><b>${esc(s.items.map((i) => i.name).join(", "))}</b><small>${esc(s.client || "Sem cliente")} · ${brl(s.total)}</small></div><div class="side">${fmtT(s.createdAt)}${saleBadge(s)}</div></div>`).join("")}</div>` : '<div class="hint">Nenhuma venda registrada ainda.</div>'}
-    </div>
-  </div>
-  <div class="card pad">
-    <div class="est-card-h"><div class="section-title">Últimas movimentações</div>${S.movements.length ? '<button class="btn btn-ghost btn-sm" data-est-go="movimentacoes">Ver todas</button>' : ""}</div>
-    ${S.movements.length ? `<div class="table-wrap" style="max-height:360px;"><table><thead><tr><th>Data e hora</th><th>Produto</th><th>Tipo</th><th class="est-r">Quantidade</th><th class="est-r">Saldo</th><th>Responsável</th></tr></thead><tbody>
-      ${S.movements.slice(0, 8).map((m) => `<tr><td class="est-num">${fmtDT(m.at)}</td><td>${esc(m.productName)}</td><td>${movBadge(m.type)}</td><td class="est-r est-num ${m.direction < 0 ? "est-neg" : "est-pos-n"}">${m.direction < 0 ? "−" : "+"}${qty(m.qty, m.unit)}</td><td class="est-r est-num">${numF(m.before)} → ${numF(m.after)}</td><td>${esc(m.byName)}</td></tr>`).join("")}
-    </tbody></table></div>` : '<div class="hint">As entradas e saídas aparecem aqui.</div>'}
-  </div>`;
-  }
-  function bindPainel(el) {
-    const draw = () => {
-      const t = today();
-      const days = [];
-      for (let i = ui2.days - 1;i >= 0; i--)
-        days.push(addDaysISO(t, -i));
-      const idx = Object.fromEntries(days.map((d, i) => [d, i]));
-      const p = days.map(() => 0), k = days.map(() => 0);
-      for (const s of validSales()) {
-        const i = idx[todayISO(s.createdAt)];
-        if (i === undefined)
+        };
+        const result = await fn(t);
+        if (yieldBetweenReads)
+          await new Promise((r) => setTimeout(r, 0));
+        let conflict = false;
+        for (const [k, v] of reads) {
+          const [c, id] = k.split("/");
+          const r = col(c)[id];
+          if ((r ? r.v : 0) !== v)
+            conflict = true;
+        }
+        if (conflict) {
+          stats.retries++;
           continue;
-        const [a, b] = split(s);
-        p[i] += a;
-        k[i] += b;
+        }
+        const touched = new Set;
+        for (const w of writes) {
+          const cc = col(w.c);
+          if (w.op === "delete")
+            delete cc[w.id];
+          else if (w.op === "set")
+            cc[w.id] = { doc: w.d, v: (cc[w.id] && cc[w.id].v || 0) + 1 };
+          else {
+            if (!cc[w.id])
+              throw new Error("update em documento inexistente " + w.c + "/" + w.id);
+            cc[w.id] = { doc: { ...cc[w.id].doc, ...w.d }, v: cc[w.id].v + 1 };
+          }
+          touched.add(w.c);
+        }
+        stats.commits++;
+        touched.forEach(notify);
+        return result;
       }
-      lineChart(el.querySelector("#estChart"), { labels: days.map((d) => d.slice(8) + "/" + d.slice(5, 7)), series: [{ name: "Produtos", color: "#5C7355", values: p }, { name: "Pacotes", color: "#A9805F", values: k }] });
-      const tot = el.querySelector("#estChartTot");
-      if (tot)
-        tot.innerHTML = `Total em ${ui2.days} dias: <strong style="color:var(--ink)">${brl(p.concat(k).reduce((a, b) => a + b, 0))}</strong>`;
+      throw new Error("Muitos conflitos simultâneos. Tente novamente.");
+    }
+    return {
+      tx,
+      stats,
+      newId: (c) => c.slice(0, 3) + "_" + (++seq).toString(36) + Math.random().toString(36).slice(2, 6),
+      watch(c, cb) {
+        (watchers[c] || (watchers[c] = [])).push(cb);
+        cb(list(c));
+        return () => {
+          watchers[c] = watchers[c].filter((x) => x !== cb);
+        };
+      },
+      all: list,
+      get: (c, id) => col(c)[id] ? { id, ...clone(col(c)[id].doc) } : null,
+      raw: data
     };
-    el.querySelectorAll("#estDays [data-d]").forEach((b) => b.onclick = () => {
-      ui2.days = +b.dataset.d;
-      el.querySelectorAll("#estDays [data-d]").forEach((x) => x.classList.toggle("active", x === b));
-      draw();
-    });
-    if (el.querySelector("#estChart"))
-      draw();
   }
 
   // src/ops.js
@@ -1644,6 +1229,676 @@ td.est-c, th.est-c{text-align:center;}
       audit(db, t, ctx, old ? label + "_editado" : label + "_criado", data.name);
       return id;
     });
+  }
+
+  // src/store-demo.js
+  var LIVRES = ["counters", "config"];
+  var COLS = ["products", "packages", "suppliers", "categories", "sales", "movements", "entries", "adjustments", "audit", "skus", "assemblies", "counters"];
+
+  class SinalExemplo extends Error {
+    constructor() {
+      super("exemplo");
+      this.sinalExemplo = true;
+    }
+  }
+  function novoMem(snap) {
+    const mem = createMemoryStore();
+    const data = snap && snap.data || {};
+    for (const c of Object.keys(data)) {
+      mem.raw[c] = {};
+      for (const [id, doc] of Object.entries(data[c] || {}))
+        mem.raw[c][id] = { doc, v: 1 };
+    }
+    return mem;
+  }
+  function dump(mem) {
+    const data = {};
+    for (const [c, docs] of Object.entries(mem.raw)) {
+      const o = {};
+      for (const [id, r] of Object.entries(docs))
+        o[id] = r.doc;
+      if (Object.keys(o).length)
+        data[c] = o;
+    }
+    return data;
+  }
+  function createDualStore(real, hooks) {
+    let mem = novoMem(hooks.ler());
+    let rev = (hooks.ler() || {}).rev || 0;
+    const pend = new Set;
+    const watchers = {};
+    const demoRows = (c) => mem.all(c).map((d) => ({ ...d, exemplo: true }));
+    const tem = (c, id) => !!(mem.raw[c] && mem.raw[c][id]);
+    const emit = (c) => (watchers[c] || []).forEach((w) => w.cb([...w.realRows || [], ...demoRows(c)]));
+    const mapa = (v) => {
+      if (typeof v === "string")
+        return pend.has(v) ? "ex_" + v : v;
+      if (Array.isArray(v))
+        return v.map(mapa);
+      if (v && typeof v === "object") {
+        const o = {};
+        for (const k of Object.keys(v))
+          o[k] = mapa(v[k]);
+        return o;
+      }
+      return v;
+    };
+    const idEx = (c, id) => LIVRES.includes(c) || String(id).startsWith("ex_") ? id : "ex_" + id;
+    async function txExemplo(fn) {
+      const r = await mem.tx(async (t) => fn({
+        get: async (c, id) => {
+          if (!LIVRES.includes(c) && !tem(c, id) && hooks.existeReal(c, id)) {
+            throw new ValidationError("Itens de exemplo não podem ser usados junto com itens reais na mesma operação.");
+          }
+          return t.get(c, id);
+        },
+        set: (c, id, d) => t.set(c, idEx(c, id), mapa(d)),
+        update: (c, id, d) => t.update(c, idEx(c, id), mapa(d)),
+        delete: (c, id) => t.delete(c, id)
+      }));
+      const out = mapa(r);
+      pend.clear();
+      rev++;
+      hooks.salvar({ rev, data: dump(mem) });
+      COLS.forEach(emit);
+      return out;
+    }
+    return {
+      async tx(fn) {
+        try {
+          const r = await real.tx(async (t) => fn({
+            get: async (c, id) => {
+              if (!LIVRES.includes(c) && tem(c, id))
+                throw new SinalExemplo;
+              return t.get(c, id);
+            },
+            set: (c, id, d) => {
+              if (!LIVRES.includes(c) && tem(c, id))
+                throw new SinalExemplo;
+              return t.set(c, id, d);
+            },
+            update: (c, id, d) => {
+              if (!LIVRES.includes(c) && tem(c, id))
+                throw new SinalExemplo;
+              return t.update(c, id, d);
+            },
+            delete: (c, id) => {
+              if (!LIVRES.includes(c) && tem(c, id))
+                throw new SinalExemplo;
+              return t.delete(c, id);
+            }
+          }));
+          pend.clear();
+          return r;
+        } catch (e) {
+          if (!(e && e.sinalExemplo))
+            throw e;
+          return txExemplo(fn);
+        }
+      },
+      newId(c) {
+        const id = real.newId(c);
+        pend.add(id);
+        return id;
+      },
+      watch(c, cb, o, onErr) {
+        const w = { cb, realRows: [] };
+        (watchers[c] || (watchers[c] = [])).push(w);
+        const un = real.watch(c, (rows) => {
+          w.realRows = rows;
+          cb([...rows, ...demoRows(c)]);
+        }, o, onErr);
+        return () => {
+          un && un();
+          watchers[c] = (watchers[c] || []).filter((x) => x !== w);
+        };
+      },
+      watchDoc: (...a) => real.watchDoc(...a),
+      recarregar() {
+        const s = hooks.ler() || {};
+        if ((s.rev || 0) === rev && (s.rev || 0) !== 0)
+          return;
+        if (!s.data && !Object.keys(mem.raw).some((c) => Object.keys(mem.raw[c]).length))
+          return;
+        rev = s.rev || 0;
+        mem = novoMem(s);
+        COLS.forEach(emit);
+      }
+    };
+  }
+  async function montarExemplos(user, tutores) {
+    const mem = createMemoryStore();
+    let seq = 0;
+    const db = { tx: mem.tx, newId: (c) => "ex_" + c.slice(0, 3) + (++seq).toString(36) + Math.random().toString(36).slice(2, 7) };
+    await mem.tx(async (t) => {
+      t.set("counters", "vendas", { value: 9000 });
+    });
+    const dia = 86400000, agora = Date.now();
+    const ctxEm = (diasAtras, hora) => {
+      const d = new Date(agora - diasAtras * dia);
+      d.setHours(hora, 15, 0, 0);
+      const ts = Math.min(d.getTime(), agora - 60000);
+      return { user: { ...user, role: "admin", active: true }, now: () => ts };
+    };
+    const c0 = ctxEm(20, 9);
+    const cat = await saveSimple(db, c0, "categories", { name: "Colírios (exemplo)" }, ["name"], "categoria");
+    const cat2 = await saveSimple(db, c0, "categories", { name: "Medicamentos (exemplo)" }, ["name"], "categoria");
+    const forn = await saveSimple(db, c0, "suppliers", { name: "Distribuidora Exemplo", phone: "", email: "", notes: "" }, ["name", "phone", "email", "notes"], "fornecedor");
+    const validade = (dias) => new Date(agora + dias * dia).toISOString().slice(0, 10);
+    const p1 = await saveProduct(db, c0, { name: "Colírio lubrificante (exemplo)", unit: "frasco", categoryId: cat, supplierId: forn, minStock: 4, price: 58, cost: 25, initialQty: 12 });
+    const p2 = await saveProduct(db, c0, { name: "Colírio antibiótico (exemplo)", unit: "frasco", categoryId: cat, supplierId: forn, minStock: 3, price: 72, cost: 31, initialQty: 4 });
+    const p3 = await saveProduct(db, c0, { name: "Pomada oftálmica (exemplo)", unit: "tubo", categoryId: cat2, minStock: 2, price: 49, cost: 20, initialQty: 2 });
+    const p4 = await saveProduct(db, c0, { name: "Anti-inflamatório (exemplo)", unit: "comprimido", categoryId: cat2, minStock: 10, price: 4, cost: 1.5, controlsLot: true, initialQty: 30, initialLot: "EX-01", initialExpiry: validade(18) });
+    const k1 = await savePackage(db, c0, { name: "Consulta + colírio (exemplo)", price: 300, components: [{ productId: p1, qty: 1 }], services: [{ name: "Consulta oftalmológica" }] });
+    await registerEntry(db, ctxEm(10, 10), { supplierId: forn, invoice: "EX-123", items: [{ productId: p1, qty: 6, cost: 25 }] });
+    const t = (i) => tutores[i] || {};
+    const venda = (diasAtras, hora, lines, i, payment) => createSale(db, ctxEm(diasAtras, hora), { lines, tutorId: t(i).id || "", animalId: t(i).animalId || "", animalName: t(i).animalName || "", client: t(i).nome || "", payment });
+    await venda(6, 9, [{ type: "pacote", refId: k1, qty: 1 }], 0, "Cartão de Crédito");
+    await venda(4, 11, [{ type: "produto", refId: p1, qty: 2 }], 1, "Pix");
+    await venda(2, 15, [{ type: "produto", refId: p2, qty: 1 }, { type: "produto", refId: p4, qty: 10 }], 2, "Dinheiro");
+    await venda(0, 9, [{ type: "pacote", refId: k1, qty: 1 }], 3, "Cartão de Débito");
+    await venda(0, 10, [{ type: "produto", refId: p3, qty: 2 }], 0, "Pix");
+    return { rev: Date.now(), data: dump(mem) };
+  }
+
+  // src/state.js
+  var DEFAULT_GERAL = {
+    expiryDays: 30,
+    consumoDias: 30,
+    units: ["unidade", "frasco", "caixa", "comprimido", "dose", "tubo", "ampola", "pacote", "mililitro", "quilograma"]
+  };
+  var S = {
+    store: null,
+    started: false,
+    perfis: null,
+    perms: DEFAULT_PERMS,
+    geral: DEFAULT_GERAL,
+    products: [],
+    packages: [],
+    suppliers: [],
+    categories: [],
+    sales: [],
+    movements: [],
+    entries: [],
+    adjustments: [],
+    audit: [],
+    pMap: {},
+    kMap: {},
+    sMap: {},
+    cMap: {},
+    loaded: {}
+  };
+  var ROLES = { admin: "Administrador", gerente: "Gerente", funcionario: "Funcionário" };
+  var myEmail = () => (auth.currentUser && auth.currentUser.email || "").toLowerCase();
+  function roleOf(email) {
+    if (!S.perfis)
+      return "admin";
+    return (S.perfis.emails || {})[String(email).toLowerCase()] || "funcionario";
+  }
+  function me() {
+    const u = auth.currentUser;
+    let nome = "";
+    try {
+      nome = getCurrentUser();
+    } catch (e) {}
+    return { uid: u ? u.uid : "", name: nome || u && (u.displayName || u.email) || "", email: myEmail(), role: roleOf(myEmail()), active: true };
+  }
+  var ctx = () => ({ user: me(), perms: S.perms });
+  var canDo = (p) => can(me(), S.perms, p);
+  var isAdmin = () => me().role === "admin";
+  var payments = () => typeof FORMAS_PAGAMENTO !== "undefined" ? FORMAS_PAGAMENTO : ["Dinheiro", "Pix", "Cartão de Débito", "Cartão de Crédito"];
+  var authorizedEmails = () => (typeof EMAILS_AUTORIZADOS !== "undefined" ? EMAILS_AUTORIZADOS : []).map((e) => e.toLowerCase());
+  var today = () => todayISO();
+  var status = (p) => stockStatus(p, today(), Number(S.geral.expiryDays) || 30);
+  var avail = (p) => availableQty(p, today());
+  var activeProducts = () => S.products.filter((p) => p.status === "ativo");
+  var catName = (id) => S.cMap[id] && S.cMap[id].name || "";
+  var supName = (id) => S.sMap[id] && S.sMap[id].name || "";
+  var saleNet = (s) => s.status === "cancelada" ? 0 : Math.max(0, (s.total || 0) - (s.refunded || 0));
+  var validSales = () => S.sales.filter((s) => s.status !== "cancelada");
+  function reindex() {
+    S.pMap = Object.fromEntries(S.products.map((p) => [p.id, p]));
+    S.kMap = Object.fromEntries(S.packages.map((p) => [p.id, p]));
+    S.sMap = Object.fromEntries(S.suppliers.map((p) => [p.id, p]));
+    S.cMap = Object.fromEntries(S.categories.map((p) => [p.id, p]));
+  }
+  function computeAlerts() {
+    const out = { sem: [], baixo: [], vencidos: [], vencendo: [] };
+    for (const p of activeProducts()) {
+      const st = status(p);
+      if (st.level === "sem")
+        out.sem.push(p);
+      else if (st.level === "baixo")
+        out.baixo.push(p);
+      for (const l of st.expiredLots)
+        out.vencidos.push({ p, l });
+      for (const l of st.nearLots)
+        out.vencendo.push({ p, l });
+    }
+    out.vencendo.sort((a, b) => a.l.expiry.localeCompare(b.l.expiry));
+    out.total = out.sem.length + out.baixo.length + out.vencidos.length + out.vencendo.length;
+    out.urgent = out.sem.length + out.baixo.length + out.vencidos.length;
+    return out;
+  }
+  function consumptionByProduct(sales) {
+    const out = {};
+    for (const s of sales) {
+      if (s.status === "cancelada")
+        continue;
+      for (const it of s.items) {
+        const net = it.qty - ((s.returnedByKey || {})[it.key] || 0);
+        if (net <= 0)
+          continue;
+        if (it.type === "produto") {
+          const o = out[it.refId] || (out[it.refId] = { avulso: 0, pacote: 0, name: it.name, unit: it.unit });
+          o.avulso += net;
+        } else
+          for (const c of it.composition) {
+            const o = out[c.productId] || (out[c.productId] = { avulso: 0, pacote: 0, name: c.name, unit: c.unit });
+            o.pacote += net * c.qty;
+          }
+      }
+    }
+    return out;
+  }
+  function monthRange(off = 0) {
+    const d = new Date;
+    return { from: todayISO(new Date(d.getFullYear(), d.getMonth() + off, 1).getTime()), to: todayISO(new Date(d.getFullYear(), d.getMonth() + off + 1, 0).getTime()) };
+  }
+  var inRange = (ms, r) => ms >= new Date(r.from + "T00:00:00").getTime() && ms <= new Date(r.to + "T23:59:59.999").getTime();
+  var periodLabel = (r) => r.from === r.to ? fmtISO(r.from) : `${fmtISO(r.from)} a ${fmtISO(r.to)}`;
+  function periodHTML(r, key) {
+    const t = today(), m = monthRange(0), pm = monthRange(-1);
+    const on = (x) => r.from === x.from && r.to === x.to ? "on" : "";
+    return `<div class="est-period" data-period="${key}">
+    <input type="date" data-pf value="${r.from}" aria-label="De"><span class="est-ate">até</span><input type="date" data-pt value="${r.to}" aria-label="Até">
+    <button class="chip-btn ${on({ from: t, to: t })}" data-pq="hoje">Hoje</button>
+    <button class="chip-btn ${on({ from: addDaysISO(t, -6), to: t })}" data-pq="7">7 dias</button>
+    <button class="chip-btn ${on(m)}" data-pq="mes">Este mês</button>
+    <button class="chip-btn ${on(pm)}" data-pq="mesp">Mês passado</button></div>`;
+  }
+  function bindPeriod(el, r, rerender) {
+    const f = el.querySelector("[data-pf]"), t = el.querySelector("[data-pt]");
+    if (!f)
+      return;
+    f.onchange = () => {
+      if (f.value) {
+        r.from = f.value;
+        if (r.to < r.from)
+          r.to = r.from;
+        rerender();
+      }
+    };
+    t.onchange = () => {
+      if (t.value) {
+        r.to = t.value;
+        if (r.from > r.to)
+          r.from = r.to;
+        rerender();
+      }
+    };
+    el.querySelectorAll("[data-pq]").forEach((b) => b.onclick = () => {
+      const d = today(), q = b.dataset.pq;
+      const x = q === "hoje" ? { from: d, to: d } : q === "7" ? { from: addDaysISO(d, -6), to: d } : q === "mes" ? monthRange(0) : monthRange(-1);
+      r.from = x.from;
+      r.to = x.to;
+      rerender();
+    });
+  }
+  var levelBadge = (lv) => lv === "sem" ? '<span class="badge st-Cancelado">Sem estoque</span>' : lv === "baixo" ? '<span class="badge st-AguardandoConfirmacao">Estoque baixo</span>' : '<span class="badge st-Realizado">Normal</span>';
+  function saleBadge(s) {
+    if (s.status === "cancelada")
+      return '<span class="badge st-Cancelado">Cancelada</span>';
+    if (s.status === "devolvida")
+      return '<span class="badge st-Desmarcado">Devolvida</span>';
+    if (s.refunded > 0)
+      return '<span class="badge st-Desmarcado">Devolução parcial</span>';
+    return '<span class="badge st-Realizado">Concluída</span>';
+  }
+  var MOV = {
+    entrada: ["Entrada por compra", "st-Realizado"],
+    estoque_inicial: ["Estoque inicial", "st-Realizado"],
+    venda_avulsa: ["Venda avulsa", "st-Confirmado"],
+    venda_pacote: ["Venda de pacote", "st-Confirmado"],
+    estorno: ["Estorno de cancelamento", "st-Desmarcado"],
+    devolucao: ["Devolução", "st-Desmarcado"],
+    ajuste_entrada: ["Ajuste (acréscimo)", "st-Reagendado"],
+    ajuste_saida: ["Ajuste (retirada)", "st-Reagendado"],
+    inventario_entrada: ["Inventário (acréscimo)", "st-Reagendado"],
+    inventario_saida: ["Inventário (retirada)", "st-Reagendado"],
+    perda: ["Perda ou avaria", "st-Cancelado"],
+    vencido: ["Descarte de vencido", "st-Cancelado"],
+    montagem_saida: ["Montagem de kit (saída)", "st-Reagendado"],
+    montagem_entrada: ["Montagem de kit (entrada)", "st-Realizado"]
+  };
+  var movBadge = (t) => {
+    const m = MOV[t] || [t, "st-Reagendado"];
+    return `<span class="badge ${m[1]}">${m[0]}</span>`;
+  };
+  var statIc = (l) => {
+    const t = l.toLowerCase();
+    if (t.includes("sem estoque"))
+      return ["ban", "bad"];
+    if (t.includes("vencido"))
+      return ["clock", "bad"];
+    if (t.includes("produto"))
+      return ["produto", ""];
+    if (t.includes("baixo") || t.includes("mínimo"))
+      return ["reposicao", "warn"];
+    if (t.includes("lote") || t.includes("venc"))
+      return ["clock", "warn"];
+    if (t.includes("categor"))
+      return ["tag", "brown"];
+    if (t.includes("cartão") || t.includes("nota"))
+      return ["receipt", "warn"];
+    if (t.includes("valor") || t.includes("fatur") || t.includes("mês"))
+      return ["receipt", "brown"];
+    if (t.includes("venda"))
+      return ["vendas", ""];
+    return ["estoque", ""];
+  };
+  var stat = (label, value, sub = "", go = "") => `<div class="stat-card${go ? " clicavel" : ""}" ${go ? `data-est-go="${go}" role="button" tabindex="0"` : ""}><div class="label">${label}</div><div class="value est-val ${statIc(label)[1] ? "c-" + statIc(label)[1] : ""}">${value}</div>${sub ? `<div class="est-statsub">${sub}</div>` : ""}</div>`;
+  var empty = (t, d, btn = "") => `<div class="empty">${ICONS.inbox}<div class="t">${esc(t)}</div><div class="d">${d}</div>${btn ? `<div style="margin-top:12px;">${btn}</div>` : ""}</div>`;
+  var searchBox = (id, ph, val, extra = "") => `<div class="search-input" ${extra}>${ic("search")}<input id="${id}" placeholder="${ph}" value="${esc(val)}" autocomplete="off"></div>`;
+  function modal(title, body, foot, opts = {}) {
+    openModal(modalShell(title, body, foot), { narrow: !!opts.narrow });
+    const root = document.getElementById("modalRoot");
+    const m = root.querySelector(".modal");
+    if (opts.wide)
+      m.classList.add("est-wide");
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+    root.querySelectorAll("[data-mclose]").forEach((b) => b.addEventListener("click", closeModal));
+    return m;
+  }
+  function confirmar({ title, text, ok = "Confirmar", danger = false, reason = null }, cb) {
+    const m = modal(title, `<p style="font-size:13.5px; color:var(--ink-soft); margin:0 0 ${reason ? 12 : 0}px;">${text}</p>${reason ? `<div class="field" style="margin:0;"><label for="estReason">${reason}</label><textarea id="estReason" rows="2"></textarea></div>` : ""}`, `<button class="btn btn-secondary" data-mclose>Voltar</button><button class="btn ${danger ? "btn-danger" : "btn-primary"}" id="estOk">${ok}</button>`, { narrow: true });
+    m.querySelector("#estOk").onclick = () => {
+      const r = reason ? m.querySelector("#estReason").value.trim() : true;
+      if (reason && !r) {
+        m.querySelector("#estReason").focus();
+        m.querySelector("#estReason").style.borderColor = "var(--st-cancelado)";
+        return;
+      }
+      cb(r, m);
+    };
+  }
+  function drawer(title, sub, body) {
+    openDrawer(`<div class="drawer-head"><div style="min-width:0;"><h2>${title}</h2>${sub ? `<div class="drawer-sub">${sub}</div>` : ""}</div><button class="icon-btn" id="drawerClose">${ICONS.x}</button></div><div class="drawer-body est-drawer">${body}</div>`);
+    document.getElementById("drawerClose").addEventListener("click", closeDrawer);
+    return document.querySelector("#drawerRoot .drawer");
+  }
+  var errBox = (msg) => `<div class="alert alert-danger" style="margin-top:12px;"><div>${msg}</div></div>`;
+
+  // src/nav.js
+  var SUBS = [
+    { id: "painel", label: "Painel", icon: "painel" },
+    { id: "vender", label: "Vender", icon: "vender", perm: "vender" },
+    { id: "vendas", label: "Vendas", icon: "vendas" },
+    { id: "produtos", label: "Produtos", icon: "produto" },
+    { id: "pacotes", label: "Pacotes", icon: "pacote" },
+    { id: "reposicao", label: "Reposição", icon: "reposicao" },
+    { id: "entradas", label: "Entradas", icon: "entrada", perm: "entradas" },
+    { id: "ajustes", label: "Ajustes e kits", icon: "ajuste", perm: "ajustar" },
+    { id: "movimentacoes", label: "Movimentações", icon: "mov" },
+    { id: "fornecedores", label: "Fornecedores", icon: "fornecedor" },
+    { id: "relatorios", label: "Relatórios", icon: "relatorio", perm: "relatorios" },
+    { id: "configuracoes", label: "Configurações", icon: "config" }
+  ];
+  var NESTED = {
+    relatorios: { def: "estoque", opts: ["estoque", "vendas", "consumo", "financeiro"] },
+    configuracoes: { def: "perfis", opts: ["perfis", "categorias", "preferencias", "auditoria", "backup"] }
+  };
+  var ui = { sub: "painel", nested: { relatorios: "estoque", configuracoes: "perfis" } };
+  var visibleSubs = () => SUBS.filter((s) => !s.perm || canDo(s.perm));
+  function routeGet() {
+    const n = NESTED[ui.sub];
+    const nest = n && ui.nested[ui.sub] !== n.def ? "-" + ui.nested[ui.sub] : "";
+    return ui.sub === "painel" && !nest ? "" : ui.sub + nest;
+  }
+  function routeSet(v) {
+    const [sub, nest] = String(v || "").split("-");
+    ui.sub = SUBS.some((s) => s.id === sub) ? sub : "painel";
+    const n = NESTED[ui.sub];
+    if (n)
+      ui.nested[ui.sub] = n.opts.includes(nest) ? nest : n.def;
+  }
+  var subLabel = () => (SUBS.find((s) => s.id === ui.sub) || SUBS[0]).label;
+  function estGo(sub, nested) {
+    ui.sub = sub;
+    if (nested && NESTED[sub])
+      ui.nested[sub] = nested;
+    if (state.view !== "estoque")
+      goTo("estoque");
+    else {
+      render();
+      window.scrollTo(0, 0);
+    }
+  }
+  function tabsHTML() {
+    const al = computeAlerts();
+    return `<div class="est-tabs" role="tablist">${visibleSubs().map((s) => {
+      const badge = s.id === "reposicao" && al.urgent ? `<span class="nav-badge">${al.urgent}</span>` : "";
+      return `<button class="est-tab ${ui.sub === s.id ? "on" : ""}" data-est-sub="${s.id}" role="tab">${ic(s.icon)}<span>${s.label}</span>${badge}</button>`;
+    }).join("")}</div>`;
+  }
+  function nestedHTML(sub, labels) {
+    return `<div class="est-sub">${NESTED[sub].opts.filter((o) => labels[o]).map((o) => `<button class="chip-btn ${ui.nested[sub] === o ? "on" : ""}" data-est-nest="${sub}:${o}">${labels[o]}</button>`).join("")}</div>`;
+  }
+  function loadingHTML() {
+    return `<div class="card pad">${empty("Carregando o estoque", "Buscando produtos e vendas na nuvem.")}</div>`;
+  }
+  function deniedHTML() {
+    return `<div class="card pad">${empty("Acesso restrito", "Seu perfil não tem acesso a esta área do estoque. Fale com quem administra o sistema.")}</div>`;
+  }
+  var ready = () => S.loaded.products && S.loaded.packages && S.loaded.sales && S.loaded.movements;
+
+  // src/charts.js
+  function nice(max) {
+    if (max <= 0)
+      return 10;
+    const p = 10 ** Math.floor(Math.log10(max));
+    const m = max / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+  }
+  var short = (v) => v >= 1000 ? (v / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " mil" : v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+  function lineChart(host, { labels, series, fmt = brl }) {
+    if (!host)
+      return;
+    const draw = () => {
+      if (!host.isConnected)
+        return;
+      const W = Math.max(260, Math.floor(host.getBoundingClientRect().width) - 1), H = 220;
+      const pl = 44, pr = 8, pt = 10, pb = 26;
+      const max = nice(Math.max(1, ...series.flatMap((s) => s.values)) * 1.1);
+      const n = labels.length;
+      const x = (i) => pl + (n <= 1 ? 0 : i * (W - pl - pr) / (n - 1));
+      const y = (v) => pt + (H - pt - pb) * (1 - v / max);
+      const every = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(W / 80))));
+      let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de vendas">`;
+      for (const f of [0, 0.25, 0.5, 0.75, 1]) {
+        const t = max * f;
+        s += `<line x1="${pl}" x2="${W - pr}" y1="${y(t)}" y2="${y(t)}" stroke="#ECE6D8" ${t ? 'stroke-dasharray="3 4"' : ""}/><text x="${pl - 8}" y="${y(t) + 4}" text-anchor="end" font-size="10.5" fill="#9A9C90" font-family="Manrope">${short(t)}</text>`;
+      }
+      labels.forEach((l, i) => {
+        if (i % every === 0 || i === n - 1)
+          s += `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 ? "start" : i === n - 1 ? "end" : "middle"}" font-size="10.5" fill="#9A9C90" font-family="Manrope">${esc(l)}</text>`;
+      });
+      series.forEach((se, si) => {
+        const pts = se.values.map((v, i) => [x(i), y(v)]);
+        const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+        if (si === 0)
+          s += `<path d="${d} L${x(n - 1)} ${y(0)} L${x(0)} ${y(0)} Z" fill="${se.color}" opacity=".08"/>`;
+        s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;
+        const last = pts[pts.length - 1];
+        if (last)
+          s += `<circle cx="${last[0]}" cy="${last[1]}" r="3.5" fill="${se.color}"/>`;
+      });
+      s += `<line class="hl" x1="0" x2="0" y1="${pt}" y2="${H - pb}" stroke="#C9D3C2" opacity="0"/><rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" class="hz"/></svg><div class="est-tip" hidden></div>`;
+      host.innerHTML = s;
+      const hz = host.querySelector(".hz"), hl = host.querySelector(".hl"), tip = host.querySelector(".est-tip");
+      const move = (cx) => {
+        const r = host.getBoundingClientRect();
+        const i = Math.max(0, Math.min(n - 1, Math.round((cx - r.left - pl) / (W - pl - pr) * (n - 1))));
+        hl.setAttribute("x1", x(i));
+        hl.setAttribute("x2", x(i));
+        hl.setAttribute("opacity", 1);
+        tip.innerHTML = `<b>${esc(labels[i])}</b>${series.map((se) => `<div><i style="background:${se.color}"></i>${esc(se.name)}<span>${fmt(se.values[i])}</span></div>`).join("")}`;
+        tip.hidden = false;
+        tip.style.left = Math.min(W - tip.offsetWidth - 4, Math.max(4, x(i) + 12)) + "px";
+      };
+      hz.addEventListener("pointermove", (e) => move(e.clientX));
+      hz.addEventListener("pointerdown", (e) => move(e.clientX));
+      hz.addEventListener("pointerleave", () => {
+        hl.setAttribute("opacity", 0);
+        tip.hidden = true;
+      });
+    };
+    draw();
+    let t;
+    const ro = new ResizeObserver(() => {
+      clearTimeout(t);
+      t = setTimeout(draw, 120);
+    });
+    ro.observe(host);
+  }
+
+  // src/v-painel.js
+  var ui2 = { days: 30 };
+  function split(s) {
+    const f = s.gross > 0 ? s.total / s.gross : 0;
+    let p = 0, k = 0;
+    for (const it of s.items) {
+      const v = (it.qty - ((s.returnedByKey || {})[it.key] || 0)) * it.unitPrice * f;
+      if (it.type === "produto")
+        p += v;
+      else
+        k += v;
+    }
+    return [p, k];
+  }
+  function trend(cur, prev) {
+    if (!prev && !cur)
+      return "";
+    if (!prev)
+      return '<span class="est-trend">novo</span>';
+    const d = (cur - prev) / prev * 100;
+    if (Math.abs(d) < 0.5)
+      return '<span class="est-trend eq">igual</span>';
+    return `<span class="est-trend ${d < 0 ? "down" : ""}">${d < 0 ? "▼" : "▲"} ${numF(Math.min(100, Math.abs(d)), 0)}%</span>`;
+  }
+  function salesSummary() {
+    const sales = validSales();
+    const now = new Date;
+    const mStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const pmStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+    const pmEnd = new Date(now.getFullYear(), now.getMonth() - 1, Math.min(now.getDate(), new Date(now.getFullYear(), now.getMonth(), 0).getDate()), 23, 59, 59).getTime();
+    const t = today();
+    const day = sales.filter((s) => todayISO(s.createdAt) === t);
+    const month = sales.filter((s) => s.createdAt >= mStart);
+    const prev = sales.filter((s) => s.createdAt >= pmStart && s.createdAt <= pmEnd);
+    const sum = (a) => a.reduce((x, s) => x + saleNet(s), 0);
+    return { day, month, prev, dayV: sum(day), monthV: sum(month), prevV: sum(prev) };
+  }
+  function alertRows(al) {
+    const r = [];
+    if (al.vencidos.length)
+      r.push(["danger", `${al.vencidos.length} lote${al.vencidos.length > 1 ? "s" : ""} vencido${al.vencidos.length > 1 ? "s" : ""}`, "Bloqueados para venda"]);
+    if (al.sem.length)
+      r.push(["danger", `${al.sem.length} produto${al.sem.length > 1 ? "s" : ""} sem estoque`, "Impedem novas vendas"]);
+    if (al.baixo.length)
+      r.push(["warn", `${al.baixo.length} produto${al.baixo.length > 1 ? "s" : ""} com estoque baixo`, "No mínimo ou abaixo"]);
+    if (al.vencendo.length)
+      r.push(["warn", `${al.vencendo.length} lote${al.vencendo.length > 1 ? "s" : ""} perto do vencimento`, `Em até ${S.geral.expiryDays} dias`]);
+    if (!r.length)
+      return `<div class="alert alert-sage">${ic("check")}<div><div class="t1">Tudo em ordem</div>Nenhum alerta no momento</div></div>`;
+    return r.map(([c, t, s]) => `<div class="alert alert-${c} est-alert" data-est-go="reposicao" role="button" tabindex="0"><div class="grow"><div class="t1">${t}</div>${s}</div>${ic("chevron")}</div>`).join("");
+  }
+  function renderPainel() {
+    const al = computeAlerts();
+    const prods = activeProducts();
+    const pkgs = S.packages.filter((p) => p.status === "ativo");
+    const sm = salesSummary();
+    const restock = [...al.sem, ...al.baixo];
+    const cons = consumptionByProduct(S.sales.filter((s) => s.createdAt >= Date.now() - 30 * 86400000));
+    const top = Object.entries(cons).map(([id, c]) => ({ id, ...c, total: c.avulso + c.pacote })).sort((a, b) => b.total - a.total).slice(0, 5);
+    const ok = prods.length - al.sem.length - al.baixo.length;
+    if (!S.products.length && !S.packages.length) {
+      return `<div class="card pad">${empty("O estoque ainda está vazio", "Comece cadastrando os produtos (colírios, medicamentos, materiais). Depois monte os pacotes, como consulta com colírio.", canDo("cadastros") ? `<button class="btn btn-primary" data-est-go="produtos">${ic("plus")} Cadastrar produtos</button>` : "")}</div>`;
+    }
+    return `
+  <div class="grid est-k6" style="margin-bottom:16px;">
+    ${stat("Produtos ativos", prods.length, `${pkgs.length} pacote${pkgs.length === 1 ? "" : "s"} à venda`, "produtos")}
+    ${stat("Estoque baixo", al.baixo.length, "no mínimo ou abaixo", "reposicao")}
+    ${stat("Sem estoque", al.sem.length, "indisponíveis para venda", "reposicao")}
+    ${stat("Vendas hoje", sm.day.length, brl(sm.dayV), "vendas")}
+    ${stat("Vendas do mês", `<span class="est-money">${brl(sm.monthV)}</span>`, `${sm.month.length} venda${sm.month.length === 1 ? "" : "s"} ${trend(sm.monthV, sm.prevV)}`, "vendas")}
+    ${stat("Lotes vencendo", al.vencendo.length, `em até ${S.geral.expiryDays} dias${al.vencidos.length ? ` · ${al.vencidos.length} vencido${al.vencidos.length > 1 ? "s" : ""}` : ""}`, "reposicao")}
+  </div>
+  <div class="est-row2">
+    <div class="card pad">
+      <div class="est-card-h"><div class="section-title">Vendas</div><div class="dash-nav-gran" id="estDays">${[7, 30, 90].map((d) => `<button class="dgran ${ui2.days === d ? "active" : ""}" data-d="${d}">${d} dias</button>`).join("")}</div></div>
+      <div class="est-chart" id="estChart"></div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:8px;"><div class="est-legend"><span><i style="background:#5C7355"></i>Produtos</span><span><i style="background:#A9805F"></i>Pacotes</span></div><div style="margin-left:auto; font-size:12.5px; color:var(--ink-soft);" id="estChartTot"></div></div>
+    </div>
+    <div class="card pad">
+      <div class="section-title">Situação do estoque</div>
+      ${prods.length ? `<div class="est-donut">${donutChartHtml([{ value: ok, color: "#5C7355" }, { value: al.baixo.length, color: "#C9A66B" }, { value: al.sem.length, color: "#B03B3B" }], prods.length, "produtos")}
+        <div class="est-donut-leg"><div><i style="background:#5C7355"></i>Normal<b>${ok}</b></div><div><i style="background:#C9A66B"></i>Estoque baixo<b>${al.baixo.length}</b></div><div><i style="background:#B03B3B"></i>Sem estoque<b>${al.sem.length}</b></div></div></div>` : empty("Sem produtos", "Cadastre produtos para acompanhar.")}
+    </div>
+    <div class="card pad"><div class="section-title">${ic("reposicao")} Alertas</div>${alertRows(al)}</div>
+  </div>
+  <div class="est-row2">
+    <div class="card pad">
+      <div class="est-card-h"><div class="section-title">Precisam de reposição <span class="tag">${restock.length}</span></div>${restock.length ? '<button class="btn btn-ghost btn-sm" data-est-go="reposicao">Ver reposição</button>' : ""}</div>
+      ${restock.length ? `<div class="est-list est-scroll" data-keep="prest">${restock.map((p) => {
+      const st = status(p);
+      return `<div class="est-li click" data-est-prod="${p.id}"><div class="est-thumb">${ic("produto")}</div><div class="grow"><b>${esc(p.name)}</b><small>Mínimo ${qty(p.minStock, p.unit)}</small></div><div class="side"><b class="est-num ${st.level === "sem" ? "est-neg" : ""}">${qty(st.available, p.unit)}</b>${levelBadge(st.level)}</div></div>`;
+    }).join("")}</div>` : `<div class="alert alert-sage">${ic("check")}<div>Nenhum produto abaixo do mínimo.</div></div>`}
+    </div>
+    <div class="card pad">
+      <div class="est-card-h"><div class="section-title">Mais vendidos <span class="tag">30 dias</span></div></div>
+      ${top.length ? `<div class="est-list">${top.map((x, i) => `<div class="est-li click" data-est-prod="${x.id}"><span class="est-rank">${i + 1}</span><div class="grow"><b>${esc(x.name)}</b><small>${qty(x.total, x.unit)}${x.pacote ? ` · ${numF(x.pacote)} em pacotes` : ""}</small></div><div class="est-bar"><i style="width:${Math.max(6, x.total / top[0].total * 100)}%"></i></div></div>`).join("")}</div>` : '<div class="hint">Nenhuma venda nos últimos 30 dias.</div>'}
+    </div>
+    <div class="card pad">
+      <div class="est-card-h"><div class="section-title">Últimas vendas</div>${S.sales.length ? '<button class="btn btn-ghost btn-sm" data-est-go="vendas">Ver todas</button>' : ""}</div>
+      ${S.sales.length ? `<div class="est-list">${S.sales.slice(0, 5).map((s) => `<div class="est-li click" data-est-sale="${s.id}"><div class="est-thumb ${s.items.some((i) => i.type === "pacote") ? "pk" : ""}">${ic(s.items.some((i) => i.type === "pacote") ? "pacote" : "produto")}</div><div class="grow"><b>${esc(s.items.map((i) => i.name).join(", "))}</b><small>${esc(s.client || "Sem cliente")} · ${brl(s.total)}</small></div><div class="side">${fmtT(s.createdAt)}${saleBadge(s)}</div></div>`).join("")}</div>` : '<div class="hint">Nenhuma venda registrada ainda.</div>'}
+    </div>
+  </div>
+  <div class="card pad">
+    <div class="est-card-h"><div class="section-title">Últimas movimentações</div>${S.movements.length ? '<button class="btn btn-ghost btn-sm" data-est-go="movimentacoes">Ver todas</button>' : ""}</div>
+    ${S.movements.length ? `<div class="table-wrap" style="max-height:360px;"><table><thead><tr><th>Data e hora</th><th>Produto</th><th>Tipo</th><th class="est-r">Quantidade</th><th class="est-r">Saldo</th><th>Responsável</th></tr></thead><tbody>
+      ${S.movements.slice(0, 8).map((m) => `<tr><td class="est-num">${fmtDT(m.at)}</td><td>${esc(m.productName)}</td><td>${movBadge(m.type)}</td><td class="est-r est-num ${m.direction < 0 ? "est-neg" : "est-pos-n"}">${m.direction < 0 ? "−" : "+"}${qty(m.qty, m.unit)}</td><td class="est-r est-num">${numF(m.before)} → ${numF(m.after)}</td><td>${esc(m.byName)}</td></tr>`).join("")}
+    </tbody></table></div>` : '<div class="hint">As entradas e saídas aparecem aqui.</div>'}
+  </div>`;
+  }
+  function bindPainel(el) {
+    const draw = () => {
+      const t = today();
+      const days = [];
+      for (let i = ui2.days - 1;i >= 0; i--)
+        days.push(addDaysISO(t, -i));
+      const idx = Object.fromEntries(days.map((d, i) => [d, i]));
+      const p = days.map(() => 0), k = days.map(() => 0);
+      for (const s of validSales()) {
+        const i = idx[todayISO(s.createdAt)];
+        if (i === undefined)
+          continue;
+        const [a, b] = split(s);
+        p[i] += a;
+        k[i] += b;
+      }
+      lineChart(el.querySelector("#estChart"), { labels: days.map((d) => d.slice(8) + "/" + d.slice(5, 7)), series: [{ name: "Produtos", color: "#5C7355", values: p }, { name: "Pacotes", color: "#A9805F", values: k }] });
+      const tot = el.querySelector("#estChartTot");
+      if (tot)
+        tot.innerHTML = `Total em ${ui2.days} dias: <strong style="color:var(--ink)">${brl(p.concat(k).reduce((a, b) => a + b, 0))}</strong>`;
+    };
+    el.querySelectorAll("#estDays [data-d]").forEach((b) => b.onclick = () => {
+      ui2.days = +b.dataset.d;
+      el.querySelectorAll("#estDays [data-d]").forEach((x) => x.classList.toggle("active", x === b));
+      draw();
+    });
+    if (el.querySelector("#estChart"))
+      draw();
   }
 
   // src/csv.js
@@ -3673,6 +3928,13 @@ td.est-c, th.est-c{text-align:center;}
   }
   var _render = window.render;
   window.render = function() {
+    if (S.store && S.store.recarregar) {
+      try {
+        S.store.recarregar();
+      } catch (e) {
+        console.error(e);
+      }
+    }
     if (state.view !== "estoque") {
       _render();
       if (state.view === "dashboard")
@@ -3752,7 +4014,20 @@ td.est-c, th.est-c{text-align:center;}
     if (S.started)
       return;
     S.started = true;
-    S.store = createCompatStore();
+    const realHas = { products: () => S.pMap, packages: () => S.kMap, suppliers: () => S.sMap, categories: () => S.cMap };
+    S.store = createDualStore(createCompatStore(), {
+      ler: () => typeof DB !== "undefined" && DB.exemploEstoque || null,
+      salvar: (snap) => {
+        DB.exemploEstoque = snap;
+        try {
+          saveDB();
+        } catch (e) {}
+      },
+      existeReal: (c, id) => {
+        const m = realHas[c] && realHas[c]();
+        return !!(m && m[id] && !m[id].exemplo);
+      }
+    });
     const st2 = S.store;
     const since = Date.now() - 400 * 86400000;
     const onErr = (e) => {
@@ -4003,5 +4278,25 @@ td.est-c, th.est-c{text-align:center;}
       goTo("estoque");
     } catch (e) {}
   }
-  window.Estq = { S, startSale, estGo, openSale, openProduct, NESTED, sa, myEmail, tutorById: (id) => tutorById(id) };
+  window.Estq = {
+    async exemplos(tutores) {
+      return montarExemplos({ uid: auth.currentUser && auth.currentUser.uid || "", name: (() => {
+        try {
+          return getCurrentUser();
+        } catch (e) {
+          return "";
+        }
+      })() }, tutores);
+    },
+    temExemplos: () => !!(typeof DB !== "undefined" && DB.exemploEstoque && DB.exemploEstoque.data),
+    S,
+    startSale,
+    estGo,
+    openSale,
+    openProduct,
+    NESTED,
+    sa,
+    myEmail,
+    tutorById: (id) => tutorById(id)
+  };
 })();

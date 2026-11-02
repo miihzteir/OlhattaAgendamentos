@@ -757,6 +757,15 @@ th.sortavel[data-dir=asc]::after{content:' \2191'; font-size:11px;} th.sortavel[
 .ind-c.bad b{color:#B0463C;} .ind-c.warn b{color:#A8752A;}
 .ind-c small{display:block; font-size:10px; font-weight:700; color:var(--ink-soft); margin-top:2px; line-height:1.3;}
 @media (max-width:640px){ .ind-grid{grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px;} .ind-grid > span:first-child{display:none;} .ind-r{grid-column:1/-1; margin-top:6px;} .ind-r i{height:16px;} .ind-c b{font-size:20px;} }
+.cal-event.cal-ex{opacity:.45;}
+[data-est-prod^="ex_"], [data-est-sale^="ex_"], [data-est-pk^="ex_"]{opacity:.5;}
+[data-est-prod^="ex_"]:hover, [data-est-sale^="ex_"]:hover, [data-est-pk^="ex_"]:hover{opacity:.8;}
+.ex-row{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+.ex-row .acc-tx{font:600 16px 'Fraunces',serif; color:var(--ink); min-width:200px;}
+/* Exemplos ficam mais apagados que os dados reais, para não chamar mais atenção que eles */
+[data-open-ag^="ex_"], [data-open-contato^="ex_"], [data-open-tutor^="ex_"], [data-open-animal^="ex_"], [data-open-nf^="ex_"],
+[data-open-lembrete-pend^="ex_"], .lemb-row:has([data-done-lembrete^="ex_"]), tr:has([data-edit-tutor^="ex_"]), .rolagem-lista > :has([data-contato-to-ag^="ex_"]), tr:has([data-edit-animal^="ex_"]), :is(tr,.card):has(> * [data-edit-obs-avaliacao^="ex_"], [data-edit-obs-avaliacao^="ex_"]):not(.view > *){opacity:.5;}
+[data-open-ag^="ex_"]:hover, [data-open-contato^="ex_"]:hover, [data-open-tutor^="ex_"]:hover, [data-open-nf^="ex_"]:hover{opacity:.8;}
 /* ---------- Quadros de números com ícone ---------- */
 .stat-card:has(> .sc-ic){display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:14px; align-items:center;}
 .stat-card > .sc-ic{grid-column:1; grid-row:1 / span 3; align-self:center; width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:#DFE9D8; color:#4A6443;}
@@ -2719,7 +2728,7 @@ function renderCalendarioMes(refDateStr){
               const tiposGrupo = [...new Set(grupo.map(g=>g.tipo))];
               const linha3 = [tiposGrupo.join('/'), a.clinica].filter(Boolean).join(' - ') + profs;
               const tooltip = [horarioTxt, tutorAnimal, linha3].filter(Boolean).join(' · ');
-              return `<div class="cal-event" style="background:${agColor(a)};" title="${tooltip}">
+              return `<div class="cal-event ${ehExemplo(a)?'cal-ex':''}" style="background:${agColor(a)};" title="${tooltip}">
                 <div class="cal-event-l1">${horarioTxt}${grupo.length>1?` (${grupo.length})`:''}</div>
                 <div class="cal-event-l2">${tutorAnimal}</div>
                 <div class="cal-event-l3">${linha3}</div>
@@ -4714,11 +4723,83 @@ function renderPersonalizacao(){
 /* =========================================================
    CONFIGURAÇÕES
 ========================================================= */
+
+/* ---------- Dados de exemplo (Configurações) ---------- */
+// Todo exemplo tem id começando com "ex_". Assim eles nunca substituem nem se misturam com os dados reais,
+// e "Tirar exemplos" apaga só eles.
+const EX_COLS = ['tutores','animais','vinculos','agendamentos','contatos','lembretes','notasFiscais','avaliacoes'];
+const ehExemplo = x => !!(x && typeof x.id==='string' && x.id.startsWith('ex_'));
+function contarExemplosEstoque(){ const d=(DB.exemploEstoque&&DB.exemploEstoque.data)||{}; return ['products','packages','sales'].reduce((n,c)=>n+Object.keys(d[c]||{}).length,0); }
+function contarExemplos(){ return EX_COLS.reduce((n,c)=>n+(DB[c]||[]).filter(ehExemplo).length, 0) + contarExemplosEstoque(); }
+function colocarExemplos(){
+  if(contarExemplos()) return;
+  const t = todayISO(), ini = t.slice(0,8)+'01', agora = new Date().toISOString();
+  const d = n=>{ const x = addDays(t,n); return x<ini ? ini : x; }; // passados ficam dentro do mês atual
+  const tutores = [
+    ['ex_t1','Ana Lima (exemplo)','66 9 0000 0001'], ['ex_t2','Bruno Costa (exemplo)','66 9 0000 0002'],
+    ['ex_t3','Carol Dias (exemplo)','66 9 0000 0003'], ['ex_t4','Davi Rocha (exemplo)','66 9 0000 0004'],
+  ].map(([id,nome,telefone])=>({id, nome, telefone, codigo:'EX', cidade:'Sinop', clinica:'Olhatta', criadoPor:getCurrentUser(), criadoEm:agora}));
+  const animais = [['ex_a1','Mel','Cão'],['ex_a2','Tom','Gato'],['ex_a3','Pipoca','Cão'],['ex_a4','Nala','Gato'],['ex_a5','Zeca','Cão']]
+    .map(([id,nome,especie])=>({id, nome, especie, sexo:'', obito:false, criadoEm:agora}));
+  const vinculos = [['ex_t1','ex_a1'],['ex_t2','ex_a2'],['ex_t3','ex_a3'],['ex_t4','ex_a4'],['ex_t1','ex_a5']]
+    .map(([tutorId,animalId],i)=>({id:'ex_v'+i, tutorId, animalId}));
+  const ag = (id,tu,an,dia,hora,tipo,status)=>({id, tutorId:tu, animalId:an, data:d(dia), horario:hora, tipo, status, cidade:'Sinop', clinica:'Olhatta', criadoPor:getCurrentUser(), criadoEm:agora});
+  const agendamentos = [
+    ag('ex_g1','ex_t1','ex_a1',0,'08:30','Consulta','Confirmado'),
+    ag('ex_g2','ex_t2','ex_a2',0,'11:00','Retorno','Agendado'),
+    ag('ex_g3','ex_t3','ex_a3',1,'09:30','Cirurgia','Agendado'),
+    ag('ex_g4','ex_t4','ex_a4',-2,'15:00','Consulta','Realizado'),
+    ag('ex_g5','ex_t1','ex_a5',-3,'10:00','Consulta','Desmarcado'),
+  ];
+  const ct = (id,dia,status,nome,tipo,extra)=>Object.assign({id, dataContato:d(dia), status, origem:'Recebido', nomeAvulso:nome, telefone:'66 9 0000 00'+id.slice(-2), tipoAtendimento:tipo, tentativas:[], criadoPor:getCurrentUser()}, extra||{});
+  const contatos = [
+    ct('ex_c1',0,'Aguardando','Elisa (exemplo)','Consulta'),
+    ct('ex_c2',-1,'Aguardando','Fábio (exemplo)','Cirurgia',{recontatarEm:t}),
+    ct('ex_c3',-2,'Não agendado','Gabi (exemplo)','Consulta',{motivoNaoAgendamento:'Preço'}),
+  ];
+  const lembretes = [
+    {id:'ex_l1', titulo:'Exemplo: ligar para confirmar cirurgia', data:t, horario:'16:00', concluido:false},
+    {id:'ex_l2', titulo:'Exemplo: conferir notas da semana', data:d(2), concluido:false},
+  ];
+  const notasFiscais = [
+    {id:'ex_n1', tutorId:'ex_t4', animalId:'ex_a4', data:t, status:'Pendente', formaPagamento:'Cartão de Crédito', usarDadosTutor:true, itens:[{id:'ex_i1', categoria:'Consulta', descricao:'', valor:250}], cobrado:250, splits:0, valorTotal:250, anexos:[], enviado:false, criadoPor:getCurrentUser(), criadoEm:agora},
+  ];
+  const avaliacoes = [
+    {id:'ex_r1', tutorId:'ex_t4', animalId:'ex_a4', status:'Já pedi', avaliou:null, data:d(-2), criadoPor:getCurrentUser(), criadoEm:agora},
+  ];
+  const novos = {tutores, animais, vinculos, agendamentos, contatos, lembretes, notasFiscais, avaliacoes};
+  EX_COLS.forEach(c=>{ DB[c] = (DB[c]||[]).concat(novos[c]); });
+  logAction('colocou dados de exemplo');
+  saveDB();
+  return colocarExemplosEstoque(tutores, animais, vinculos);
+}
+async function colocarExemplosEstoque(tutores, animais, vinculos){
+  if(!window.Estq || !window.Estq.exemplos || contarExemplosEstoque()) return;
+  try{
+    const lista = tutores.map(t=>{ const v=vinculos.find(x=>x.tutorId===t.id); const a=v&&animais.find(x=>x.id===v.animalId); return {id:t.id, nome:t.nome, animalId:a?a.id:'', animalName:a?a.nome:''}; });
+    DB.exemploEstoque = await window.Estq.exemplos(lista);
+    saveDB(); render();
+  }catch(e){ console.error('Exemplos do estoque', e); }
+}
+function tirarExemplos(){
+  EX_COLS.forEach(c=>{ DB[c] = (DB[c]||[]).filter(x=>!ehExemplo(x) && !(c==='vinculos' && (String(x.tutorId).startsWith('ex_') || String(x.animalId).startsWith('ex_')))); });
+  DB.lixeira = (DB.lixeira||[]).filter(it=>!ehExemplo(it.dados));
+  delete DB.exemploEstoque;
+  logAction('tirou os dados de exemplo');
+  saveDB();
+}
 function renderConfiguracoes(){
   const total = DB.tutores.length+DB.animais.length+DB.agendamentos.length+DB.contatos.length+DB.lembretes.length;
   const lixeira = (DB.lixeira||[]);
   return `
   <div class="set-list">
+    <div class="card pad ex-card" style="order:-1;">
+      <div class="ex-row">
+        <span class="acc-ic">${ICONS.sparkle}</span>
+        <span class="acc-tx" style="flex:1;">Dados de exemplo<small>${contarExemplos()?`${contarExemplos()} registros de exemplo no sistema, mais claros que os seus. Os seus dados não mudam.`:'Mostra tutores, agenda, contatos, notas, lembretes e estoque fictícios para ver como tudo funciona. Os seus dados não mudam.'}</small></span>
+        ${contarExemplos()?`<button class="btn btn-secondary btn-sm" id="exTirar">${ICONS.trash} Tirar exemplos</button>`:`<button class="btn btn-primary btn-sm" id="exVer">${ICONS.plus} Ver exemplos</button>`}
+      </div>
+    </div>
     <div class="card pad ${accCard('c-lixeira', false)}">
       <div class="section-title" ${accTitleAttrs()}><span class="acc-ic">${ICONS.trash}</span><span class="acc-tx">Lixeira<small>Itens excluídos que podem voltar</small></span><span class="tag">${lixeira.length}</span></div>
       <p style="font-size:13.5px; color:var(--ink-soft); margin-bottom:12px;">Tutores, animais, agendamentos, contatos e lembretes excluídos ficam aqui e podem ser restaurados a qualquer momento.</p>
@@ -6882,6 +6963,10 @@ function attachViewHandlers(){
 
   // Configurações
   document.getElementById('btnRestaurarBackup')?.addEventListener('click', ()=>{ document.getElementById('importFile').click(); });
+  document.getElementById('exVer')?.addEventListener('click', async ()=>{ const p = colocarExemplos(); render(); toast('Exemplos adicionados'); await p; render(); });
+  document.getElementById('exTirar')?.addEventListener('click', ()=>{
+    confirmDialog('Tirar os exemplos?','Só os registros de exemplo saem. Tudo o que você cadastrou continua igual.', ()=>{ tirarExemplos(); closeModal(); render(); toast('Exemplos removidos'); });
+  });
   document.getElementById('importFile')?.addEventListener('change', importBackup);
   document.getElementById('btnAtualizarApp')?.addEventListener('click', async ()=>{
     toast('Verificando atualizações…');
@@ -7253,6 +7338,6 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="estoque.js?v=11"></script>
+<script src="estoque.js?v=12"></script>
 </body>
 </html>
